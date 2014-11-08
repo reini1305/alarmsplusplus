@@ -179,8 +179,11 @@ static void menu_select(struct MenuLayer* menu, MenuIndex* cell_index, void* cal
       break;
     case MENU_SECTION_OTHER:
       menu_select_other(cell_index->row);
-      menu_layer_reload_data(menu);
-      menu_layer_set_selected_index(menu,(MenuIndex){.row=0,.section=1},MenuRowAlignCenter,false);
+      if(cell_index->row==MENU_ROW_OTHER_HIDE)
+      {
+        menu_layer_reload_data(menu);
+        menu_layer_set_selected_index(menu,(MenuIndex){.row=0,.section=1},MenuRowAlignCenter,false);
+      }
       layer_mark_dirty(menu_layer_get_layer(menu));
       break;
   }
