@@ -1,0 +1,49 @@
+{
+  "uuid": "e3060014-bfe9-4d03-b75e-374cc4dca97b",
+  "shortName": "Alarms++",
+  "longName": "Alarms++",
+  "companyName": "Christian Reinbacher",
+  "versionCode": 8,
+  "versionLabel": "1.8",
+  "watchapp": {
+    "watchface": false
+  },
+  "appKeys": {
+    "dummy": 0
+  },
+  "resources": {
+    "media": [
+              {
+              "menuIcon": true,
+              "type": "png",
+              "name": "IMAGE_MENU_ICON",
+              "file": "images/logo.png"
+              },
+              {
+              "type": "png",
+              "name": "IMAGE_ACTION_ICON_CHECK",
+              "file": "images/action_icon_check.png"
+              },
+              {
+              "type": "png",
+              "name": "IMAGE_ACTION_ICON_UP",
+              "file": "images/action_icon_up.png"
+              },
+              {
+              "type": "png",
+              "name": "IMAGE_ACTION_ICON_DOWN",
+              "file": "images/action_icon_down.png"
+              },
+              {
+              "type": "png",
+              "name": "IMAGE_ACTION_ICON_CROSS",
+              "file": "images/action_icon_cross.png"
+              },
+              {
+              "type": "png",
+              "name": "IMAGE_ACTION_ICON_ZZ",
+              "file": "images/action_icon_zz.png"
+              }
+              ]
+  }
+}
