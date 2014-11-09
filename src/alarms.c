@@ -115,6 +115,16 @@ void alarm_schedule_wakeup(Alarm *alarm)
         APP_LOG(APP_LOG_LEVEL_DEBUG,"Scheduled at %d.%d %d:%d",t->tm_mday, t->tm_mon+1,t->tm_hour,t->tm_min);
         alarm->alarm_id = wakeup_schedule(timestamp,0,true);
       }
+      else // one-time alert (no weekdays active)
+      {
+        timestamp = clock_to_timestamp(TODAY,alarm->hour,alarm->minute);
+        if((timestamp-now)>(60*60*24))
+          timestamp = clock_to_timestamp(current_weekday+1,alarm->hour,alarm->minute);
+        
+        t = localtime(&timestamp);
+        APP_LOG(APP_LOG_LEVEL_DEBUG,"Scheduled one-time event at %d.%d %d:%d",t->tm_mday, t->tm_mon+1,t->tm_hour,t->tm_min);
+        alarm->alarm_id = wakeup_schedule(timestamp,0,true);
+      }
     }
     if(some_active && alarm->alarm_id<0) // some error occured
     {
@@ -152,6 +162,17 @@ void reschedule_wakeup(Alarm *alarms)
   {
     alarm_schedule_wakeup(&alarms[i]);
   }
+}
+
+bool alarm_is_one_time(Alarm *alarm)
+{
+  bool onetime=true;
+  
+  for (int i=0;i<7;i++)
+    if(alarm->weekdays_active[i])
+      onetime=false;
+  
+  return onetime;
 }
 
 void convert_24_to_12(int hour_in, int* hour_out, bool* am)

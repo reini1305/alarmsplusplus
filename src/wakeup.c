@@ -15,8 +15,8 @@ static TextLayer *s_output_layer;
 static InverterLayer *s_inverter_layer;
 static ActionBarLayer *action_bar;
 static char output_text[10];
-static Alarm* s_alarm;
 static bool *s_snooze;
+static Alarm *s_alarm;
 
 void do_vibrate(void);
 void vibe_timer_callback(void* data);
@@ -26,27 +26,13 @@ bool cancel_vibrate=false;
 
 static void wakeup_handler(WakeupId id, int32_t reason) {
   // The app has woken!
-  if(reason!=0)
-  {
-    s_alarm = (Alarm*)reason;
-    // search for alarm which caused the wakeup
-    while(s_alarm->alarm_id!=id)
-      s_alarm++;
-    if(clock_is_24h_style())
-      snprintf(output_text, sizeof(output_text), "%02d:%02d",s_alarm->hour,s_alarm->minute);
-    else
-    {
-      int hour;
-      bool is_am;
-      convert_24_to_12(s_alarm->hour, &hour, &is_am);
-      snprintf(output_text, sizeof(output_text), "%02d:%02d %s",hour,s_alarm->minute,is_am?"AM":"PM");
-    }
-    light_enable_interaction();
-  }
+
 }
 
 static void dismiss_click_handler(ClickRecognizerRef recognizer, void *context) {
   *s_snooze=false;
+  if(alarm_is_one_time(s_alarm))
+    s_alarm->enabled=false;
   window_stack_pop(true);
 }
 
@@ -57,7 +43,7 @@ static void snooze_click_handler(ClickRecognizerRef recognizer, void *context) {
   time_t timestamp = time(NULL) + 60*snooze_delay;
   s_alarm->alarm_id = wakeup_schedule(timestamp,0,true);
   struct tm *t = localtime(&timestamp);
-  APP_LOG(APP_LOG_LEVEL_DEBUG,"Scheduled at %d.%d %d:%d",t->tm_mday, t->tm_mon+1,t->tm_hour,t->tm_min);
+  APP_LOG(APP_LOG_LEVEL_DEBUG,"Scheduled snooze at %d.%d %d:%d",t->tm_mday, t->tm_mon+1,t->tm_hour,t->tm_min);
   window_stack_pop(true);
 }
 
@@ -106,7 +92,7 @@ static void main_window_load(Window *window) {
   s_output_layer = text_layer_create(GRect(0, bounds.size.h/2-21-(clock_is_24h_style()?0:21), bounds.size.w-ACTION_BAR_WIDTH, bounds.size.h));
   text_layer_set_text_alignment(s_output_layer, GTextAlignmentCenter);
   text_layer_set_font(s_output_layer,fonts_get_system_font(FONT_KEY_BITHAM_42_BOLD));
-  snprintf(output_text, sizeof(output_text), "00.00");
+  //snprintf(output_text, sizeof(output_text), "00:00");
   text_layer_set_text(s_output_layer, output_text);
   layer_add_child(window_get_root_layer(window), text_layer_get_layer(s_output_layer));
   s_inverter_layer = inverter_layer_create(GRect(0,0,bounds.size.w,bounds.size.h));
@@ -143,10 +129,25 @@ void perform_wakeup_tasks(Alarm* alarms, bool *snooze)
     // The app was started by a wakeup
     WakeupId id = 0;
     int32_t reason = 0;
-    window_stack_push(s_main_window, true);
+    
     // Get details and handle the wakeup
     wakeup_get_launch_event(&id, &reason);
-    wakeup_handler(id, (int32_t)alarms);
+    // search for alarm which caused the wakeup
+    s_alarm = alarms;
+    while(s_alarm->alarm_id!=id)
+      s_alarm++;
+    if(clock_is_24h_style())
+      snprintf(output_text, sizeof(output_text), "%02d:%02d",s_alarm->hour,s_alarm->minute);
+    else
+    {
+      int hour;
+      bool is_am;
+      convert_24_to_12(s_alarm->hour, &hour, &is_am);
+      snprintf(output_text, sizeof(output_text), "%02d:%02d %s",hour,s_alarm->minute,is_am?"AM":"PM");
+    }
+    light_enable_interaction();
+    window_stack_push(s_main_window, true);
+    //wakeup_handler(id, (int32_t)alarms);
   }
   else{
     *snooze=false;
