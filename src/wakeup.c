@@ -136,14 +136,19 @@ void perform_wakeup_tasks(Alarm* alarms, bool *snooze)
     s_alarm = alarms;
     while(s_alarm->alarm_id!=id)
       s_alarm++;
+    
+    // Get the current time
+    time_t now = time(NULL);
+    struct tm *t = localtime(&now);
+    
     if(clock_is_24h_style())
-      snprintf(output_text, sizeof(output_text), "%02d:%02d",s_alarm->hour,s_alarm->minute);
+      snprintf(output_text, sizeof(output_text), "%02d:%02d",t->tm_hour,t->tm_min);
     else
     {
       int hour;
       bool is_am;
-      convert_24_to_12(s_alarm->hour, &hour, &is_am);
-      snprintf(output_text, sizeof(output_text), "%02d:%02d %s",hour,s_alarm->minute,is_am?"AM":"PM");
+      convert_24_to_12(t->tm_hour, &hour, &is_am);
+      snprintf(output_text, sizeof(output_text), "%02d:%02d %s",hour,t->tm_min,is_am?"AM":"PM");
     }
     light_enable_interaction();
     window_stack_push(s_main_window, true);

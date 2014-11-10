@@ -23,6 +23,7 @@ static MenuLayer* s_menu;
 static NumberWindow *hour_window,*minute_window;
 static GBitmap *check_icon,*up_icon,*down_icon;
 static bool s_is_am;
+static bool s_select_all;
 
 static void progress_to_minutes(NumberWindow *window,void* context);
 static void progress_to_days(NumberWindow *window,void* context);
@@ -76,6 +77,7 @@ void win_edit_init(void)
 void win_edit_show(Alarm *alarm){
   memcpy(&temp_alarm,alarm,sizeof(Alarm));
   current_alarm = alarm;
+  s_select_all = false;
   if(clock_is_24h_style())
   {
     number_window_set_value(hour_window,temp_alarm.hour);
@@ -186,7 +188,7 @@ static uint16_t menu_num_sections(struct MenuLayer* menu, void* callback_context
 static uint16_t menu_num_rows(struct MenuLayer* menu, uint16_t section_index, void* callback_context) {
   switch (section_index) {
     case MENU_SECTION_WEEKDAYS:
-      return 7;
+      return 8;
       break;
     case MENU_SECTION_OK:
       return 1;
@@ -227,14 +229,29 @@ static void menu_draw_row(GContext* ctx, const Layer* cell_layer, MenuIndex* cel
   }
   else
   {
-    graphics_draw_text(ctx, weekday_names[cell_index->row],
-                       fonts_get_system_font(FONT_KEY_GOTHIC_24),
-                       GRect(3, -3, 144 - 33, 28), GTextOverflowModeWordWrap,
-                       GTextAlignmentLeft, NULL);
-    // draw checkmark if enabled
-    if(temp_alarm.weekdays_active[cell_index->row])
+    if(cell_index->row==0) // select all-none
     {
-      graphics_draw_bitmap_in_rect(ctx, check_icon, GRect(144 - 3 - 16, 6, 16, 16));
+      graphics_draw_text(ctx, "Select All/None",
+                         fonts_get_system_font(FONT_KEY_GOTHIC_24),
+                         GRect(3, -3, 144 - 33, 28), GTextOverflowModeWordWrap,
+                         GTextAlignmentLeft, NULL);
+      // draw checkmark if enabled
+      if(s_select_all)
+      {
+        graphics_draw_bitmap_in_rect(ctx, check_icon, GRect(144 - 3 - 16, 6, 16, 16));
+      }
+    }
+    else
+    {
+      graphics_draw_text(ctx, weekday_names[cell_index->row-1],
+                         fonts_get_system_font(FONT_KEY_GOTHIC_24),
+                         GRect(3, -3, 144 - 33, 28), GTextOverflowModeWordWrap,
+                         GTextAlignmentLeft, NULL);
+      // draw checkmark if enabled
+      if(temp_alarm.weekdays_active[cell_index->row-1])
+      {
+        graphics_draw_bitmap_in_rect(ctx, check_icon, GRect(144 - 3 - 16, 6, 16, 16));
+      }
     }
   }
 }
@@ -273,7 +290,13 @@ static void menu_select(struct MenuLayer* menu, MenuIndex* cell_index, void* cal
       }
       break;
     case MENU_SECTION_WEEKDAYS:
-      temp_alarm.weekdays_active[cell_index->row]=!temp_alarm.weekdays_active[cell_index->row];
+      if(cell_index->row==0)
+      {
+        s_select_all=!s_select_all;
+        for(int i=0;i<7;temp_alarm.weekdays_active[i++]=s_select_all);
+      }
+      else
+        temp_alarm.weekdays_active[cell_index->row-1]=!temp_alarm.weekdays_active[cell_index->row-1];
       layer_mark_dirty(menu_layer_get_layer(menu));
       break;
       
