@@ -18,6 +18,7 @@
 
 static void window_load(Window* window);
 static void window_unload(Window* window);
+static void window_appear(Window* window);
 static uint16_t menu_num_sections(struct MenuLayer* menu, void* callback_context);
 static uint16_t menu_num_rows(struct MenuLayer* menu, uint16_t section_index, void* callback_context);
 static int16_t menu_cell_height(struct MenuLayer *menu, MenuIndex *cell_index, void *callback_context);
@@ -47,7 +48,8 @@ void win_main_init(Alarm* alarms) {
   s_window = window_create();
   window_set_window_handlers(s_window, (WindowHandlers) {
     .load = window_load,
-    .unload = window_unload
+    .unload = window_unload,
+    .appear = window_appear
   });
   win_edit_init();
   win_snooze_init();
@@ -87,6 +89,11 @@ static void window_load(Window* window) {
 
 static void window_unload(Window* window) {
   menu_layer_destroy(s_menu);
+}
+
+static void window_appear(Window* window) {
+  update_id_enabled();
+  layer_mark_dirty(menu_layer_get_layer(s_menu));
 }
 
 static uint16_t menu_num_sections(struct MenuLayer* menu, void* callback_context) {
@@ -157,7 +164,7 @@ static void menu_draw_row_other(GContext* ctx, const Layer* cell_layer, uint16_t
   switch (row_index) {
     case MENU_ROW_OTHER_ABOUT:
       // This is a basic menu item with a title and subtitle
-      menu_cell_basic_draw(ctx, cell_layer, "About", "Alarms++ v1.10", NULL);
+      menu_cell_basic_draw(ctx, cell_layer, "About", "Alarms++ v1.11", NULL);
       break;
     case MENU_ROW_OTHER_SNOOZE:
       snprintf(s_snooze_text,sizeof(s_snooze_text),"%02d Minutes",s_snooze_delay);
