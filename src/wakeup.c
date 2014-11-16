@@ -18,12 +18,12 @@ static ActionBarLayer *action_bar;
 static char output_text[10];
 static bool *s_snooze;
 static Alarm *s_alarm;
-static uint32_t s_segments[]={800,1};
+static uint32_t s_segments[]={600,1};
 static VibePatternPWM s_pwmPat = {
   .durations = s_segments,
   .num_segments = 2
 };
-static int s_vibe_counter = 1;
+static int s_vibe_counter = 0;
 static int s_vibration_pattern = 0;
 
 void do_vibrate(void);
@@ -74,7 +74,8 @@ static void click_config_provider(void *context) {
 void do_vibrate(void) {
   if(s_vibration_pattern)
   {
-    s_pwmPat.durations[1] = s_vibe_counter++;
+    s_pwmPat.durations[1] = (s_vibe_counter/s_vibration_pattern)+1;
+    s_vibe_counter++;
     vibes_enqueue_custom_pwm_pattern(&s_pwmPat);
   }
   else

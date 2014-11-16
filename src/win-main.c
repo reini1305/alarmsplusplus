@@ -12,10 +12,10 @@
 #define MENU_ROW_COUNT_ALARMS NUM_ALARMS
 
 #define MENU_ROW_OTHER_ABOUT         4
-#define MENU_ROW_OTHER_LONGPRESS     2
+#define MENU_ROW_OTHER_LONGPRESS     3
 #define MENU_ROW_OTHER_SNOOZE        1
 #define MENU_ROW_OTHER_HIDE          0
-#define MENU_ROW_OTHER_VIBRATION     3
+#define MENU_ROW_OTHER_VIBRATION     2
 
 static void window_load(Window* window);
 static void window_unload(Window* window);
@@ -180,7 +180,23 @@ static void menu_draw_row_other(GContext* ctx, const Layer* cell_layer, uint16_t
       menu_cell_basic_draw(ctx, cell_layer, "Disabled Alarms", s_hide_unused_alarms?"Hide":"Show", NULL);
       break;
     case MENU_ROW_OTHER_VIBRATION:
-      menu_cell_basic_draw(ctx, cell_layer, "Vibration Strength", s_vibration_pattern==0?"Constant":"Increasing", NULL);
+      switch (s_vibration_pattern) {
+        case 0:
+          menu_cell_basic_draw(ctx, cell_layer, "Vibration Strength", "Constant", NULL);
+          break;
+        case 1:
+          menu_cell_basic_draw(ctx, cell_layer, "Vibration Strength", "Increasing (10s)", NULL);
+          break;
+        case 2:
+          menu_cell_basic_draw(ctx, cell_layer, "Vibration Strength", "Increasing (20s)", NULL);
+          break;
+        case 3:
+          menu_cell_basic_draw(ctx, cell_layer, "Vibration Strength", "Increasing (30s)", NULL);
+          break;
+        default:
+          break;
+      }
+      
       break;
   }
 }
@@ -237,7 +253,9 @@ static void menu_select_other(uint16_t row_index) {
       persist_write_bool(HIDE_UNUSED_ALARMS_KEY,s_hide_unused_alarms);
       break;
     case MENU_ROW_OTHER_VIBRATION:
-      s_vibration_pattern=!s_vibration_pattern;
+      s_vibration_pattern++;
+      if(s_vibration_pattern>3)
+        s_vibration_pattern=0;
       persist_write_int(VIBRATION_PATTERN_KEY,s_vibration_pattern);
       break;
   }
