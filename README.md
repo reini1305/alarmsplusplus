@@ -14,6 +14,7 @@ The app can be found in the store: https://apps.getpebble.com/applications/54551
 - each alarm can be customized to different weekdays
 - flexible snooze interval
 - optional long-press-to-dismiss-alarm
+- optional increasing vibration strength (thanks to the great library of Jeff Blum: https://github.com/jeffbl/pebble)
 
 #Credits
 Credits go to Matthew Tole and his Multi-Timer app, which helped me a lot in structuring the code and mastering MenuLayers: https://github.com/smallstoneapps/multi-timer
