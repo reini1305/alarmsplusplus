@@ -9,6 +9,7 @@
 #include "wakeup.h"
 #include "win-main.h"
 #include "storage.h"
+#include "pwm_vibrate.h"
 
 static Window *s_main_window;
 static TextLayer *s_output_layer;
@@ -17,6 +18,13 @@ static ActionBarLayer *action_bar;
 static char output_text[10];
 static bool *s_snooze;
 static Alarm *s_alarm;
+static uint32_t s_segments[]={800,1};
+static VibePatternPWM s_pwmPat = {
+  .durations = s_segments,
+  .num_segments = 2
+};
+static int s_vibe_counter = 1;
+static int s_vibration_pattern = 0;
 
 void do_vibrate(void);
 void vibe_timer_callback(void* data);
@@ -64,7 +72,13 @@ static void click_config_provider(void *context) {
 }
 
 void do_vibrate(void) {
-  vibes_long_pulse();
+  if(s_vibration_pattern)
+  {
+    s_pwmPat.durations[1] = s_vibe_counter++;
+    vibes_enqueue_custom_pwm_pattern(&s_pwmPat);
+  }
+  else
+    vibes_long_pulse();
   vibe_timer = app_timer_register(1000,vibe_timer_callback,NULL);
 }
 
@@ -97,6 +111,7 @@ static void main_window_load(Window *window) {
   layer_add_child(window_get_root_layer(window), text_layer_get_layer(s_output_layer));
   s_inverter_layer = inverter_layer_create(GRect(0,0,bounds.size.w,bounds.size.h));
   layer_add_child(window_get_root_layer(window), inverter_layer_get_layer(s_inverter_layer));
+  load_persistent_storage_vibration_pattern(&s_vibration_pattern);
   do_vibrate();
   // switch off vibration after 3 minutes
   cancel_vibe_timer = app_timer_register(1000*60*3,cancel_vibe_timer_callback,NULL);

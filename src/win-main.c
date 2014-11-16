@@ -8,13 +8,14 @@
 #define MENU_SECTION_ALARMS   0
 #define MENU_SECTION_OTHER   1
 
-#define MENU_ROW_COUNT_OTHER 4
+#define MENU_ROW_COUNT_OTHER 5
 #define MENU_ROW_COUNT_ALARMS NUM_ALARMS
 
-#define MENU_ROW_OTHER_ABOUT         3
+#define MENU_ROW_OTHER_ABOUT         4
 #define MENU_ROW_OTHER_LONGPRESS     2
 #define MENU_ROW_OTHER_SNOOZE        1
 #define MENU_ROW_OTHER_HIDE          0
+#define MENU_ROW_OTHER_VIBRATION     3
 
 static void window_load(Window* window);
 static void window_unload(Window* window);
@@ -42,6 +43,7 @@ static bool s_longpress_dismiss;
 static bool s_hide_unused_alarms;
 static char s_id_enabled[NUM_ALARMS];
 static char s_num_enabled;
+static int s_vibration_pattern;
 
 void win_main_init(Alarm* alarms) {
   s_alarms = alarms;
@@ -57,6 +59,7 @@ void win_main_init(Alarm* alarms) {
   load_persistent_storage_snooze_delay(&s_snooze_delay);
   load_persistent_storage_longpress_dismiss(&s_longpress_dismiss);
   load_persistent_storage_hide_unused_alarms(&s_hide_unused_alarms);
+  load_persistent_storage_vibration_pattern(&s_vibration_pattern);
   update_id_enabled();
 }
 
@@ -164,7 +167,7 @@ static void menu_draw_row_other(GContext* ctx, const Layer* cell_layer, uint16_t
   switch (row_index) {
     case MENU_ROW_OTHER_ABOUT:
       // This is a basic menu item with a title and subtitle
-      menu_cell_basic_draw(ctx, cell_layer, "About", "Alarms++ v1.11", NULL);
+      menu_cell_basic_draw(ctx, cell_layer, "About", "Alarms++ v1.12", NULL);
       break;
     case MENU_ROW_OTHER_SNOOZE:
       snprintf(s_snooze_text,sizeof(s_snooze_text),"%02d Minutes",s_snooze_delay);
@@ -175,6 +178,9 @@ static void menu_draw_row_other(GContext* ctx, const Layer* cell_layer, uint16_t
       break;
     case MENU_ROW_OTHER_HIDE:
       menu_cell_basic_draw(ctx, cell_layer, "Disabled Alarms", s_hide_unused_alarms?"Hide":"Show", NULL);
+      break;
+    case MENU_ROW_OTHER_VIBRATION:
+      menu_cell_basic_draw(ctx, cell_layer, "Vibration Strength", s_vibration_pattern==0?"Constant":"Increasing", NULL);
       break;
   }
 }
@@ -229,6 +235,10 @@ static void menu_select_other(uint16_t row_index) {
     case MENU_ROW_OTHER_HIDE:
       s_hide_unused_alarms=!s_hide_unused_alarms;
       persist_write_bool(HIDE_UNUSED_ALARMS_KEY,s_hide_unused_alarms);
+      break;
+    case MENU_ROW_OTHER_VIBRATION:
+      s_vibration_pattern=!s_vibration_pattern;
+      persist_write_int(VIBRATION_PATTERN_KEY,s_vibration_pattern);
       break;
   }
 }

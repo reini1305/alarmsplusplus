@@ -68,3 +68,10 @@ void load_persistent_storage_hide_unused_alarms(bool *hide_unused_alarms)
   if(persist_exists(HIDE_UNUSED_ALARMS_KEY))
     *hide_unused_alarms = persist_read_bool(HIDE_UNUSED_ALARMS_KEY);
 }
+
+void load_persistent_storage_vibration_pattern(int *vibration_pattern)
+{
+  *vibration_pattern = 0;
+  if(persist_exists(VIBRATION_PATTERN_KEY))
+    *vibration_pattern = persist_read_int(VIBRATION_PATTERN_KEY);
+}
