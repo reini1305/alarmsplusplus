@@ -25,12 +25,14 @@ static VibePatternPWM s_pwmPat = {
 };
 static int s_vibe_counter = 0;
 static int s_vibration_pattern = 0;
+static int s_last_z = 10000;
 
 void do_vibrate(void);
 void vibe_timer_callback(void* data);
 AppTimer* vibe_timer = NULL;
 AppTimer* cancel_vibe_timer = NULL;
 bool cancel_vibrate=false;
+bool s_flip_to_snooze=false;
 
 static void wakeup_handler(WakeupId id, int32_t reason) {
   // The app has woken!
@@ -44,7 +46,8 @@ static void dismiss_click_handler(ClickRecognizerRef recognizer, void *context) 
   window_stack_pop(true);
 }
 
-static void snooze_click_handler(ClickRecognizerRef recognizer, void *context) {
+static void do_snooze(void)
+{
   *s_snooze=true;
   int snooze_delay;
   load_persistent_storage_snooze_delay(&snooze_delay);
@@ -53,6 +56,10 @@ static void snooze_click_handler(ClickRecognizerRef recognizer, void *context) {
   struct tm *t = localtime(&timestamp);
   APP_LOG(APP_LOG_LEVEL_DEBUG,"Scheduled snooze at %d.%d %d:%d",t->tm_mday, t->tm_mon+1,t->tm_hour,t->tm_min);
   window_stack_pop(true);
+}
+
+static void snooze_click_handler(ClickRecognizerRef recognizer, void *context) {
+  do_snooze();
 }
 
 static void do_nothing_click_handler(ClickRecognizerRef recognizer, void *context) {
@@ -84,15 +91,22 @@ void do_vibrate(void) {
 }
 
 void vibe_timer_callback(void* data) {
-  //vibe_timer = NULL;
   if(!cancel_vibrate)
     do_vibrate();
 }
 
 void cancel_vibe_timer_callback(void* data) {
-  //vibe_timer = NULL;
   cancel_vibrate = true;
 }
+
+static void data_handler(AccelData *data, uint32_t num_samples) {
+  if(s_last_z>4000) // we are called for the first time
+    s_last_z = data[0].z;
+  if((s_last_z>0)!=(data[0].z>0)) // sign flip
+    do_snooze();
+  s_last_z = data[0].z;
+}
+
 
 static void main_window_load(Window *window) {
   GRect bounds = layer_get_bounds(window_get_root_layer(window));
@@ -116,6 +130,14 @@ static void main_window_load(Window *window) {
   do_vibrate();
   // switch off vibration after 3 minutes
   cancel_vibe_timer = app_timer_register(1000*60*3,cancel_vibe_timer_callback,NULL);
+  
+  // test snoozing with the accelerometer
+  if(s_flip_to_snooze)
+  {
+    s_last_z=10000;
+    accel_service_set_sampling_rate(ACCEL_SAMPLING_10HZ);
+    accel_data_service_subscribe(5,data_handler);
+  }
 }
 
 static void main_window_unload(Window *window) {
@@ -136,6 +158,8 @@ void perform_wakeup_tasks(Alarm* alarms, bool *snooze)
     .unload = main_window_unload,
   });
   window_set_fullscreen(s_main_window,true);
+  
+  load_persistent_storage_flip_to_snooze(&s_flip_to_snooze);
   
   // Subscribe to Wakeup API
   wakeup_service_subscribe(wakeup_handler);

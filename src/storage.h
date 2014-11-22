@@ -17,12 +17,14 @@
 #define ALARMS_KEY 4
 #define HIDE_UNUSED_ALARMS_KEY 5
 #define VIBRATION_PATTERN_KEY 6
+#define FLIP_TO_SNOOZE_KEY 7
 
 void load_persistent_storage_alarms(Alarm *alarms);
 void load_persistent_storage_snooze_delay(int *snooze_delay);
 void load_persistent_storage_longpress_dismiss(bool *longpress_dismiss);
 void load_persistent_storage_hide_unused_alarms(bool *hide_unused_alarms);
 void load_persistent_storage_vibration_pattern(int *vibration_pattern);
+void load_persistent_storage_flip_to_snooze(bool *flip_to_snooze);
 
 void write_persistent_storage_alarms(Alarm *alarms);
 //void write_persistent_storage_snooze_delay(int snooze_delay);

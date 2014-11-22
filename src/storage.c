@@ -75,3 +75,10 @@ void load_persistent_storage_vibration_pattern(int *vibration_pattern)
   if(persist_exists(VIBRATION_PATTERN_KEY))
     *vibration_pattern = persist_read_int(VIBRATION_PATTERN_KEY);
 }
+
+void load_persistent_storage_flip_to_snooze(bool *flip_to_snooze)
+{
+  *flip_to_snooze = false;
+  if(persist_exists(FLIP_TO_SNOOZE_KEY))
+    *flip_to_snooze = persist_read_bool(FLIP_TO_SNOOZE_KEY);
+}

@@ -8,14 +8,15 @@
 #define MENU_SECTION_ALARMS   0
 #define MENU_SECTION_OTHER   1
 
-#define MENU_ROW_COUNT_OTHER 5
+#define MENU_ROW_COUNT_OTHER 6
 #define MENU_ROW_COUNT_ALARMS NUM_ALARMS
 
-#define MENU_ROW_OTHER_ABOUT         4
-#define MENU_ROW_OTHER_LONGPRESS     3
+#define MENU_ROW_OTHER_ABOUT         5
+#define MENU_ROW_OTHER_LONGPRESS     4
 #define MENU_ROW_OTHER_SNOOZE        1
 #define MENU_ROW_OTHER_HIDE          0
-#define MENU_ROW_OTHER_VIBRATION     2
+#define MENU_ROW_OTHER_VIBRATION     3
+#define MENU_ROW_OTHER_FLIP          2
 
 static void window_load(Window* window);
 static void window_unload(Window* window);
@@ -44,6 +45,7 @@ static bool s_hide_unused_alarms;
 static char s_id_enabled[NUM_ALARMS];
 static char s_num_enabled;
 static int s_vibration_pattern;
+static bool s_flip_to_snooze;
 
 void win_main_init(Alarm* alarms) {
   s_alarms = alarms;
@@ -60,6 +62,7 @@ void win_main_init(Alarm* alarms) {
   load_persistent_storage_longpress_dismiss(&s_longpress_dismiss);
   load_persistent_storage_hide_unused_alarms(&s_hide_unused_alarms);
   load_persistent_storage_vibration_pattern(&s_vibration_pattern);
+  load_persistent_storage_flip_to_snooze(&s_flip_to_snooze);
   update_id_enabled();
 }
 
@@ -167,7 +170,7 @@ static void menu_draw_row_other(GContext* ctx, const Layer* cell_layer, uint16_t
   switch (row_index) {
     case MENU_ROW_OTHER_ABOUT:
       // This is a basic menu item with a title and subtitle
-      menu_cell_basic_draw(ctx, cell_layer, "About", "Alarms++ v1.12", NULL);
+      menu_cell_basic_draw(ctx, cell_layer, "About", "Alarms++ v1.13", NULL);
       break;
     case MENU_ROW_OTHER_SNOOZE:
       snprintf(s_snooze_text,sizeof(s_snooze_text),"%02d Minutes",s_snooze_delay);
@@ -178,6 +181,9 @@ static void menu_draw_row_other(GContext* ctx, const Layer* cell_layer, uint16_t
       break;
     case MENU_ROW_OTHER_HIDE:
       menu_cell_basic_draw(ctx, cell_layer, "Disabled Alarms", s_hide_unused_alarms?"Hide":"Show", NULL);
+      break;
+    case MENU_ROW_OTHER_FLIP:
+      menu_cell_basic_draw(ctx, cell_layer, "Flip to Snooze", s_flip_to_snooze?"Enabled":"Disabled (default)", NULL);
       break;
     case MENU_ROW_OTHER_VIBRATION:
       switch (s_vibration_pattern) {
@@ -251,6 +257,10 @@ static void menu_select_other(uint16_t row_index) {
     case MENU_ROW_OTHER_HIDE:
       s_hide_unused_alarms=!s_hide_unused_alarms;
       persist_write_bool(HIDE_UNUSED_ALARMS_KEY,s_hide_unused_alarms);
+      break;
+    case MENU_ROW_OTHER_FLIP:
+      s_flip_to_snooze=!s_flip_to_snooze;
+      persist_write_bool(FLIP_TO_SNOOZE_KEY,s_flip_to_snooze);
       break;
     case MENU_ROW_OTHER_VIBRATION:
       s_vibration_pattern++;
