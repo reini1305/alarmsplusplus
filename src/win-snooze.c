@@ -29,7 +29,7 @@ void win_snooze_init(void)
 void win_snooze_show(int *snooze_delay)
 {
   s_snooze_delay = snooze_delay;
-  load_persistent_storage_snooze_delay(s_snooze_delay);
+  *s_snooze_delay = load_persistent_storage_int(SNOOZE_KEY, 10);
   
   number_window_set_value(s_window,*s_snooze_delay);
   window_stack_push(number_window_get_window(s_window),true);

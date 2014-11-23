@@ -15,6 +15,8 @@ static Window *s_main_window;
 static TextLayer *s_output_layer;
 static InverterLayer *s_inverter_layer;
 static ActionBarLayer *action_bar;
+static BitmapLayer *s_bitmap_layer;
+static GBitmap *s_logo;
 static char output_text[10];
 static bool *s_snooze;
 static Alarm *s_alarm;
@@ -50,7 +52,7 @@ static void do_snooze(void)
 {
   *s_snooze=true;
   int snooze_delay;
-  load_persistent_storage_snooze_delay(&snooze_delay);
+  snooze_delay = load_persistent_storage_int(SNOOZE_KEY,10);
   time_t timestamp = time(NULL) + 60*snooze_delay;
   s_alarm->alarm_id = wakeup_schedule(timestamp,0,true);
   struct tm *t = localtime(&timestamp);
@@ -69,8 +71,7 @@ static void click_config_provider(void *context) {
   // Register the ClickHandlers
   window_single_click_subscribe(BUTTON_ID_SELECT, do_nothing_click_handler);
   window_single_click_subscribe(BUTTON_ID_BACK, do_nothing_click_handler);
-  bool longpress_dismiss;
-  load_persistent_storage_longpress_dismiss(&longpress_dismiss);
+  bool longpress_dismiss = load_persistent_storage_bool(LONGPRESS_DISMISS_KEY,false);
   if(longpress_dismiss)
     window_long_click_subscribe(BUTTON_ID_UP,1000,dismiss_click_handler,NULL);
   else
@@ -117,6 +118,12 @@ static void main_window_load(Window *window) {
   action_bar_layer_set_icon(action_bar,BUTTON_ID_DOWN,gbitmap_create_with_resource(RESOURCE_ID_IMAGE_ACTION_ICON_ZZ));
   action_bar_layer_add_to_window(action_bar,window);
   
+  // Create Bitmap
+  s_bitmap_layer = bitmap_layer_create(GRect(0,10,bounds.size.w-ACTION_BAR_WIDTH, bounds.size.h));
+  s_logo = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_LOGO);
+  bitmap_layer_set_bitmap(s_bitmap_layer,s_logo);
+  bitmap_layer_set_alignment(s_bitmap_layer,GAlignTop);
+  layer_add_child(window_get_root_layer(window),bitmap_layer_get_layer(s_bitmap_layer));
   // Create output TextLayer
   s_output_layer = text_layer_create(GRect(0, bounds.size.h/2-21-(clock_is_24h_style()?0:21), bounds.size.w-ACTION_BAR_WIDTH, bounds.size.h));
   text_layer_set_text_alignment(s_output_layer, GTextAlignmentCenter);
@@ -126,7 +133,7 @@ static void main_window_load(Window *window) {
   layer_add_child(window_get_root_layer(window), text_layer_get_layer(s_output_layer));
   s_inverter_layer = inverter_layer_create(GRect(0,0,bounds.size.w,bounds.size.h));
   layer_add_child(window_get_root_layer(window), inverter_layer_get_layer(s_inverter_layer));
-  load_persistent_storage_vibration_pattern(&s_vibration_pattern);
+  s_vibration_pattern = load_persistent_storage_int(VIBRATION_PATTERN_KEY,0);
   do_vibrate();
   // switch off vibration after 3 minutes
   cancel_vibe_timer = app_timer_register(1000*60*3,cancel_vibe_timer_callback,NULL);
@@ -141,9 +148,6 @@ static void main_window_load(Window *window) {
 }
 
 static void main_window_unload(Window *window) {
-  // Destroy output TextLayer
-  text_layer_destroy(s_output_layer);
-  inverter_layer_destroy(s_inverter_layer);
   app_timer_cancel(vibe_timer);
 }
 
@@ -159,7 +163,7 @@ void perform_wakeup_tasks(Alarm* alarms, bool *snooze)
   });
   window_set_fullscreen(s_main_window,true);
   
-  load_persistent_storage_flip_to_snooze(&s_flip_to_snooze);
+  s_flip_to_snooze = load_persistent_storage_bool(FLIP_TO_SNOOZE_KEY, false);
   
   // Subscribe to Wakeup API
   wakeup_service_subscribe(wakeup_handler);

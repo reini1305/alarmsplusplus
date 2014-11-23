@@ -48,37 +48,17 @@ void write_persistent_storage_alarms(Alarm *alarms)
   persist_write_data(ALARMS_KEY,alarms,NUM_ALARMS*sizeof(Alarm));
 }
 
-void load_persistent_storage_snooze_delay(int *snooze_delay)
+bool load_persistent_storage_bool(int key, bool default_val)
 {
-  *snooze_delay = 10;
-  if(persist_exists(SNOOZE_KEY))
-    *snooze_delay = persist_read_int(SNOOZE_KEY);
+  bool temp = default_val;
+  if(persist_exists(key))
+    temp = persist_read_bool(key);
+  return temp;
 }
-
-void load_persistent_storage_longpress_dismiss(bool *longpress_dismiss)
+int load_persistent_storage_int(int key, int default_val)
 {
-  *longpress_dismiss = false;
-  if(persist_exists(LONGPRESS_DISMISS_KEY))
-    *longpress_dismiss = persist_read_bool(LONGPRESS_DISMISS_KEY);
-}
-
-void load_persistent_storage_hide_unused_alarms(bool *hide_unused_alarms)
-{
-  *hide_unused_alarms = false;
-  if(persist_exists(HIDE_UNUSED_ALARMS_KEY))
-    *hide_unused_alarms = persist_read_bool(HIDE_UNUSED_ALARMS_KEY);
-}
-
-void load_persistent_storage_vibration_pattern(int *vibration_pattern)
-{
-  *vibration_pattern = 0;
-  if(persist_exists(VIBRATION_PATTERN_KEY))
-    *vibration_pattern = persist_read_int(VIBRATION_PATTERN_KEY);
-}
-
-void load_persistent_storage_flip_to_snooze(bool *flip_to_snooze)
-{
-  *flip_to_snooze = false;
-  if(persist_exists(FLIP_TO_SNOOZE_KEY))
-    *flip_to_snooze = persist_read_bool(FLIP_TO_SNOOZE_KEY);
+  int temp = default_val;
+  if(persist_exists(key))
+    temp = persist_read_bool(key);
+  return temp;
 }
