@@ -4,6 +4,7 @@
 #include "win-snooze.h"
 #include "win-about.h"
 #include "storage.h"
+#include "localize.h"
 
 #define MENU_SECTION_ALARMS   0
 #define MENU_SECTION_OTHER   1
@@ -143,7 +144,7 @@ static void menu_draw_header(GContext* ctx, const Layer* cell_layer, uint16_t se
     graphics_context_set_text_color(ctx, GColorBlack);
     graphics_context_set_fill_color(ctx, GColorBlack);
     
-    graphics_draw_text(ctx, "Options",
+    graphics_draw_text(ctx, _("Options"),
                        fonts_get_system_font(FONT_KEY_GOTHIC_14_BOLD),
                        GRect(3, -2, 144 - 33, 14), GTextOverflowModeWordWrap,
                        GTextAlignmentLeft, NULL);
@@ -170,34 +171,34 @@ static void menu_draw_row_other(GContext* ctx, const Layer* cell_layer, uint16_t
   switch (row_index) {
     case MENU_ROW_OTHER_ABOUT:
       // This is a basic menu item with a title and subtitle
-      menu_cell_basic_draw(ctx, cell_layer, "About", "Alarms++ v1.14", NULL);
+      menu_cell_basic_draw(ctx, cell_layer, _("About"), "Alarms++ v1.15", NULL);
       break;
     case MENU_ROW_OTHER_SNOOZE:
-      snprintf(s_snooze_text,sizeof(s_snooze_text),"%02d Minutes",s_snooze_delay);
-      menu_cell_basic_draw(ctx, cell_layer, "Snooze Delay", s_snooze_text, NULL);
+      snprintf(s_snooze_text,sizeof(s_snooze_text),"%02d %s",s_snooze_delay,_("Minutes"));
+      menu_cell_basic_draw(ctx, cell_layer, _("Snooze Delay"), s_snooze_text, NULL);
       break;
     case MENU_ROW_OTHER_LONGPRESS:
-      menu_cell_basic_draw(ctx, cell_layer, "Dismiss Alarm", s_longpress_dismiss?"Long press":"Short press (default)", NULL);
+      menu_cell_basic_draw(ctx, cell_layer, _("Dismiss Alarm"), s_longpress_dismiss?_("Long press"):_("Short press"), NULL);
       break;
     case MENU_ROW_OTHER_HIDE:
-      menu_cell_basic_draw(ctx, cell_layer, "Disabled Alarms", s_hide_unused_alarms?"Hide":"Show", NULL);
+      menu_cell_basic_draw(ctx, cell_layer, _("Disabled Alarms"), s_hide_unused_alarms?_("Hide"):_("Show"), NULL);
       break;
     case MENU_ROW_OTHER_FLIP:
-      menu_cell_basic_draw(ctx, cell_layer, "Flip to Snooze", s_flip_to_snooze?"Enabled":"Disabled (default)", NULL);
+      menu_cell_basic_draw(ctx, cell_layer, _("Flip to Snooze"), s_flip_to_snooze?_("Enabled"):_("Disabled"), NULL);
       break;
     case MENU_ROW_OTHER_VIBRATION:
       switch (s_vibration_pattern) {
         case 0:
-          menu_cell_basic_draw(ctx, cell_layer, "Vibration Strength", "Constant", NULL);
+          menu_cell_basic_draw(ctx, cell_layer, _("Vibration Strength"), _("Constant"), NULL);
           break;
         case 1:
-          menu_cell_basic_draw(ctx, cell_layer, "Vibration Strength", "Increasing (10s)", NULL);
+          menu_cell_basic_draw(ctx, cell_layer, _("Vibration Strength"), _("Increasing 10s"), NULL);
           break;
         case 2:
-          menu_cell_basic_draw(ctx, cell_layer, "Vibration Strength", "Increasing (20s)", NULL);
+          menu_cell_basic_draw(ctx, cell_layer, _("Vibration Strength"), _("Increasing 20s"), NULL);
           break;
         case 3:
-          menu_cell_basic_draw(ctx, cell_layer, "Vibration Strength", "Increasing (30s)", NULL);
+          menu_cell_basic_draw(ctx, cell_layer, _("Vibration Strength"), _("Increasing 30s"), NULL);
           break;
         default:
           break;

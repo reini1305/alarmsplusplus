@@ -7,6 +7,7 @@
 //
 
 #include "win-edit.h"
+#include "localize.h"
 
 static void window_load(Window* window);
 static void window_unload(Window* window);
@@ -43,7 +44,9 @@ static void menu_select(struct MenuLayer* menu, MenuIndex* cell_index, void* cal
 static Alarm temp_alarm;
 static Alarm *current_alarm;
 
-static char *weekday_names[7] = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"};
+static char *english[7] = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"};
+static char *german[7] = {"Sonntag", "Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag"};
+static char **weekday_names=english;
 
 void win_edit_init(void)
 {
@@ -58,13 +61,21 @@ void win_edit_init(void)
     .load = am_pm_window_load,
     .unload = am_pm_window_unload
   });
+  // Use selocale() to obtain the system locale for translation
+  char *sys_locale = setlocale(LC_ALL, "");
+  if (strcmp("de_DE", sys_locale) == 0) {
+    weekday_names = german;
+    hour_window = number_window_create("Stunde",(NumberWindowCallbacks){.selected=progress_to_minutes},NULL);
+    minute_window = number_window_create("Minute",(NumberWindowCallbacks){.selected=progress_to_days},NULL);
+  } else {
+    hour_window = number_window_create("Hour",(NumberWindowCallbacks){.selected=progress_to_minutes},NULL);
+    minute_window = number_window_create("Minute",(NumberWindowCallbacks){.selected=progress_to_days},NULL);
+  }
   
-  hour_window = number_window_create("Hour",(NumberWindowCallbacks){.selected=progress_to_minutes},NULL);
   number_window_set_min(hour_window,0);
   number_window_set_max(hour_window,23);
   number_window_set_step_size(hour_window,1);
 
-  minute_window = number_window_create("Minute",(NumberWindowCallbacks){.selected=progress_to_days},NULL);
   number_window_set_min(minute_window,0);
   number_window_set_max(minute_window,59);
   number_window_set_step_size(minute_window,1);
@@ -72,6 +83,7 @@ void win_edit_init(void)
   check_icon = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_ACTION_ICON_CHECK);
   up_icon = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_ACTION_ICON_UP);
   down_icon = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_ACTION_ICON_DOWN);
+
 }
 
 void win_edit_show(Alarm *alarm){
@@ -210,7 +222,7 @@ static void menu_draw_header(GContext* ctx, const Layer* cell_layer, uint16_t se
   graphics_context_set_text_color(ctx, GColorBlack);
   graphics_context_set_fill_color(ctx, GColorBlack);
   
-  graphics_draw_text(ctx, section_index==MENU_SECTION_OK?"Update Alarm":"Weekdays",
+  graphics_draw_text(ctx, section_index==MENU_SECTION_OK?_("Update Alarm"):_("Weekdays"),
                      fonts_get_system_font(FONT_KEY_GOTHIC_14_BOLD),
                      GRect(3, -2, 144 - 33, 14), GTextOverflowModeWordWrap,
                      GTextAlignmentLeft, NULL);
@@ -222,7 +234,7 @@ static void menu_draw_row(GContext* ctx, const Layer* cell_layer, MenuIndex* cel
   
   if(cell_index->section == MENU_SECTION_OK)
   {
-    graphics_draw_text(ctx, "OK",
+    graphics_draw_text(ctx, _("OK"),
                        fonts_get_system_font(FONT_KEY_GOTHIC_24_BOLD),
                        GRect(3, -3, 144 - 33, 28), GTextOverflowModeWordWrap,
                        GTextAlignmentLeft, NULL);
@@ -231,7 +243,7 @@ static void menu_draw_row(GContext* ctx, const Layer* cell_layer, MenuIndex* cel
   {
     if(cell_index->row==0) // select all-none
     {
-      graphics_draw_text(ctx, "Select All/None",
+      graphics_draw_text(ctx, _("Select All/None"),
                          fonts_get_system_font(FONT_KEY_GOTHIC_24),
                          GRect(3, -3, 144 - 33, 28), GTextOverflowModeWordWrap,
                          GTextAlignmentLeft, NULL);

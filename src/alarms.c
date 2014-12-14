@@ -6,6 +6,7 @@
 //
 //
 #include "alarms.h"
+#include "localize.h"
 
 void alarm_draw_row(Alarm* alarm, GContext* ctx)
 {
@@ -32,21 +33,21 @@ void alarm_draw_row(Alarm* alarm, GContext* ctx)
   
   // draw activity state
   char state[4];
-  snprintf(state, sizeof(state), "%s",alarm->enabled? "ON":"OFF");
+  snprintf(state, sizeof(state), "%s",alarm->enabled? _("ON"):_("OFF"));
   graphics_draw_text(ctx, state,font,
-                     GRect(3, -3, 144 - 6, 28), GTextOverflowModeFill,
+                     GRect(3, -3, 144 - 5, 28), GTextOverflowModeFill,
                      GTextAlignmentRight, NULL);
 
    // draw active weekdays
   char weekday_state[10];
   snprintf(weekday_state,sizeof(weekday_state),"%s%s%s%s%s\n%s%s",
-           alarm->weekdays_active[1]?"M":"_",
-           alarm->weekdays_active[2]?"T":"_",
-           alarm->weekdays_active[3]?"W":"_",
-           alarm->weekdays_active[4]?"T":"_",
-           alarm->weekdays_active[5]?"F":"_",
-           alarm->weekdays_active[6]?"S":"_",
-           alarm->weekdays_active[0]?"S":"_");
+           alarm->weekdays_active[1]?_("M"):"_",
+           alarm->weekdays_active[2]?_("T"):"_",
+           alarm->weekdays_active[3]?_("W"):"_",
+           alarm->weekdays_active[4]?_("T"):"_",
+           alarm->weekdays_active[5]?_("F"):"_",
+           alarm->weekdays_active[6]?_("S"):"_",
+           alarm->weekdays_active[0]?_("S"):"_");
   
   graphics_draw_text(ctx, weekday_state,
                      fonts_get_system_font(FONT_KEY_GOTHIC_14),

@@ -1,5 +1,6 @@
 #include <pebble.h>
 #include "win-about.h"
+#include "localize.h"
 
 static void window_load(Window* window);
 static void window_unload(Window* window);
@@ -42,5 +43,5 @@ static void layer_header_update(Layer* layer, GContext* ctx) {
   //graphics_context_set_fill_color(ctx, GColorBlack);
   graphics_context_set_text_color(ctx, GColorWhite);
   graphics_fill_rect(ctx, layer_get_bounds(layer), 12, GCornersAll);
-  graphics_draw_text(ctx, "Alarms++ v1.14", fonts_get_system_font(FONT_KEY_GOTHIC_18_BOLD), GRect(0, -2, 144, 24), GTextOverflowModeFill, GTextAlignmentCenter, 0);
+  graphics_draw_text(ctx, "Alarms++ v1.15", fonts_get_system_font(FONT_KEY_GOTHIC_18_BOLD), GRect(0, -2, 144, 24), GTextOverflowModeFill, GTextAlignmentCenter, 0);
 }

@@ -1,6 +1,7 @@
 #include <pebble.h>
 #include "storage.h"
 #include "wakeup.h"
+#include "localize.h"
 
 static Alarm alarms[NUM_ALARMS];
 static bool snooze;
@@ -22,7 +23,7 @@ int main(void) {
   init();
 
  // APP_LOG(APP_LOG_LEVEL_DEBUG, "Done initializing, pushed window: %p", window);
-
+  locale_init();
   app_event_loop();
   deinit();
 }

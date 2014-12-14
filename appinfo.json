@@ -4,7 +4,7 @@
   "longName": "Alarms++",
   "companyName": "Christian Reinbacher",
   "versionCode": 14,
-  "versionLabel": "1.14",
+  "versionLabel": "1.15",
   "watchapp": {
     "watchface": false
   },
@@ -48,6 +48,23 @@
               "type": "png",
               "name": "IMAGE_ACTION_ICON_ZZ",
               "file": "images/action_icon_zz.png"
+              },
+              {
+              "type": "raw",
+              "name": "LOCALE_ENGLISH",
+              "file": "locale_english.bin"
+              }, {
+              "type": "raw",
+              "name": "LOCALE_FRENCH",
+              "file": "locale_french.bin"
+              }, {
+              "type": "raw",
+              "name": "LOCALE_SPANISH",
+              "file": "locale_spanish.bin"
+              }, {
+              "type": "raw",
+              "name": "LOCALE_GERMAN",
+              "file": "locale_german.bin"
               }
               ]
   }
