@@ -98,6 +98,7 @@ void vibe_timer_callback(void* data) {
 
 void cancel_vibe_timer_callback(void* data) {
   cancel_vibrate = true;
+  do_snooze();
 }
 
 static void data_handler(AccelData *data, uint32_t num_samples) {
@@ -106,6 +107,19 @@ static void data_handler(AccelData *data, uint32_t num_samples) {
   if((s_last_z>0)!=(data[0].z>0)) // sign flip
     do_snooze();
   s_last_z = data[0].z;
+}
+
+static void handle_tick(struct tm *t, TimeUnits units_changed) {
+  if(clock_is_24h_style())
+    snprintf(output_text, sizeof(output_text), "%02d:%02d",t->tm_hour,t->tm_min);
+  else
+  {
+    int hour;
+    bool is_am;
+    convert_24_to_12(t->tm_hour, &hour, &is_am);
+    snprintf(output_text, sizeof(output_text), "%02d:%02d %s",hour,t->tm_min,is_am?"AM":"PM");
+  }
+  layer_mark_dirty(text_layer_get_layer(s_output_layer));
 }
 
 
@@ -184,7 +198,6 @@ void perform_wakeup_tasks(Alarm* alarms, bool *snooze)
     // Get the current time
     time_t now = time(NULL);
     struct tm *t = localtime(&now);
-    
     if(clock_is_24h_style())
       snprintf(output_text, sizeof(output_text), "%02d:%02d",t->tm_hour,t->tm_min);
     else
@@ -194,6 +207,9 @@ void perform_wakeup_tasks(Alarm* alarms, bool *snooze)
       convert_24_to_12(t->tm_hour, &hour, &is_am);
       snprintf(output_text, sizeof(output_text), "%02d:%02d %s",hour,t->tm_min,is_am?"AM":"PM");
     }
+    
+    //handle_tick(t, MINUTE_UNIT);
+    tick_timer_service_subscribe(MINUTE_UNIT, handle_tick);
     light_enable_interaction();
     window_stack_push(s_main_window, true);
     //wakeup_handler(id, (int32_t)alarms);
