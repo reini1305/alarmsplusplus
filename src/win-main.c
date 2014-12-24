@@ -171,7 +171,7 @@ static void menu_draw_row_other(GContext* ctx, const Layer* cell_layer, uint16_t
   switch (row_index) {
     case MENU_ROW_OTHER_ABOUT:
       // This is a basic menu item with a title and subtitle
-      menu_cell_basic_draw(ctx, cell_layer, _("About"), "Alarms++ v1.16", NULL);
+      menu_cell_basic_draw(ctx, cell_layer, _("Help"), "Alarms++ v1.17", NULL);
       break;
     case MENU_ROW_OTHER_SNOOZE:
       snprintf(s_snooze_text,sizeof(s_snooze_text),"%02d %s",s_snooze_delay,_("Minutes"));
@@ -184,7 +184,7 @@ static void menu_draw_row_other(GContext* ctx, const Layer* cell_layer, uint16_t
       menu_cell_basic_draw(ctx, cell_layer, _("Disabled Alarms"), s_hide_unused_alarms?_("Hide"):_("Show"), NULL);
       break;
     case MENU_ROW_OTHER_FLIP:
-      menu_cell_basic_draw(ctx, cell_layer, _("Flip to Snooze"), s_flip_to_snooze?_("Enabled"):_("Disabled"), NULL);
+      menu_cell_basic_draw(ctx, cell_layer, _("Shake to Snooze"), s_flip_to_snooze?_("Enabled"):_("Disabled"), NULL);
       break;
     case MENU_ROW_OTHER_VIBRATION:
       switch (s_vibration_pattern) {

@@ -27,7 +27,7 @@ static VibePatternPWM s_pwmPat = {
 };
 static int s_vibe_counter = 0;
 static int s_vibration_pattern = 0;
-static int s_last_z = 10000;
+//static int s_last_z = 10000;
 
 void do_vibrate(void);
 void vibe_timer_callback(void* data);
@@ -101,12 +101,18 @@ void cancel_vibe_timer_callback(void* data) {
   do_snooze();
 }
 
-static void data_handler(AccelData *data, uint32_t num_samples) {
+/*static void data_handler(AccelData *data, uint32_t num_samples) {
   if(s_last_z>4000) // we are called for the first time
     s_last_z = data[0].z;
   if((s_last_z>0)!=(data[0].z>0)) // sign flip
     do_snooze();
   s_last_z = data[0].z;
+}*/
+
+static void accel_tap_handler(AccelAxisType axis, int32_t direction) {
+  // Process tap on ACCEL_AXIS_X, ACCEL_AXIS_Y or ACCEL_AXIS_Z
+  // Direction is 1 or -1
+  do_snooze();
 }
 
 static void handle_tick(struct tm *t, TimeUnits units_changed) {
@@ -155,14 +161,17 @@ static void main_window_load(Window *window) {
   // test snoozing with the accelerometer
   if(s_flip_to_snooze)
   {
-    s_last_z=10000;
+    accel_tap_service_subscribe(&accel_tap_handler);
+    /*s_last_z=10000;
     accel_service_set_sampling_rate(ACCEL_SAMPLING_10HZ);
-    accel_data_service_subscribe(5,data_handler);
+    accel_data_service_subscribe(5,data_handler);*/
   }
 }
 
 static void main_window_unload(Window *window) {
   app_timer_cancel(vibe_timer);
+  if(s_flip_to_snooze)
+    accel_tap_service_unsubscribe();
 }
 
 void perform_wakeup_tasks(Alarm* alarms, bool *snooze)
