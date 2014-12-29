@@ -85,10 +85,6 @@ static void next()
   size = 27;
 }
 
-static void up_long_release_handler(ClickRecognizerRef recognizer, void *window) {}
-static void select_long_release_handler(ClickRecognizerRef recognizer, void *window) {}
-static void down_long_release_handler(ClickRecognizerRef recognizer, void *window) {}
-
 static void clickButton(int b)
 {
   if (!blackout)
@@ -197,7 +193,7 @@ static void down_long_click_handler(ClickRecognizerRef recognizer, void* context
   
   if (size==27 && pos>0 && !blackout)
   {
-    text_buffer[--pos] = ' ';
+    text_buffer[--pos] = 0;
     drawNotepadText();
   }
   else
@@ -222,13 +218,13 @@ static void set_menu()
 static void click_config_provider(void* context) {
   
   window_single_click_subscribe(BUTTON_ID_UP, up_single_click_handler);
-  window_long_click_subscribe(BUTTON_ID_UP, 500, up_long_click_handler, up_long_release_handler);
+  window_long_click_subscribe(BUTTON_ID_UP, 500, up_long_click_handler, NULL);
   
   window_single_click_subscribe(BUTTON_ID_SELECT, select_single_click_handler);
-  window_long_click_subscribe(BUTTON_ID_SELECT, 500, select_long_click_handler, select_long_release_handler);
+  window_long_click_subscribe(BUTTON_ID_SELECT, 500, select_long_click_handler, NULL);
   
   window_single_click_subscribe(BUTTON_ID_DOWN, down_single_click_handler);
-  window_long_click_subscribe(BUTTON_ID_DOWN, 500, down_long_click_handler, down_long_release_handler);
+  window_long_click_subscribe(BUTTON_ID_DOWN, 500, down_long_click_handler, NULL);
 }
 
 static void drawMenu()
@@ -289,7 +285,7 @@ static void initSidesAndText()
 {
   Layer *window_layer = window_get_root_layer(window);
   
-  wordsYouWrite = text_layer_create((GRect) { .origin = { 10, 0 }, .size = { 100, 150 } });
+  wordsYouWrite = text_layer_create((GRect) { .origin = { 3, 0 }, .size = { 109, 150 } });
   
   text_layer_set_background_color(wordsYouWrite, GColorClear);
   text_layer_set_font(wordsYouWrite, fonts_get_system_font(FONT_KEY_GOTHIC_28_BOLD));
@@ -373,6 +369,6 @@ void tertiary_text_init(void) {
 void tertiary_text_show(char *text) {
   return_text = text;
   strncpy(text_buffer,text,DESCRIPTION_LENGTH);
-  pos=strlen(text_buffer)-1;
+  pos=strlen(text_buffer);
   window_stack_push(window, true);
 }
