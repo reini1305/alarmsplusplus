@@ -8,6 +8,7 @@
 
 #include "win-edit.h"
 #include "localize.h"
+#include "tertiary_text.h"
 
 static void window_load(Window* window);
 static void window_unload(Window* window);
@@ -49,6 +50,7 @@ static char *german[7] = {"Sonntag", "Montag", "Dienstag", "Mittwoch", "Donnerst
 static char *french[7] = {"dimanche", "lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi"};
 static char *spanish[7] = {"domingo", "lunes", "martes", "miércoles", "jueves", "viernes", "sábado"};
 static char **weekday_names=english;
+
 
 void win_edit_init(void)
 {
@@ -93,6 +95,8 @@ void win_edit_init(void)
   check_icon = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_ACTION_ICON_CHECK);
   up_icon = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_ACTION_ICON_UP);
   down_icon = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_ACTION_ICON_DOWN);
+  
+  tertiary_text_init();
 
 }
 
@@ -213,7 +217,7 @@ static uint16_t menu_num_rows(struct MenuLayer* menu, uint16_t section_index, vo
       return 8;
       break;
     case MENU_SECTION_OK:
-      return 1;
+      return 2;
     default:
       break;
   }
@@ -244,10 +248,20 @@ static void menu_draw_row(GContext* ctx, const Layer* cell_layer, MenuIndex* cel
   
   if(cell_index->section == MENU_SECTION_OK)
   {
-    graphics_draw_text(ctx, _("OK"),
+    if(cell_index->row==0) // OK
+    {
+      graphics_draw_text(ctx, _("OK"),
                        fonts_get_system_font(FONT_KEY_GOTHIC_24_BOLD),
                        GRect(3, -3, 144 - 33, 28), GTextOverflowModeWordWrap,
                        GTextAlignmentLeft, NULL);
+    }
+    if(cell_index->row==1) // set text
+    {
+      graphics_draw_text(ctx, _("Description"),
+                         fonts_get_system_font(FONT_KEY_GOTHIC_24_BOLD),
+                         GRect(3, -3, 144 - 33, 28), GTextOverflowModeWordWrap,
+                         GTextAlignmentLeft, NULL);
+    }
   }
   else
   {
@@ -281,35 +295,40 @@ static void menu_draw_row(GContext* ctx, const Layer* cell_layer, MenuIndex* cel
 static void menu_select(struct MenuLayer* menu, MenuIndex* cell_index, void* callback_context) {
   switch (cell_index->section) {
     case MENU_SECTION_OK:
-      // update timer, destroy windows
-      temp_alarm.enabled=true;
-      if(clock_is_24h_style())
+      if(cell_index->row==0)
       {
-        memcpy(current_alarm,&temp_alarm,sizeof(Alarm));
-        window_stack_pop(true);
-        window_stack_pop(false);
-        window_stack_pop(false);
-      }
-      else
-      {
-        // convert hours and am/pm back
-        APP_LOG(APP_LOG_LEVEL_DEBUG,"Hour before conversion is %d",temp_alarm.hour);
-        if(s_is_am)
+        // update timer, destroy windows
+        temp_alarm.enabled=true;
+        if(clock_is_24h_style())
         {
-          int hour = temp_alarm.hour;
-          hour -= 12;
-          if(hour<0) hour+=12;
-          APP_LOG(APP_LOG_LEVEL_DEBUG,"Hour after conversion is %d",hour);
-          temp_alarm.hour = hour;
+          memcpy(current_alarm,&temp_alarm,sizeof(Alarm));
+          window_stack_pop(true);
+          window_stack_pop(false);
+          window_stack_pop(false);
         }
         else
-          temp_alarm.hour = ((temp_alarm.hour+12)%12) + 12;
-        memcpy(current_alarm,&temp_alarm,sizeof(Alarm));
-        window_stack_pop(true);
-        window_stack_pop(false);
-        window_stack_pop(false);
-        window_stack_pop(false);
+        {
+          // convert hours and am/pm back
+          APP_LOG(APP_LOG_LEVEL_DEBUG,"Hour before conversion is %d",temp_alarm.hour);
+          if(s_is_am)
+          {
+            int hour = temp_alarm.hour;
+            hour -= 12;
+            if(hour<0) hour+=12;
+            APP_LOG(APP_LOG_LEVEL_DEBUG,"Hour after conversion is %d",hour);
+            temp_alarm.hour = hour;
+          }
+          else
+            temp_alarm.hour = ((temp_alarm.hour+12)%12) + 12;
+          memcpy(current_alarm,&temp_alarm,sizeof(Alarm));
+          window_stack_pop(true);
+          window_stack_pop(false);
+          window_stack_pop(false);
+          window_stack_pop(false);
+        }
       }
+      else
+        tertiary_text_show(temp_alarm.description);
       break;
     case MENU_SECTION_WEEKDAYS:
       if(cell_index->row==0)

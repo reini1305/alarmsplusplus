@@ -13,10 +13,11 @@
 
 static Window *s_main_window;
 static TextLayer *s_output_layer;
+static TextLayer *s_description_layer;
 static InverterLayer *s_inverter_layer;
 static ActionBarLayer *action_bar;
-static BitmapLayer *s_bitmap_layer;
-static GBitmap *s_logo;
+//static BitmapLayer *s_bitmap_layer;
+//static GBitmap *s_logo;
 static char output_text[10];
 static bool *s_snooze;
 static Alarm *s_alarm;
@@ -126,6 +127,7 @@ static void handle_tick(struct tm *t, TimeUnits units_changed) {
     snprintf(output_text, sizeof(output_text), "%02d:%02d %s",hour,t->tm_min,is_am?"AM":"PM");
   }
   layer_mark_dirty(text_layer_get_layer(s_output_layer));
+  layer_mark_dirty(text_layer_get_layer(s_description_layer));
 }
 
 
@@ -139,11 +141,11 @@ static void main_window_load(Window *window) {
   action_bar_layer_add_to_window(action_bar,window);
   
   // Create Bitmap
-  s_bitmap_layer = bitmap_layer_create(GRect(0,10,bounds.size.w-ACTION_BAR_WIDTH, bounds.size.h));
+  /*s_bitmap_layer = bitmap_layer_create(GRect(0,10,bounds.size.w-ACTION_BAR_WIDTH, bounds.size.h));
   s_logo = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_LOGO);
   bitmap_layer_set_bitmap(s_bitmap_layer,s_logo);
   bitmap_layer_set_alignment(s_bitmap_layer,GAlignTop);
-  layer_add_child(window_get_root_layer(window),bitmap_layer_get_layer(s_bitmap_layer));
+  layer_add_child(window_get_root_layer(window),bitmap_layer_get_layer(s_bitmap_layer));*/
   // Create output TextLayer
   s_output_layer = text_layer_create(GRect(0, bounds.size.h/2-21-(clock_is_24h_style()?0:21), bounds.size.w-ACTION_BAR_WIDTH, bounds.size.h));
   text_layer_set_text_alignment(s_output_layer, GTextAlignmentCenter);
@@ -151,6 +153,13 @@ static void main_window_load(Window *window) {
   //snprintf(output_text, sizeof(output_text), "00:00");
   text_layer_set_text(s_output_layer, output_text);
   layer_add_child(window_get_root_layer(window), text_layer_get_layer(s_output_layer));
+  s_description_layer = text_layer_create(GRect(0, 6, bounds.size.w-ACTION_BAR_WIDTH, 36));
+  text_layer_set_text_alignment(s_description_layer, GTextAlignmentCenter);
+  text_layer_set_font(s_description_layer,fonts_get_system_font(FONT_KEY_GOTHIC_28_BOLD));
+  //snprintf(output_text, sizeof(output_text), "00:00");
+  text_layer_set_text(s_description_layer, s_alarm->description);
+  layer_add_child(window_get_root_layer(window), text_layer_get_layer(s_description_layer));
+  
   s_inverter_layer = inverter_layer_create(GRect(0,0,bounds.size.w,bounds.size.h));
   layer_add_child(window_get_root_layer(window), inverter_layer_get_layer(s_inverter_layer));
   s_vibration_pattern = load_persistent_storage_int(VIBRATION_PATTERN_KEY,0);

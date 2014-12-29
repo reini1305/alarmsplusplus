@@ -6,13 +6,13 @@
 //
 //
 
-#ifndef __alarms____tertiary_text__
-#define __alarms____tertiary_text__
+#ifndef __alarms____win_edit__
+#define __alarms____win_edit__
 
 #include <pebble.h>
-#include "alarms.h"
 
-void win_edit_init(void);
-void win_edit_show(Alarm* alarm);
+void tertiary_text_init(void);
+void tertiary_text_show(char *text);
+
 
 #endif /* defined(__alarms____win_edit__) */

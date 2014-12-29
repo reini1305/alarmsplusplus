@@ -11,6 +11,7 @@
 
 #include <pebble.h>
 #define NUM_ALARMS 8
+#define DESCRIPTION_LENGTH 9
 
 typedef struct Alarm{
   unsigned char hour;
@@ -18,7 +19,16 @@ typedef struct Alarm{
   bool weekdays_active[7];
   bool enabled;
   WakeupId alarm_id;
+  char description[DESCRIPTION_LENGTH+1];
 }Alarm;
+
+typedef struct AlarmOld{
+  unsigned char hour;
+  unsigned char minute;
+  bool weekdays_active[7];
+  bool enabled;
+  WakeupId alarm_id;
+}AlarmOld;
 
 void alarm_draw_row(Alarm* alarm, GContext* ctx);
 void alarm_toggle_enable(Alarm *alarm);
