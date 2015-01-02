@@ -47,8 +47,8 @@ static Alarm *current_alarm;
 
 static char *english[7] = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"};
 static char *german[7] = {"Sonntag", "Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag"};
-static char *french[7] = {"dimanche", "lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi"};
-static char *spanish[7] = {"domingo", "lunes", "martes", "miércoles", "jueves", "viernes", "sábado"};
+//static char *french[7] = {"dimanche", "lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi"};
+//static char *spanish[7] = {"domingo", "lunes", "martes", "miércoles", "jueves", "viernes", "sábado"};
 static char **weekday_names=english;
 
 
@@ -258,7 +258,7 @@ static void menu_draw_row(GContext* ctx, const Layer* cell_layer, MenuIndex* cel
     if(cell_index->row==1) // set text
     {
       graphics_draw_text(ctx, _("Description"),
-                         fonts_get_system_font(FONT_KEY_GOTHIC_24_BOLD),
+                         fonts_get_system_font(FONT_KEY_GOTHIC_24),
                          GRect(3, -3, 144 - 33, 28), GTextOverflowModeWordWrap,
                          GTextAlignmentLeft, NULL);
     }

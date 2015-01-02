@@ -30,7 +30,7 @@ static void window_load(Window* window) {
 
   s_layer_text = text_layer_create(GRect(0, 25, 144, 168 - 24));
   text_layer_set_font(s_layer_text, fonts_get_system_font(FONT_KEY_GOTHIC_18_BOLD));
-  text_layer_set_text(s_layer_text, "Hints: long-press middle button to toggle alarm on/off, long-press middle button to enter text in description");
+  text_layer_set_text(s_layer_text, "Hints: long-press middle button to toggle alarm on/off. Alarms only go off when the app is closed!");
   layer_add_child(window_get_root_layer(window),text_layer_get_layer(s_layer_text));
 }
 
@@ -43,5 +43,5 @@ static void layer_header_update(Layer* layer, GContext* ctx) {
   //graphics_context_set_fill_color(ctx, GColorBlack);
   graphics_context_set_text_color(ctx, GColorWhite);
   graphics_fill_rect(ctx, layer_get_bounds(layer), 12, GCornersAll);
-  graphics_draw_text(ctx, "Alarms++ v2.0", fonts_get_system_font(FONT_KEY_GOTHIC_18_BOLD), GRect(0, -2, 144, 24), GTextOverflowModeFill, GTextAlignmentCenter, 0);
+  graphics_draw_text(ctx, "Alarms++ v2.1", fonts_get_system_font(FONT_KEY_GOTHIC_18_BOLD), GRect(0, -2, 144, 24), GTextOverflowModeFill, GTextAlignmentCenter, 0);
 }
