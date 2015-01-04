@@ -8,6 +8,12 @@
 #include "alarms.h"
 #include "localize.h"
 
+static char english[7] = {"SMTWTFS"};
+static char german[7] = {"SMDMDFS"};
+static char french[7] = {"dlmmjvs"};
+static char spanish[7] = {"dlmmjvs"};
+static char *weekday_names=english;
+
 void alarm_draw_row(Alarm* alarm, GContext* ctx)
 {
   graphics_context_set_text_color(ctx, GColorBlack);
@@ -40,14 +46,14 @@ void alarm_draw_row(Alarm* alarm, GContext* ctx)
 
    // draw active weekdays
   char weekday_state[10];
-  snprintf(weekday_state,sizeof(weekday_state),"%s%s%s%s%s\n%s%s",
-           alarm->weekdays_active[1]?_("M"):"_",
-           alarm->weekdays_active[2]?_("T"):"_",
-           alarm->weekdays_active[3]?_("W"):"_",
-           alarm->weekdays_active[4]?_("T"):"_",
-           alarm->weekdays_active[5]?_("F"):"_",
-           alarm->weekdays_active[6]?_("S"):"_",
-           alarm->weekdays_active[0]?_("S"):"_");
+  snprintf(weekday_state,sizeof(weekday_state),"%c%c%c%c%c\n%c%c",
+           alarm->weekdays_active[1]?weekday_names[1]:'_',
+           alarm->weekdays_active[2]?weekday_names[2]:'_',
+           alarm->weekdays_active[3]?weekday_names[3]:'_',
+           alarm->weekdays_active[4]?weekday_names[4]:'_',
+           alarm->weekdays_active[5]?weekday_names[5]:'_',
+           alarm->weekdays_active[6]?weekday_names[6]:'_',
+           alarm->weekdays_active[0]?weekday_names[0]:'_');
   
   graphics_draw_text(ctx, weekday_state,
                      fonts_get_system_font(FONT_KEY_GOTHIC_14),
@@ -197,5 +203,17 @@ void convert_24_to_12(int hour_in, int* hour_out, bool* am)
   {
     *hour_out = hour_in-12;
     *am=false;
+  }
+}
+
+void alarm_set_language(void)
+{
+  char *sys_locale = setlocale(LC_ALL, "");
+  if (strcmp("de_DE", sys_locale) == 0) {
+    weekday_names = german;
+  } else if (strcmp("fr_FR", sys_locale) == 0) {
+    weekday_names = french;
+  } else if (strcmp("es_ES", sys_locale) == 0) {
+    weekday_names = spanish;
   }
 }

@@ -59,6 +59,7 @@ void win_main_init(Alarm* alarms) {
   win_edit_init();
   win_snooze_init();
   win_about_init();
+  alarm_set_language();
   s_snooze_delay = load_persistent_storage_int(SNOOZE_KEY,10);
   s_longpress_dismiss = load_persistent_storage_bool(LONGPRESS_DISMISS_KEY,false);
   s_hide_unused_alarms = load_persistent_storage_bool(HIDE_UNUSED_ALARMS_KEY,false);
@@ -171,7 +172,7 @@ static void menu_draw_row_other(GContext* ctx, const Layer* cell_layer, uint16_t
   switch (row_index) {
     case MENU_ROW_OTHER_ABOUT:
       // This is a basic menu item with a title and subtitle
-      menu_cell_basic_draw(ctx, cell_layer, _("Help"), "Alarms++ v2.1", NULL);
+      menu_cell_basic_draw(ctx, cell_layer, _("Help"), "Alarms++ v2.2", NULL);
       break;
     case MENU_ROW_OTHER_SNOOZE:
       snprintf(s_snooze_text,sizeof(s_snooze_text),"%02d %s",s_snooze_delay,_("Minutes"));

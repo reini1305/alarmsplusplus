@@ -47,8 +47,8 @@ static Alarm *current_alarm;
 
 static char *english[7] = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"};
 static char *german[7] = {"Sonntag", "Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag"};
-//static char *french[7] = {"dimanche", "lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi"};
-//static char *spanish[7] = {"domingo", "lunes", "martes", "miércoles", "jueves", "viernes", "sábado"};
+static char *french[7] = {"dimanche", "lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi"};
+static char *spanish[7] = {"domingo", "lunes", "martes", "miércoles", "jueves", "viernes", "sábado"};
 static char **weekday_names=english;
 
 
@@ -71,7 +71,7 @@ void win_edit_init(void)
     weekday_names = german;
     hour_window = number_window_create("Stunde",(NumberWindowCallbacks){.selected=progress_to_minutes},NULL);
     minute_window = number_window_create("Minute",(NumberWindowCallbacks){.selected=progress_to_days},NULL);
-  }/* else if (strcmp("fr_FR", sys_locale) == 0) {
+  } else if (strcmp("fr_FR", sys_locale) == 0) {
     weekday_names = french;
     hour_window = number_window_create("heure",(NumberWindowCallbacks){.selected=progress_to_minutes},NULL);
     minute_window = number_window_create("minute",(NumberWindowCallbacks){.selected=progress_to_days},NULL);
@@ -79,7 +79,7 @@ void win_edit_init(void)
     weekday_names = spanish;
     hour_window = number_window_create("hora",(NumberWindowCallbacks){.selected=progress_to_minutes},NULL);
     minute_window = number_window_create("minuto",(NumberWindowCallbacks){.selected=progress_to_days},NULL);
-  } */else {
+  } else {
     hour_window = number_window_create("Hour",(NumberWindowCallbacks){.selected=progress_to_minutes},NULL);
     minute_window = number_window_create("Minute",(NumberWindowCallbacks){.selected=progress_to_days},NULL);
   }
