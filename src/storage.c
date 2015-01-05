@@ -7,10 +7,11 @@
 //
 
 #include "storage.h"
+#include "debug.h"
 
 void load_persistent_storage_alarms(Alarm *alarms)
 {
-  if(persist_exists(ALARMS_OLD_OLD_KEY)) // we have to migrate the old timers
+  /*if(persist_exists(ALARMS_OLD_OLD_KEY)) // we have to migrate the old timers
   {
     AlarmOld alarms_old[5];
     persist_read_data(ALARMS_OLD_KEY,alarms_old,5*(sizeof(AlarmOld)));
@@ -33,7 +34,7 @@ void load_persistent_storage_alarms(Alarm *alarms)
     // delete it from memory
     persist_delete(ALARMS_OLD_OLD_KEY);
     APP_LOG(APP_LOG_LEVEL_DEBUG,"Migrated Timers");
-  } else if(persist_exists(ALARMS_OLD_KEY)) // we have to migrate the old timers
+  } else */if(persist_exists(ALARMS_OLD_KEY)) // we have to migrate the old timers
   {
     AlarmOld alarms_old[8];
     persist_read_data(ALARMS_OLD_KEY,&alarms_old,8*(sizeof(AlarmOld)));

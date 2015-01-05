@@ -23,6 +23,7 @@ SOFTWARE.
 */
 
 #include "pwm_vibrate.h"
+#include "debug.h"
 
 /*
  * Allocate one global buffer for the long pwm pattern to be handed to native API.

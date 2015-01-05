@@ -9,6 +9,7 @@
 #include "win-edit.h"
 #include "localize.h"
 #include "tertiary_text.h"
+#include "debug.h"
 
 static void window_load(Window* window);
 static void window_unload(Window* window);

@@ -10,6 +10,7 @@
 #include "win-main.h"
 #include "storage.h"
 #include "pwm_vibrate.h"
+#include "debug.h"
 
 static Window *s_main_window;
 static TextLayer *s_output_layer;
@@ -113,7 +114,8 @@ void cancel_vibe_timer_callback(void* data) {
 static void accel_tap_handler(AccelAxisType axis, int32_t direction) {
   // Process tap on ACCEL_AXIS_X, ACCEL_AXIS_Y or ACCEL_AXIS_Z
   // Direction is 1 or -1
-  do_snooze();
+  if(axis == ACCEL_AXIS_X || axis == ACCEL_AXIS_Z) // flick your wrist
+    do_snooze();
 }
 
 static void handle_tick(struct tm *t, TimeUnits units_changed) {
