@@ -10,6 +10,7 @@
 #include "localize.h"
 #include "tertiary_text.h"
 #include "debug.h"
+#include "timeout.h"
 
 static void window_load(Window* window);
 static void window_unload(Window* window);
@@ -127,6 +128,7 @@ void progress_to_days(NumberWindow *window,void* context)
 {
   temp_alarm.minute = number_window_get_value(window);
   window_stack_push(s_window,true);
+  refresh_timeout();
 }
 
 void progress_to_minutes(NumberWindow *window,void* context)
@@ -135,6 +137,7 @@ void progress_to_minutes(NumberWindow *window,void* context)
   number_window_set_value(minute_window,temp_alarm.minute);
   
   window_stack_push(number_window_get_window(minute_window),true);
+  refresh_timeout();
 }
 
 static void up_down_click_handler(ClickRecognizerRef recognizer, void *context) {
@@ -345,4 +348,5 @@ static void menu_select(struct MenuLayer* menu, MenuIndex* cell_index, void* cal
     default:
       break;
   }
+  refresh_timeout();
 }

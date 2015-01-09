@@ -1,5 +1,6 @@
 #include "tertiary_text.h"
 #include "alarms.h"
+#include "timeout.h"
 
 #define TOP 0
 #define MID 1
@@ -120,7 +121,7 @@ static void clickButton(int b)
     
     drawSides();
   }
-  
+  refresh_timeout();
 }
 
 // Modify these common button handlers

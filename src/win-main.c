@@ -5,6 +5,7 @@
 #include "win-about.h"
 #include "storage.h"
 #include "localize.h"
+#include "timeout.h"
 
 #define MENU_SECTION_ALARMS   0
 #define MENU_SECTION_OTHER   1
@@ -34,6 +35,7 @@ static void menu_select(struct MenuLayer* menu, MenuIndex* cell_index, void* cal
 static void menu_select_long(struct MenuLayer* menu, MenuIndex* cell_index, void* callback_context);
 static void menu_select_alarms(uint16_t row_index);
 static void menu_select_other(uint16_t row_index);
+static void menu_selection_changed(struct MenuLayer *menu_layer, MenuIndex new_index, MenuIndex old_index, void *callback_context);
 static void update_id_enabled(void);
 
 static Window*    s_window;
@@ -66,6 +68,7 @@ void win_main_init(Alarm* alarms) {
   s_vibration_pattern = load_persistent_storage_int(VIBRATION_PATTERN_KEY,0);
   s_flip_to_snooze = load_persistent_storage_bool(FLIP_TO_SNOOZE_KEY, false);
   update_id_enabled();
+  refresh_timeout();
 }
 
 void win_main_show(void) {
@@ -87,6 +90,7 @@ static void window_load(Window* window) {
     .select_long_click = menu_select_long,
     .draw_header = menu_draw_header,
     .get_header_height = menu_header_height,
+    .selection_changed = menu_selection_changed,
   });
   // Bind the menu layer's click config provider to the window for interactivity
   menu_layer_set_click_config_onto_window(s_menu, s_window);
@@ -172,7 +176,7 @@ static void menu_draw_row_other(GContext* ctx, const Layer* cell_layer, uint16_t
   switch (row_index) {
     case MENU_ROW_OTHER_ABOUT:
       // This is a basic menu item with a title and subtitle
-      menu_cell_basic_draw(ctx, cell_layer, _("Help"), "Alarms++ v2.5", NULL);
+      menu_cell_basic_draw(ctx, cell_layer, _("Help"), "Alarms++ v2.6", NULL);
       break;
     case MENU_ROW_OTHER_SNOOZE:
       snprintf(s_snooze_text,sizeof(s_snooze_text),"%02d %s",s_snooze_delay,_("Minutes"));
@@ -224,6 +228,7 @@ static void menu_select(struct MenuLayer* menu, MenuIndex* cell_index, void* cal
       layer_mark_dirty(menu_layer_get_layer(menu));
       break;
   }
+  refresh_timeout();
 }
 
 static void menu_select_long(struct MenuLayer* menu, MenuIndex* cell_index, void* callback_context) {
@@ -271,6 +276,11 @@ static void menu_select_other(uint16_t row_index) {
       persist_write_int(VIBRATION_PATTERN_KEY,s_vibration_pattern);
       break;
   }
+}
+
+static void menu_selection_changed(struct MenuLayer *menu_layer, MenuIndex new_index, MenuIndex old_index, void *callback_context)
+{
+  refresh_timeout();
 }
 
 static void update_id_enabled(void)
