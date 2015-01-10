@@ -15,6 +15,11 @@ static char french[7] = {"dlmmjvs"};
 static char spanish[7] = {"dlmmjvs"};
 static char *weekday_names=english;
 
+time_t clock_to_timestamp_precise(WeekDay day, int hour, int minute)
+{
+  return (clock_to_timestamp(day, hour, minute)/60)*60;
+}
+
 void alarm_draw_row(Alarm* alarm, GContext* ctx)
 {
   graphics_context_set_text_color(ctx, GColorBlack);
@@ -85,7 +90,7 @@ void alarm_schedule_wakeup(Alarm *alarm)
     // Calculate time to wake up
     time_t now = time(NULL);
     struct tm *t = localtime(&now);
-    time_t timestamp = clock_to_timestamp(TODAY,alarm->hour,alarm->minute);
+    time_t timestamp = clock_to_timestamp_precise(TODAY,alarm->hour,alarm->minute);
     bool some_active=false;
     
     // Check if we may schedule the alarm today
@@ -95,9 +100,9 @@ void alarm_schedule_wakeup(Alarm *alarm)
       if(alarm->weekdays_active[(i+current_weekday)%7])
       {
         if(i==0)
-          timestamp = clock_to_timestamp(TODAY,alarm->hour,alarm->minute);
+          timestamp = clock_to_timestamp_precise(TODAY,alarm->hour,alarm->minute);
         else
-          timestamp = clock_to_timestamp(((i+current_weekday)%7)+1,alarm->hour,alarm->minute);
+          timestamp = clock_to_timestamp_precise(((i+current_weekday)%7)+1,alarm->hour,alarm->minute);
         if((now-timestamp)>(60*60*24*7)) // we can not be more than a week away?
           continue;
         else
@@ -118,16 +123,16 @@ void alarm_schedule_wakeup(Alarm *alarm)
       if(alarm->weekdays_active[current_weekday])
       {
         some_active=true;
-        timestamp = clock_to_timestamp(TODAY,alarm->hour,alarm->minute);
+        timestamp = clock_to_timestamp_precise(TODAY,alarm->hour,alarm->minute);
         t = localtime(&timestamp);
         APP_LOG(APP_LOG_LEVEL_DEBUG,"Scheduled at %d.%d %d:%d",t->tm_mday, t->tm_mon+1,t->tm_hour,t->tm_min);
         alarm->alarm_id = wakeup_schedule(timestamp,0,true);
       }
       else // one-time alert (no weekdays active)
       {
-        timestamp = clock_to_timestamp(TODAY,alarm->hour,alarm->minute);
+        timestamp = clock_to_timestamp_precise(TODAY,alarm->hour,alarm->minute);
         if((timestamp-now)>(60*60*24))
-          timestamp = clock_to_timestamp(current_weekday+1,alarm->hour,alarm->minute);
+          timestamp = clock_to_timestamp_precise(current_weekday+1,alarm->hour,alarm->minute);
         
         t = localtime(&timestamp);
         APP_LOG(APP_LOG_LEVEL_DEBUG,"Scheduled one-time event at %d.%d %d:%d",t->tm_mday, t->tm_mon+1,t->tm_hour,t->tm_min);
