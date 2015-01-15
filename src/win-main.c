@@ -128,10 +128,13 @@ static uint16_t menu_num_rows(struct MenuLayer* menu, uint16_t section_index, vo
 
 static int16_t menu_cell_height(struct MenuLayer *menu, MenuIndex *cell_index, void *callback_context) {
   switch (cell_index->section) {
-    case MENU_SECTION_OTHER: {
+    case MENU_SECTION_OTHER:
       return 38;
       break;
-    }
+    case MENU_SECTION_ALARMS:
+      if(alarm_has_description(&s_alarms[s_hide_unused_alarms?s_id_enabled[cell_index->row]:cell_index->row]))
+        return 50;
+      break;
   }
   return 32;
 }
@@ -176,7 +179,7 @@ static void menu_draw_row_other(GContext* ctx, const Layer* cell_layer, uint16_t
   switch (row_index) {
     case MENU_ROW_OTHER_ABOUT:
       // This is a basic menu item with a title and subtitle
-      menu_cell_basic_draw(ctx, cell_layer, _("Help"), "Alarms++ v2.8", NULL);
+      menu_cell_basic_draw(ctx, cell_layer, _("Help"), "Alarms++ v2.9", NULL);
       break;
     case MENU_ROW_OTHER_SNOOZE:
       snprintf(s_snooze_text,sizeof(s_snooze_text),"%02d %s",s_snooze_delay,_("Minutes"));

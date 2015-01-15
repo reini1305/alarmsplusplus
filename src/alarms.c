@@ -13,6 +13,7 @@ static char english[7] = {"SMTWTFS"};
 static char german[7] = {"SMDMDFS"};
 static char french[7] = {"dlmmjvs"};
 static char spanish[7] = {"dlmmjvs"};
+//static char russian[14] = {"ВПВСЧПС"}; // 2-byte characters?
 static char *weekday_names=english;
 
 time_t clock_to_timestamp_precise(WeekDay day, int hour, int minute)
@@ -65,6 +66,15 @@ void alarm_draw_row(Alarm* alarm, GContext* ctx)
                      fonts_get_system_font(FONT_KEY_GOTHIC_14),
                      GRect(70, -1, 144 - 33, 30), GTextOverflowModeWordWrap,
                      GTextAlignmentLeft, NULL);
+  
+  // draw description
+  if(alarm_has_description(alarm))
+  {
+    graphics_draw_text(ctx, alarm->description,
+                       fonts_get_system_font(FONT_KEY_GOTHIC_24_BOLD),
+                       GRect(10, 22, 144 - 33, 30), GTextOverflowModeWordWrap,
+                       GTextAlignmentLeft, NULL);
+  }
   
 }
 
@@ -222,4 +232,9 @@ void alarm_set_language(void)
   } else if (strcmp("es_ES", sys_locale) == 0) {
     weekday_names = spanish;
   }
+}
+
+bool alarm_has_description(Alarm *alarm)
+{
+  return alarm->description[0];
 }

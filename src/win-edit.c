@@ -51,6 +51,7 @@ static char *english[7] = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday
 static char *german[7] = {"Sonntag", "Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag"};
 static char *french[7] = {"dimanche", "lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi"};
 static char *spanish[7] = {"domingo", "lunes", "martes", "miércoles", "jueves", "viernes", "sábado"};
+//static char *russian[7] = {"Воскресенье","Понедельник","Вторник","Среда","Четверг","Пятница","Суббота"};
 static char **weekday_names=english;
 
 
