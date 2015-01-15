@@ -48,7 +48,7 @@ void alarm_draw_row(Alarm* alarm, GContext* ctx)
   char state[4];
   snprintf(state, sizeof(state), "%s",alarm->enabled? _("ON"):_("OFF"));
   graphics_draw_text(ctx, state,font,
-                     GRect(3, -3, 144 - 5, 28), GTextOverflowModeFill,
+                     GRect(3, alarm_has_description(alarm)?7:-3, 144 - 5, 28), GTextOverflowModeFill,
                      GTextAlignmentRight, NULL);
 
    // draw active weekdays
@@ -72,7 +72,7 @@ void alarm_draw_row(Alarm* alarm, GContext* ctx)
   {
     graphics_draw_text(ctx, alarm->description,
                        fonts_get_system_font(FONT_KEY_GOTHIC_24_BOLD),
-                       GRect(10, 22, 144 - 33, 30), GTextOverflowModeWordWrap,
+                       GRect(10, 22, 144 - 3, 30), GTextOverflowModeWordWrap,
                        GTextAlignmentLeft, NULL);
   }
   

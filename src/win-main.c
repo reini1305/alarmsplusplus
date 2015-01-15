@@ -133,7 +133,7 @@ static int16_t menu_cell_height(struct MenuLayer *menu, MenuIndex *cell_index, v
       break;
     case MENU_SECTION_ALARMS:
       if(alarm_has_description(&s_alarms[s_hide_unused_alarms?s_id_enabled[cell_index->row]:cell_index->row]))
-        return 50;
+        return 52;
       break;
   }
   return 32;
