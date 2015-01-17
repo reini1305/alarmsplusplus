@@ -6,6 +6,7 @@
 #include "storage.h"
 #include "localize.h"
 #include "timeout.h"
+#include "pebble_process_info.h"
 
 #define MENU_SECTION_ALARMS   0
 #define MENU_SECTION_OTHER   1
@@ -50,6 +51,9 @@ static char s_num_enabled;
 static int s_vibration_pattern;
 static bool s_flip_to_snooze;
 
+extern const PebbleProcessInfo __pbl_app_info;
+static char version_text[15];
+
 void win_main_init(Alarm* alarms) {
   s_alarms = alarms;
   s_window = window_create();
@@ -69,6 +73,7 @@ void win_main_init(Alarm* alarms) {
   s_flip_to_snooze = load_persistent_storage_bool(FLIP_TO_SNOOZE_KEY, false);
   update_id_enabled();
   refresh_timeout();
+  snprintf(version_text, sizeof(version_text), "Alarms++ v%d.%d",__pbl_app_info.process_version.major,__pbl_app_info.process_version.minor);
 }
 
 void win_main_show(void) {
@@ -179,7 +184,7 @@ static void menu_draw_row_other(GContext* ctx, const Layer* cell_layer, uint16_t
   switch (row_index) {
     case MENU_ROW_OTHER_ABOUT:
       // This is a basic menu item with a title and subtitle
-      menu_cell_basic_draw(ctx, cell_layer, _("Help"), "Alarms++ v2.10", NULL);
+      menu_cell_basic_draw(ctx, cell_layer, _("Help"), version_text, NULL);
       break;
     case MENU_ROW_OTHER_SNOOZE:
       snprintf(s_snooze_text,sizeof(s_snooze_text),"%02d %s",s_snooze_delay,_("Minutes"));

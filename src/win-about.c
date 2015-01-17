@@ -1,6 +1,9 @@
 #include <pebble.h>
 #include "win-about.h"
 #include "localize.h"
+#include "pebble_process_info.h"
+
+extern const PebbleProcessInfo __pbl_app_info;
 
 static void window_load(Window* window);
 static void window_unload(Window* window);
@@ -43,5 +46,7 @@ static void layer_header_update(Layer* layer, GContext* ctx) {
   //graphics_context_set_fill_color(ctx, GColorBlack);
   graphics_context_set_text_color(ctx, GColorWhite);
   graphics_fill_rect(ctx, layer_get_bounds(layer), 12, GCornersAll);
-  graphics_draw_text(ctx, "Alarms++ v2.10", fonts_get_system_font(FONT_KEY_GOTHIC_18_BOLD), GRect(0, -2, 144, 24), GTextOverflowModeFill, GTextAlignmentCenter, 0);
+  char version_text[15];
+  snprintf(version_text, sizeof(version_text), "Alarms++ v%d.%d",__pbl_app_info.process_version.major,__pbl_app_info.process_version.minor);
+  graphics_draw_text(ctx, version_text, fonts_get_system_font(FONT_KEY_GOTHIC_18_BOLD), GRect(0, -2, 144, 24), GTextOverflowModeFill, GTextAlignmentCenter, 0);
 }
