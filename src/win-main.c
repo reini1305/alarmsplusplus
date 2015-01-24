@@ -38,6 +38,7 @@ static void menu_select_alarms(uint16_t row_index);
 static void menu_select_other(uint16_t row_index);
 static void menu_selection_changed(struct MenuLayer *menu_layer, MenuIndex new_index, MenuIndex old_index, void *callback_context);
 static void update_id_enabled(void);
+void scroll_timer_callback(void* data);
 
 static Window*    s_window;
 static MenuLayer* s_menu;
@@ -53,6 +54,10 @@ static bool s_flip_to_snooze;
 
 extern const PebbleProcessInfo __pbl_app_info;
 static char version_text[15];
+
+static int16_t s_scroll_index;
+static int16_t s_scroll_row_index;
+static AppTimer *s_scroll_timer;
 
 void win_main_init(Alarm* alarms) {
   s_alarms = alarms;
@@ -74,6 +79,7 @@ void win_main_init(Alarm* alarms) {
   update_id_enabled();
   refresh_timeout();
   snprintf(version_text, sizeof(version_text), "Alarms++ v%d.%d",__pbl_app_info.process_version.major,__pbl_app_info.process_version.minor);
+  s_scroll_timer = app_timer_register(500,scroll_timer_callback,NULL);
 }
 
 void win_main_show(void) {
@@ -180,38 +186,60 @@ static void menu_draw_row_alarms(GContext* ctx, const Layer* cell_layer, uint16_
   alarm_draw_row(current_alarm,ctx);
 }
 
+static void menu_cell_animated_draw(GContext* ctx, const Layer* cell_layer, char* text, char* subtext, bool animate)
+{
+  if(animate && s_scroll_index>0)
+  {
+    //APP_LOG(APP_LOG_LEVEL_DEBUG,"String Length: %d, %d",strlen(text),s_scroll_index);
+    if(((int16_t)strlen(text)-15-s_scroll_index)>0)
+      text+=s_scroll_index;
+  }
+  menu_cell_basic_draw(ctx,cell_layer,text,subtext,NULL);
+}
+
+void scroll_timer_callback(void *data)
+{
+  s_scroll_index+=3;
+  if(s_scroll_row_index>0)
+  layer_mark_dirty(menu_layer_get_layer(s_menu));
+  //if(!app_timer_reschedule(s_scroll_timer,500))
+  s_scroll_timer = app_timer_register(1000,scroll_timer_callback,NULL);
+  //APP_LOG(APP_LOG_LEVEL_DEBUG, "Scroll index: %d",s_scroll_index);
+}
+
 static void menu_draw_row_other(GContext* ctx, const Layer* cell_layer, uint16_t row_index) {
+  bool animate = row_index==s_scroll_row_index;
   switch (row_index) {
     case MENU_ROW_OTHER_ABOUT:
       // This is a basic menu item with a title and subtitle
-      menu_cell_basic_draw(ctx, cell_layer, _("Help"), version_text, NULL);
+      menu_cell_animated_draw(ctx, cell_layer, _("Help"), version_text, animate);
       break;
     case MENU_ROW_OTHER_SNOOZE:
       snprintf(s_snooze_text,sizeof(s_snooze_text),"%02d %s",s_snooze_delay,_("Minutes"));
-      menu_cell_basic_draw(ctx, cell_layer, _("Snooze Delay"), s_snooze_text, NULL);
+      menu_cell_animated_draw(ctx, cell_layer, _("Snooze Delay"), s_snooze_text, animate);
       break;
     case MENU_ROW_OTHER_LONGPRESS:
-      menu_cell_basic_draw(ctx, cell_layer, _("Dismiss Alarm"), s_longpress_dismiss?_("Long press"):_("Short press"), NULL);
+      menu_cell_animated_draw(ctx, cell_layer, _("Dismiss Alarm"), s_longpress_dismiss?_("Long press"):_("Short press"), animate);
       break;
     case MENU_ROW_OTHER_HIDE:
-      menu_cell_basic_draw(ctx, cell_layer, _("Disabled Alarms"), s_hide_unused_alarms?_("Hide"):_("Show"), NULL);
+      menu_cell_animated_draw(ctx, cell_layer, _("Disabled Alarms"), s_hide_unused_alarms?_("Hide"):_("Show"), animate);
       break;
     case MENU_ROW_OTHER_FLIP:
-      menu_cell_basic_draw(ctx, cell_layer, _("Shake to Snooze"), s_flip_to_snooze?_("Enabled"):_("Disabled"), NULL);
+      menu_cell_animated_draw(ctx, cell_layer, _("Shake to Snooze"), s_flip_to_snooze?_("Enabled"):_("Disabled"), animate);
       break;
     case MENU_ROW_OTHER_VIBRATION:
       switch (s_vibration_pattern) {
         case 0:
-          menu_cell_basic_draw(ctx, cell_layer, _("Vibration Strength"), _("Constant"), NULL);
+          menu_cell_animated_draw(ctx, cell_layer, _("Vibration Strength"), _("Constant"), animate);
           break;
         case 1:
-          menu_cell_basic_draw(ctx, cell_layer, _("Vibration Strength"), _("Increasing 10s"), NULL);
+          menu_cell_animated_draw(ctx, cell_layer, _("Vibration Strength"), _("Increasing 10s"), animate);
           break;
         case 2:
-          menu_cell_basic_draw(ctx, cell_layer, _("Vibration Strength"), _("Increasing 20s"), NULL);
+          menu_cell_animated_draw(ctx, cell_layer, _("Vibration Strength"), _("Increasing 20s"), animate);
           break;
         case 3:
-          menu_cell_basic_draw(ctx, cell_layer, _("Vibration Strength"), _("Increasing 30s"), NULL);
+          menu_cell_animated_draw(ctx, cell_layer, _("Vibration Strength"), _("Increasing 30s"), animate);
           break;
         default:
           break;
@@ -219,6 +247,17 @@ static void menu_draw_row_other(GContext* ctx, const Layer* cell_layer, uint16_t
       
       break;
   }
+}
+
+static void menu_selection_changed(struct MenuLayer *menu_layer, MenuIndex new_index, MenuIndex old_index, void *callback_context)
+{
+  s_scroll_index=0;
+  if(new_index.section==MENU_SECTION_OTHER)
+    s_scroll_row_index = new_index.row;
+  else
+    s_scroll_row_index = -1; // disable scrolling
+  app_timer_reschedule(s_scroll_timer,1000);
+  refresh_timeout();
 }
 
 static void menu_select(struct MenuLayer* menu, MenuIndex* cell_index, void* callback_context) {
@@ -284,11 +323,6 @@ static void menu_select_other(uint16_t row_index) {
       persist_write_int(VIBRATION_PATTERN_KEY,s_vibration_pattern);
       break;
   }
-}
-
-static void menu_selection_changed(struct MenuLayer *menu_layer, MenuIndex new_index, MenuIndex old_index, void *callback_context)
-{
-  refresh_timeout();
 }
 
 static void update_id_enabled(void)
