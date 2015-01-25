@@ -42,6 +42,7 @@ void scroll_timer_callback(void* data);
 
 static Window*    s_window;
 static MenuLayer* s_menu;
+static GBitmap* s_statusbar_bitmap;
 static Alarm* s_alarms;
 static int s_snooze_delay;
 static char s_snooze_text[12];
@@ -108,6 +109,9 @@ static void window_load(Window* window) {
   
   // Add it to the window for display
   layer_add_child(window_layer, menu_layer_get_layer(s_menu));
+  
+  s_statusbar_bitmap = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_STATUS);
+  window_set_status_bar_icon(window,s_statusbar_bitmap);
 }
 
 static void window_unload(Window* window) {
@@ -190,7 +194,6 @@ static void menu_cell_animated_draw(GContext* ctx, const Layer* cell_layer, char
 {
   if(animate && s_scroll_index>0)
   {
-    //APP_LOG(APP_LOG_LEVEL_DEBUG,"String Length: %d, %d",strlen(text),s_scroll_index);
     if(((int16_t)strlen(text)-15-s_scroll_index)>0)
       text+=s_scroll_index;
   }
@@ -202,9 +205,7 @@ void scroll_timer_callback(void *data)
   s_scroll_index+=3;
   if(s_scroll_row_index>0)
   layer_mark_dirty(menu_layer_get_layer(s_menu));
-  //if(!app_timer_reschedule(s_scroll_timer,500))
   s_scroll_timer = app_timer_register(1000,scroll_timer_callback,NULL);
-  //APP_LOG(APP_LOG_LEVEL_DEBUG, "Scroll index: %d",s_scroll_index);
 }
 
 static void menu_draw_row_other(GContext* ctx, const Layer* cell_layer, uint16_t row_index) {
