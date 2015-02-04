@@ -29,6 +29,8 @@ static VibePatternPWM s_pwmPat = {
 };
 static int s_vibe_counter = 0;
 static int s_vibration_pattern = 0;
+static int s_vibration_duration = 0;
+static int s_auto_snooze=false;
 //static int s_last_z = 10000;
 
 void do_vibrate(void);
@@ -100,7 +102,8 @@ void vibe_timer_callback(void* data) {
 
 void cancel_vibe_timer_callback(void* data) {
   cancel_vibrate = true;
-  do_snooze();
+  if(s_auto_snooze)
+    do_snooze();
 }
 
 /*static void data_handler(AccelData *data, uint32_t num_samples) {
@@ -174,9 +177,27 @@ static void main_window_load(Window *window) {
   s_inverter_layer = inverter_layer_create(GRect(0,0,bounds.size.w,bounds.size.h));
   layer_add_child(window_get_root_layer(window), inverter_layer_get_layer(s_inverter_layer));
   s_vibration_pattern = load_persistent_storage_int(VIBRATION_PATTERN_KEY,0);
+  s_vibration_duration = load_persistent_storage_int(VIBRATION_DURATION_KEY, 2);
+  s_auto_snooze = load_persistent_storage_bool(AUTO_SNOOZE_KEY, true);
   do_vibrate();
-  // switch off vibration after 3 minutes
-  cancel_vibe_timer = app_timer_register(1000*60*3,cancel_vibe_timer_callback,NULL);
+  // switch off vibration after x minutes
+  switch (s_vibration_duration) {
+    case 0:
+      s_vibration_duration = 30;
+      break;
+    case 1:
+    s_vibration_duration = 60;
+    break;
+    case 2:
+    s_vibration_duration = 120;
+    break;
+    case 3:
+    s_vibration_duration = 300;
+    break;
+    default:
+    break;
+  }
+  cancel_vibe_timer = app_timer_register(1000*s_vibration_duration,cancel_vibe_timer_callback,NULL);
   
   // test snoozing with the accelerometer
   if(s_flip_to_snooze)

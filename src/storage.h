@@ -19,6 +19,8 @@
 #define VIBRATION_PATTERN_KEY 6
 #define FLIP_TO_SNOOZE_KEY 7
 #define ALARMS_KEY 8
+#define VIBRATION_DURATION_KEY 9
+#define AUTO_SNOOZE_KEY 10
 
 void load_persistent_storage_alarms(Alarm *alarms);
 bool load_persistent_storage_bool(int key, bool default_val);

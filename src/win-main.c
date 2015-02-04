@@ -3,6 +3,7 @@
 #include "win-edit.h"
 #include "win-snooze.h"
 #include "win-about.h"
+#include "win-advanced.h"
 #include "storage.h"
 #include "localize.h"
 #include "timeout.h"
@@ -11,15 +12,13 @@
 #define MENU_SECTION_ALARMS   0
 #define MENU_SECTION_OTHER   1
 
-#define MENU_ROW_COUNT_OTHER 6
+#define MENU_ROW_COUNT_OTHER 4
 #define MENU_ROW_COUNT_ALARMS NUM_ALARMS
 
-#define MENU_ROW_OTHER_ABOUT         5
-#define MENU_ROW_OTHER_LONGPRESS     4
+#define MENU_ROW_OTHER_ABOUT         3
 #define MENU_ROW_OTHER_SNOOZE        1
 #define MENU_ROW_OTHER_HIDE          0
-#define MENU_ROW_OTHER_VIBRATION     3
-#define MENU_ROW_OTHER_FLIP          2
+#define MENU_ROW_OTHER_ADVANCED      2
 
 static void window_load(Window* window);
 static void window_unload(Window* window);
@@ -46,12 +45,9 @@ static GBitmap* s_statusbar_bitmap;
 static Alarm* s_alarms;
 static int s_snooze_delay;
 static char s_snooze_text[12];
-static bool s_longpress_dismiss;
 static bool s_hide_unused_alarms;
 static char s_id_enabled[NUM_ALARMS];
 static char s_num_enabled;
-static int s_vibration_pattern;
-static bool s_flip_to_snooze;
 
 extern const PebbleProcessInfo __pbl_app_info;
 static char version_text[15];
@@ -71,12 +67,10 @@ void win_main_init(Alarm* alarms) {
   win_edit_init();
   win_snooze_init();
   win_about_init();
+  win_advanced_init();
   alarm_set_language();
   s_snooze_delay = load_persistent_storage_int(SNOOZE_KEY,10);
-  s_longpress_dismiss = load_persistent_storage_bool(LONGPRESS_DISMISS_KEY,false);
   s_hide_unused_alarms = load_persistent_storage_bool(HIDE_UNUSED_ALARMS_KEY,false);
-  s_vibration_pattern = load_persistent_storage_int(VIBRATION_PATTERN_KEY,0);
-  s_flip_to_snooze = load_persistent_storage_bool(FLIP_TO_SNOOZE_KEY, false);
   update_id_enabled();
   refresh_timeout();
   snprintf(version_text, sizeof(version_text), "Alarms++ v%d.%d",__pbl_app_info.process_version.major,__pbl_app_info.process_version.minor);
@@ -219,33 +213,11 @@ static void menu_draw_row_other(GContext* ctx, const Layer* cell_layer, uint16_t
       snprintf(s_snooze_text,sizeof(s_snooze_text),"%02d %s",s_snooze_delay,_("Minutes"));
       menu_cell_animated_draw(ctx, cell_layer, _("Snooze Delay"), s_snooze_text, animate);
       break;
-    case MENU_ROW_OTHER_LONGPRESS:
-      menu_cell_animated_draw(ctx, cell_layer, _("Dismiss Alarm"), s_longpress_dismiss?_("Long press"):_("Short press"), animate);
-      break;
     case MENU_ROW_OTHER_HIDE:
       menu_cell_animated_draw(ctx, cell_layer, _("Disabled Alarms"), s_hide_unused_alarms?_("Hide"):_("Show"), animate);
       break;
-    case MENU_ROW_OTHER_FLIP:
-      menu_cell_animated_draw(ctx, cell_layer, _("Shake to Snooze"), s_flip_to_snooze?_("Enabled"):_("Disabled"), animate);
-      break;
-    case MENU_ROW_OTHER_VIBRATION:
-      switch (s_vibration_pattern) {
-        case 0:
-          menu_cell_animated_draw(ctx, cell_layer, _("Vibration Strength"), _("Constant"), animate);
-          break;
-        case 1:
-          menu_cell_animated_draw(ctx, cell_layer, _("Vibration Strength"), _("Increasing 10s"), animate);
-          break;
-        case 2:
-          menu_cell_animated_draw(ctx, cell_layer, _("Vibration Strength"), _("Increasing 20s"), animate);
-          break;
-        case 3:
-          menu_cell_animated_draw(ctx, cell_layer, _("Vibration Strength"), _("Increasing 30s"), animate);
-          break;
-        default:
-          break;
-      }
-      
+    case MENU_ROW_OTHER_ADVANCED:
+      menu_cell_animated_draw(ctx, cell_layer, _("Advanced Options"), _("Click") , animate);
       break;
   }
 }
@@ -305,23 +277,12 @@ static void menu_select_other(uint16_t row_index) {
     case MENU_ROW_OTHER_ABOUT:
       win_about_show();
       break;
-    case MENU_ROW_OTHER_LONGPRESS:
-      s_longpress_dismiss=!s_longpress_dismiss;
-      persist_write_bool(LONGPRESS_DISMISS_KEY,s_longpress_dismiss);
-      break;
     case MENU_ROW_OTHER_HIDE:
       s_hide_unused_alarms=!s_hide_unused_alarms;
       persist_write_bool(HIDE_UNUSED_ALARMS_KEY,s_hide_unused_alarms);
       break;
-    case MENU_ROW_OTHER_FLIP:
-      s_flip_to_snooze=!s_flip_to_snooze;
-      persist_write_bool(FLIP_TO_SNOOZE_KEY,s_flip_to_snooze);
-      break;
-    case MENU_ROW_OTHER_VIBRATION:
-      s_vibration_pattern++;
-      if(s_vibration_pattern>3)
-        s_vibration_pattern=0;
-      persist_write_int(VIBRATION_PATTERN_KEY,s_vibration_pattern);
+    case MENU_ROW_OTHER_ADVANCED:
+      win_advanced_show();
       break;
   }
 }
