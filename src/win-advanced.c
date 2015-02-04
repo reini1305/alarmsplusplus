@@ -141,7 +141,7 @@ static void menu_draw_row(GContext* ctx, const Layer* cell_layer, MenuIndex* cel
     }
     break;
     case MENU_ROW_AUTO_SNOOZE:
-    menu_cell_animated_draw(ctx, cell_layer, _("Snooze after Vibration End"), s_auto_snooze?_("Yes"):_("No"), animate);
+    menu_cell_animated_draw(ctx, cell_layer, _("Snooze after Vibration End"), s_auto_snooze?_("ON"):_("OFF"), animate);
       break;
     case MENU_ROW_DURATION:
     switch (s_vibration_duration) {
