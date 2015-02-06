@@ -37,7 +37,7 @@ static void menu_select_alarms(uint16_t row_index);
 static void menu_select_other(uint16_t row_index);
 static void menu_selection_changed(struct MenuLayer *menu_layer, MenuIndex new_index, MenuIndex old_index, void *callback_context);
 static void update_id_enabled(void);
-void scroll_timer_callback(void* data);
+static void scroll_timer_callback(void* data);
 
 static Window*    s_window;
 static MenuLayer* s_menu;
@@ -194,7 +194,7 @@ static void menu_cell_animated_draw(GContext* ctx, const Layer* cell_layer, char
   menu_cell_basic_draw(ctx,cell_layer,text,subtext,NULL);
 }
 
-void scroll_timer_callback(void *data)
+static void scroll_timer_callback(void *data)
 {
   s_scroll_index+=3;
   if(s_scroll_row_index>0)
