@@ -21,6 +21,7 @@ static int16_t menu_header_height(struct MenuLayer *menu, uint16_t section_index
 static void menu_draw_row(GContext* ctx, const Layer* cell_layer, MenuIndex* cell_index, void* callback_context);
 static void menu_select(struct MenuLayer* menu, MenuIndex* cell_index, void* callback_context);
 static void menu_selection_changed(struct MenuLayer *menu_layer, MenuIndex new_index, MenuIndex old_index, void *callback_context);
+static void menu_draw_header(GContext* ctx, const Layer* cell_layer, uint16_t section_index, void* callback_context);
 static void scroll_timer_callback(void* data);
 
 static Window*    s_window;
@@ -68,6 +69,7 @@ static void window_load(Window* window) {
     .draw_row = menu_draw_row,
     .select_click = menu_select,
     .get_header_height = menu_header_height,
+    .draw_header = menu_draw_header,
     .selection_changed = menu_selection_changed,
   });
   // Bind the menu layer's click config provider to the window for interactivity
@@ -99,7 +101,18 @@ static int16_t menu_cell_height(struct MenuLayer *menu, MenuIndex *cell_index, v
 }
 
 static int16_t menu_header_height(struct MenuLayer *menu, uint16_t section_index, void *callback_context) {
-  return 0;
+  return 16;
+}
+
+static void menu_draw_header(GContext* ctx, const Layer* cell_layer, uint16_t section_index, void* callback_context) {
+    graphics_context_set_text_color(ctx, GColorWhite);
+    graphics_context_set_fill_color(ctx, GColorBlack);
+    graphics_fill_rect(ctx,GRect(0,1,144,14),0,GCornerNone);
+    
+    graphics_draw_text(ctx, _("Options"),
+                       fonts_get_system_font(FONT_KEY_GOTHIC_14_BOLD),
+                       GRect(3, -2, 144 - 33, 14), GTextOverflowModeWordWrap,
+                       GTextAlignmentLeft, NULL);
 }
 
 

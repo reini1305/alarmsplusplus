@@ -238,8 +238,9 @@ static int16_t menu_header_height(struct MenuLayer *menu, uint16_t section_index
 }
 
 static void menu_draw_header(GContext* ctx, const Layer* cell_layer, uint16_t section_index, void* callback_context) {
-  graphics_context_set_text_color(ctx, GColorBlack);
+  graphics_context_set_text_color(ctx, GColorWhite);
   graphics_context_set_fill_color(ctx, GColorBlack);
+  graphics_fill_rect(ctx,GRect(0,1,144,14),0,GCornerNone);
   
   graphics_draw_text(ctx, section_index==MENU_SECTION_OK?_("Update Alarm"):_("Weekdays"),
                      fonts_get_system_font(FONT_KEY_GOTHIC_14_BOLD),
