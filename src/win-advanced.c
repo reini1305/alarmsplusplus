@@ -6,10 +6,10 @@
 #define MENU_ROW_COUNT 5
 
 #define MENU_ROW_LONGPRESS     0
-#define MENU_ROW_VIBRATION     2
+#define MENU_ROW_VIBRATION     3
 #define MENU_ROW_FLIP          1
-#define MENU_ROW_DURATION      3
-#define MENU_ROW_AUTO_SNOOZE   4
+#define MENU_ROW_DURATION      4
+#define MENU_ROW_AUTO_SNOOZE   2
 
 static void window_load(Window* window);
 static void window_unload(Window* window);
