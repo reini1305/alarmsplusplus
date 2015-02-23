@@ -206,22 +206,29 @@ static void scroll_timer_callback(void *data)
 
 static void menu_draw_row_other(GContext* ctx, const Layer* cell_layer, uint16_t row_index) {
   bool animate = row_index==s_scroll_row_index;
+  char *text = NULL;
+  char *subtext = NULL;
   switch (row_index) {
     case MENU_ROW_OTHER_ABOUT:
       // This is a basic menu item with a title and subtitle
-      menu_cell_animated_draw(ctx, cell_layer, _("Help"), version_text, animate);
+    text = _("Help");
+    subtext = version_text;
       break;
     case MENU_ROW_OTHER_SNOOZE:
       snprintf(s_snooze_text,sizeof(s_snooze_text),"%02d %s",s_snooze_delay,_("Minutes"));
-      menu_cell_animated_draw(ctx, cell_layer, _("Snooze Delay"), s_snooze_text, animate);
+    text = _("Snooze Delay");
+    subtext = s_snooze_text;
       break;
     case MENU_ROW_OTHER_HIDE:
-      menu_cell_animated_draw(ctx, cell_layer, _("Disabled Alarms"), s_hide_unused_alarms?_("Hide"):_("Show"), animate);
+    text = _("Disabled Alarms");
+    subtext = s_hide_unused_alarms?_("Hide"):_("Show");
       break;
     case MENU_ROW_OTHER_ADVANCED:
-      menu_cell_animated_draw(ctx, cell_layer, _("Advanced Options"), _("Click") , animate);
+    text = _("Advanced Options");
+    subtext = _("Click");
       break;
   }
+  menu_cell_animated_draw(ctx, cell_layer, text, subtext, animate);
 }
 
 static void menu_selection_changed(struct MenuLayer *menu_layer, MenuIndex new_index, MenuIndex old_index, void *callback_context)

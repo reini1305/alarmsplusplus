@@ -128,47 +128,60 @@ static void menu_cell_animated_draw(GContext* ctx, const Layer* cell_layer, char
 
 static void menu_draw_row(GContext* ctx, const Layer* cell_layer, MenuIndex* cell_index, void* callback_context) {
   bool animate = cell_index->row==s_scroll_row_index;
+  char* text = NULL;
+  char* subtext = NULL;
   switch (cell_index->row) {
     case MENU_ROW_LONGPRESS:
-      menu_cell_animated_draw(ctx, cell_layer, _("Dismiss Alarm"), s_longpress_dismiss?_("Long press"):_("Short press"), animate);
+      text = _("Dismiss Alarm");
+      subtext = s_longpress_dismiss?_("Long press"):_("Short press");
       break;
     case MENU_ROW_FLIP:
-      menu_cell_animated_draw(ctx, cell_layer, _("Shake to Snooze"), s_flip_to_snooze?_("Enabled"):_("Disabled"), animate);
+    text =  _("Shake to Snooze");
+    subtext = s_flip_to_snooze?_("Enabled"):_("Disabled");
       break;
     case MENU_ROW_VIBRATION:
     switch (s_vibration_pattern) {
       case 0:
-        menu_cell_animated_draw(ctx, cell_layer, _("Vibration Strength"), _("Constant"), animate);
+      text = _("Vibration Strength");
+      subtext =  _("Constant");
         break;
       case 1:
-        menu_cell_animated_draw(ctx, cell_layer, _("Vibration Strength"), _("Increasing 10s"), animate);
+      text =  _("Vibration Strength");
+      subtext = _("Increasing 10s");
         break;
       case 2:
-        menu_cell_animated_draw(ctx, cell_layer, _("Vibration Strength"), _("Increasing 20s"), animate);
+      text = _("Vibration Strength");
+      subtext = _("Increasing 20s");
         break;
       case 3:
-        menu_cell_animated_draw(ctx, cell_layer, _("Vibration Strength"), _("Increasing 30s"), animate);
+      text = _("Vibration Strength");
+      subtext = _("Increasing 30s");
         break;
       default:
         break;
     }
     break;
     case MENU_ROW_AUTO_SNOOZE:
-    menu_cell_animated_draw(ctx, cell_layer, _("Snooze after Vibration End"), s_auto_snooze?_("ON"):_("OFF"), animate);
+    text = _("Snooze after Vibration End");
+    subtext = s_auto_snooze?_("ON"):_("OFF");
       break;
     case MENU_ROW_DURATION:
     switch (s_vibration_duration) {
       case 0:
-      menu_cell_animated_draw(ctx, cell_layer, _("Vibration Duration"), _("30 seconds"), animate);
+      text = _("Vibration Duration");
+      subtext = _("30 seconds");
       break;
       case 1:
-      menu_cell_animated_draw(ctx, cell_layer, _("Vibration Duration"), _("1 minute"), animate);
+      text = _("Vibration Duration");
+      subtext = _("1 minute");
       break;
       case 2:
-      menu_cell_animated_draw(ctx, cell_layer, _("Vibration Duration"), _("2 minutes"), animate);
+      text = _("Vibration Duration");
+      subtext = _("2 minutes");
       break;
       case 3:
-      menu_cell_animated_draw(ctx, cell_layer, _("Vibration Duration"), _("5 minutes"), animate);
+      text = _("Vibration Duration");
+      subtext = _("5 minutes");
       break;
       default:
       break;
@@ -176,6 +189,7 @@ static void menu_draw_row(GContext* ctx, const Layer* cell_layer, MenuIndex* cel
     break;
     
   }
+  menu_cell_animated_draw(ctx, cell_layer, text, subtext, animate);
 
 }
 
