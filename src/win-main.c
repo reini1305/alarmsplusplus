@@ -114,6 +114,7 @@ static void window_unload(Window* window) {
 
 static void window_appear(Window* window) {
   update_id_enabled();
+  menu_layer_reload_data(s_menu);
   layer_mark_dirty(menu_layer_get_layer(s_menu));
 }
 
