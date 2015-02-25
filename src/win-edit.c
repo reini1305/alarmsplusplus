@@ -47,12 +47,12 @@ static void menu_select(struct MenuLayer* menu, MenuIndex* cell_index, void* cal
 static Alarm temp_alarm;
 static Alarm *current_alarm;
 
-static char *english[7] = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"};
-static char *german[7] = {"Sonntag", "Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag"};
-static char *french[7] = {"dimanche", "lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi"};
-static char *spanish[7] = {"domingo", "lunes", "martes", "miércoles", "jueves", "viernes", "sábado"};
+//static char *english[7] = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"};
+//static char *german[7] = {"Sonntag", "Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag"};
+//static char *french[7] = {"dimanche", "lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi"};
+//static char *spanish[7] = {"domingo", "lunes", "martes", "miércoles", "jueves", "viernes", "sábado"};
 //static char *russian[7] = {"Воскресенье","Понедельник","Вторник","Среда","Четверг","Пятница","Суббота"};
-static char **weekday_names=english;
+//static char **weekday_names=english;
 
 
 void win_edit_init(void)
@@ -71,15 +71,15 @@ void win_edit_init(void)
   // Use selocale() to obtain the system locale for translation
   char *sys_locale = setlocale(LC_ALL, "");
   if (strcmp("de_DE", sys_locale) == 0) {
-    weekday_names = german;
+    //weekday_names = german;
     hour_window = number_window_create("Stunde",(NumberWindowCallbacks){.selected=progress_to_minutes},NULL);
     minute_window = number_window_create("Minute",(NumberWindowCallbacks){.selected=progress_to_days},NULL);
   } else if (strcmp("fr_FR", sys_locale) == 0) {
-    weekday_names = french;
+    //weekday_names = french;
     hour_window = number_window_create("heure",(NumberWindowCallbacks){.selected=progress_to_minutes},NULL);
     minute_window = number_window_create("minute",(NumberWindowCallbacks){.selected=progress_to_days},NULL);
   } else if (strcmp("es_ES", sys_locale) == 0) {
-    weekday_names = spanish;
+    //weekday_names = spanish;
     hour_window = number_window_create("hora",(NumberWindowCallbacks){.selected=progress_to_minutes},NULL);
     minute_window = number_window_create("minuto",(NumberWindowCallbacks){.selected=progress_to_days},NULL);
   } else {
@@ -279,7 +279,33 @@ static void menu_draw_row(GContext* ctx, const Layer* cell_layer, MenuIndex* cel
     }
     else
     {
-      text = weekday_names[cell_index->row-1];
+      switch (cell_index->row) {
+        case 1:
+          text = _("Sunday");
+          break;
+        case 2:
+          text = _("Monday");
+          break;
+        case 3:
+          text = _("Tuesday");
+          break;
+        case 4:
+          text = _("Wednesday");
+          break;
+        case 5:
+          text = _("Thursday");
+          break;
+        case 6:
+          text = _("Friday");
+          break;
+        case 7:
+          text = _("Saturday");
+          break;
+          
+        default:
+          break;
+      }
+      //text = weekday_names[cell_index->row-1];
       font = fonts_get_system_font(FONT_KEY_GOTHIC_24);
       // draw checkmark if enabled
       draw_checkmark = temp_alarm.weekdays_active[cell_index->row-1];
