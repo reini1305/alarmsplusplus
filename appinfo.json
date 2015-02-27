@@ -13,64 +13,72 @@
   },
   "resources": {
     "media": [
-              {
-              "menuIcon": true,
-              "type": "png",
-              "name": "IMAGE_MENU_ICON",
-              "file": "images/logo.png"
-              },
-              {
-              "type": "png",
-              "name": "IMAGE_LOGO",
-              "file": "images/logo_small.png"
-              },
-              {
-              "type": "png",
-              "name": "IMAGE_STATUS",
-              "file": "images/logo_status.png"
-              },
-              {
-              "type": "png",
-              "name": "IMAGE_ACTION_ICON_CHECK",
-              "file": "images/action_icon_check.png"
-              },
-              {
-              "type": "png",
-              "name": "IMAGE_ACTION_ICON_UP",
-              "file": "images/action_icon_up.png"
-              },
-              {
-              "type": "png",
-              "name": "IMAGE_ACTION_ICON_DOWN",
-              "file": "images/action_icon_down.png"
-              },
-              {
-              "type": "png",
-              "name": "IMAGE_ACTION_ICON_CROSS",
-              "file": "images/action_icon_cross.png"
-              },
-              {
-              "type": "png",
-              "name": "IMAGE_ACTION_ICON_ZZ",
-              "file": "images/action_icon_zz.png"
-              },
-              {
-              "type": "raw",
-              "name": "LOCALE_ENGLISH",
-              "file": "locale_english.bin"
-              }, {
-              "type": "raw",
-              "name": "LOCALE_FRENCH",
-              "file": "locale_french.bin"
-              }, {
-              "type": "raw",
-              "name": "LOCALE_SPANISH",
-              "file": "locale_spanish.bin"
-              }, {
-              "type": "raw",
-              "name": "LOCALE_GERMAN",
-              "file": "locale_german.bin"
-              }
-              ]
-  }
+      {
+        "menuIcon": true,
+        "type": "png",
+        "name": "IMAGE_MENU_ICON",
+        "file": "images/logo.png"
+      },
+      {
+        "type": "png",
+        "name": "IMAGE_LOGO",
+        "file": "images/logo_small.png"
+      },
+      {
+        "type": "png",
+        "name": "IMAGE_STATUS",
+        "file": "images/logo_status.png"
+      },
+      {
+        "type": "png",
+        "name": "IMAGE_ACTION_ICON_CHECK",
+        "file": "images/action_icon_check.png"
+      },
+      {
+        "type": "png",
+        "name": "IMAGE_ACTION_ICON_UP",
+        "file": "images/action_icon_up.png"
+      },
+      {
+        "type": "png",
+        "name": "IMAGE_ACTION_ICON_DOWN",
+        "file": "images/action_icon_down.png"
+      },
+      {
+        "type": "png",
+        "name": "IMAGE_ACTION_ICON_CROSS",
+        "file": "images/action_icon_cross.png"
+      },
+      {
+        "type": "png",
+        "name": "IMAGE_ACTION_ICON_ZZ",
+        "file": "images/action_icon_zz.png"
+      },
+      {
+        "type": "raw",
+        "name": "LOCALE_ENGLISH",
+        "file": "locale_english.bin"
+      },
+      {
+        "type": "raw",
+        "name": "LOCALE_FRENCH",
+        "file": "locale_french.bin"
+      },
+      {
+        "type": "raw",
+        "name": "LOCALE_SPANISH",
+        "file": "locale_spanish.bin"
+      },
+      {
+        "type": "raw",
+        "name": "LOCALE_GERMAN",
+        "file": "locale_german.bin"
+      }
+    ]
+  },
+  "targetPlatforms": [
+    "aplite",
+    "basalt"
+  ],
+  "sdkVersion": "3"
 }
