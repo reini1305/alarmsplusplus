@@ -30,7 +30,7 @@ typedef struct AlarmOld{
   WakeupId alarm_id;
 }AlarmOld;
 
-void alarm_draw_row(Alarm* alarm, GContext* ctx);
+void alarm_draw_row(Alarm* alarm, GContext* ctx,bool selected);
 void alarm_toggle_enable(Alarm *alarm);
 void alarm_schedule_wakeup(Alarm *alarm);
 void alarm_cancel_wakeup(Alarm *alarm);

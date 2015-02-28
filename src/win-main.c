@@ -160,7 +160,12 @@ static void menu_draw_header(GContext* ctx, const Layer* cell_layer, uint16_t se
   if(section_index==MENU_SECTION_OTHER)
   {
     graphics_context_set_text_color(ctx, GColorWhite);
-    graphics_context_set_fill_color(ctx, GColorBlack);
+    #ifdef PBL_COLOR
+        graphics_context_set_fill_color(ctx, GColorDukeBlue);
+    #else
+        graphics_context_set_fill_color(ctx, GColorBlack);
+    #endif
+    
     graphics_fill_rect(ctx,GRect(0,1,144,14),0,GCornerNone);
     
     graphics_draw_text(ctx, _("Options"),
@@ -183,7 +188,7 @@ static void menu_draw_row(GContext* ctx, const Layer* cell_layer, MenuIndex* cel
 
 static void menu_draw_row_alarms(GContext* ctx, const Layer* cell_layer, uint16_t row_index) {
   Alarm* current_alarm = &s_alarms[row_index];
-  alarm_draw_row(current_alarm,ctx);
+  alarm_draw_row(current_alarm,ctx,row_index==menu_layer_get_selected_index(s_menu).row);
 }
 
 static void menu_cell_animated_draw(GContext* ctx, const Layer* cell_layer, char* text, char* subtext, bool animate)

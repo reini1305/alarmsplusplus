@@ -21,10 +21,23 @@ time_t clock_to_timestamp_precise(WeekDay day, int hour, int minute)
   return (clock_to_timestamp(day, hour, minute)/60)*60;
 }
 
-void alarm_draw_row(Alarm* alarm, GContext* ctx)
+void alarm_draw_row(Alarm* alarm, GContext* ctx, bool selected)
 {
+#ifdef PBL_COLOR
+  if (selected) {
+    graphics_context_set_text_color(ctx, GColorBlack);
+  }
+  else{
+    if(alarm->enabled){
+      graphics_context_set_text_color(ctx, GColorIslamicGreen);
+    }
+    else{
+      graphics_context_set_text_color(ctx, GColorRed);
+    }
+  }
+#else
   graphics_context_set_text_color(ctx, GColorBlack);
-  graphics_context_set_fill_color(ctx, GColorBlack);
+#endif
   GFont font = fonts_get_system_font(alarm->enabled?FONT_KEY_GOTHIC_28_BOLD:FONT_KEY_GOTHIC_28);
   
   char alarm_time[6];
