@@ -3,13 +3,13 @@
 #include "storage.h"
 #include "localize.h"
 
-#define MENU_ROW_COUNT 5
+#define MENU_ROW_COUNT 4
 
 #define MENU_ROW_LONGPRESS     0
-#define MENU_ROW_VIBRATION     3
-#define MENU_ROW_FLIP          1
-#define MENU_ROW_DURATION      4
-#define MENU_ROW_AUTO_SNOOZE   2
+#define MENU_ROW_VIBRATION     2
+//#define MENU_ROW_FLIP          1
+#define MENU_ROW_DURATION      3
+#define MENU_ROW_AUTO_SNOOZE   1
 
 static void window_load(Window* window);
 static void window_unload(Window* window);
@@ -28,7 +28,7 @@ static Window*    s_window;
 static MenuLayer* s_menu;
 static bool s_longpress_dismiss;
 static int s_vibration_pattern;
-static bool s_flip_to_snooze;
+//static bool s_flip_to_snooze;
 static int s_vibration_duration;
 static bool s_auto_snooze;
 
@@ -45,7 +45,7 @@ void win_advanced_init(void) {
   });
   s_longpress_dismiss = load_persistent_storage_bool(LONGPRESS_DISMISS_KEY,false);
   s_vibration_pattern = load_persistent_storage_int(VIBRATION_PATTERN_KEY,0);
-  s_flip_to_snooze = load_persistent_storage_bool(FLIP_TO_SNOOZE_KEY, false);
+  //s_flip_to_snooze = load_persistent_storage_bool(FLIP_TO_SNOOZE_KEY, false);
   s_vibration_duration = load_persistent_storage_int(VIBRATION_DURATION_KEY,2);
   s_auto_snooze = load_persistent_storage_bool(AUTO_SNOOZE_KEY,true);
   refresh_timeout();
@@ -139,10 +139,10 @@ static void menu_draw_row(GContext* ctx, const Layer* cell_layer, MenuIndex* cel
       text = _("Dismiss Alarm");
       subtext = s_longpress_dismiss?_("Long press"):_("Short press");
       break;
-    case MENU_ROW_FLIP:
+    /*case MENU_ROW_FLIP:
     text =  _("Shake to Snooze");
     subtext = s_flip_to_snooze?_("Enabled"):_("Disabled");
-      break;
+      break;*/
     case MENU_ROW_VIBRATION:
     text = _("Vibration Strength");
     switch (s_vibration_pattern) {
@@ -213,10 +213,10 @@ static void menu_select(struct MenuLayer* menu, MenuIndex* cell_index, void* cal
       s_longpress_dismiss=!s_longpress_dismiss;
       persist_write_bool(LONGPRESS_DISMISS_KEY,s_longpress_dismiss);
       break;
-    case MENU_ROW_FLIP:
+    /*case MENU_ROW_FLIP:
       s_flip_to_snooze=!s_flip_to_snooze;
       persist_write_bool(FLIP_TO_SNOOZE_KEY,s_flip_to_snooze);
-      break;
+      break;*/
     case MENU_ROW_AUTO_SNOOZE:
       s_auto_snooze=!s_auto_snooze;
       persist_write_bool(AUTO_SNOOZE_KEY,s_auto_snooze);

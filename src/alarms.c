@@ -213,26 +213,11 @@ bool alarm_is_one_time(Alarm *alarm)
 
 void convert_24_to_12(int hour_in, int* hour_out, bool* am)
 {
-  if(hour_in==0)
-  {
+  *hour_out=hour_in%12;
+  if (hour_out==0) {
     *hour_out=12;
-    *am=true;
   }
-  else if (hour_in==12)
-  {
-    *hour_out=12;
-    *am=false;
-  }
-  else if (hour_in<12)
-  {
-    *hour_out = hour_in;
-    *am=true;
-  }
-  else
-  {
-    *hour_out = hour_in-12;
-    *am=false;
-  }
+  *am=hour_in<12;
 }
 
 void alarm_set_language(void)
