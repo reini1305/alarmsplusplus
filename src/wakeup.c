@@ -38,7 +38,7 @@ void vibe_timer_callback(void* data);
 AppTimer* vibe_timer = NULL;
 AppTimer* cancel_vibe_timer = NULL;
 bool cancel_vibrate=false;
-bool s_flip_to_snooze=false;
+//bool s_flip_to_snooze=false;
 
 static void wakeup_handler(WakeupId id, int32_t reason) {
   // The app has woken!
@@ -114,12 +114,12 @@ void cancel_vibe_timer_callback(void* data) {
   s_last_z = data[0].z;
 }*/
 
-static void accel_tap_handler(AccelAxisType axis, int32_t direction) {
+/*static void accel_tap_handler(AccelAxisType axis, int32_t direction) {
   // Process tap on ACCEL_AXIS_X, ACCEL_AXIS_Y or ACCEL_AXIS_Z
   // Direction is 1 or -1
   if(axis == ACCEL_AXIS_X || axis == ACCEL_AXIS_Z) // flick your wrist
     do_snooze();
-}
+}*/
 
 static void update_text(struct tm *t) {
   if(clock_is_24h_style())
@@ -204,19 +204,16 @@ static void main_window_load(Window *window) {
   cancel_vibe_timer = app_timer_register(1000*s_vibration_duration,cancel_vibe_timer_callback,NULL);
   
   // test snoozing with the accelerometer
-  if(s_flip_to_snooze)
+  /*if(s_flip_to_snooze)
   {
     accel_tap_service_subscribe(&accel_tap_handler);
-    /*s_last_z=10000;
-    accel_service_set_sampling_rate(ACCEL_SAMPLING_10HZ);
-    accel_data_service_subscribe(5,data_handler);*/
-  }
+  }*/
 }
 
 static void main_window_unload(Window *window) {
   app_timer_cancel(vibe_timer);
-  if(s_flip_to_snooze)
-    accel_tap_service_unsubscribe();
+  //if(s_flip_to_snooze)
+  //  accel_tap_service_unsubscribe();
 }
 
 void perform_wakeup_tasks(Alarm* alarms, bool *snooze)
@@ -231,7 +228,7 @@ void perform_wakeup_tasks(Alarm* alarms, bool *snooze)
   });
   window_set_fullscreen(s_main_window,true);
   
-  s_flip_to_snooze = load_persistent_storage_bool(FLIP_TO_SNOOZE_KEY, false);
+  //s_flip_to_snooze = load_persistent_storage_bool(FLIP_TO_SNOOZE_KEY, false);
   
   // Subscribe to Wakeup API
   wakeup_service_subscribe(wakeup_handler);
