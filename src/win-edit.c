@@ -367,8 +367,10 @@ static void menu_select(struct MenuLayer* menu, MenuIndex* cell_index, void* cal
         s_select_all=!s_select_all;
         for(int i=0;i<7;temp_alarm.weekdays_active[i++]=s_select_all);
       }
-      else
+      else {
         temp_alarm.weekdays_active[cell_index->row-1]=!temp_alarm.weekdays_active[cell_index->row-1];
+        menu_layer_set_selected_next(menu,false,MenuRowAlignCenter,true);
+      }
       layer_mark_dirty(menu_layer_get_layer(menu));
       break;
       
