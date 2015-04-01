@@ -179,7 +179,7 @@ static void menu_draw_header(GContext* ctx, const Layer* cell_layer, uint16_t se
 static void menu_draw_row(GContext* ctx, const Layer* cell_layer, MenuIndex* cell_index, void* callback_context) {
   switch (cell_index->section) {
     case MENU_SECTION_ALARMS:
-      menu_draw_row_alarms(ctx, cell_layer, s_hide_unused_alarms?s_id_enabled[cell_index->row]:cell_index->row);
+      menu_draw_row_alarms(ctx, cell_layer, cell_index->row);
       break;
     case MENU_SECTION_OTHER:
       menu_draw_row_other(ctx, cell_layer, cell_index->row);
@@ -188,8 +188,10 @@ static void menu_draw_row(GContext* ctx, const Layer* cell_layer, MenuIndex* cel
 }
 
 static void menu_draw_row_alarms(GContext* ctx, const Layer* cell_layer, uint16_t row_index) {
-  Alarm* current_alarm = &s_alarms[row_index];
-  alarm_draw_row(current_alarm,ctx,row_index==menu_layer_get_selected_index(s_menu).row,s_id_reset==row_index);
+  int8_t current_id = s_hide_unused_alarms?s_id_enabled[row_index]:row_index;
+  alarm_draw_row(&s_alarms[current_id],ctx,
+                 (row_index==menu_layer_get_selected_index(s_menu).row) && (menu_layer_get_selected_index(s_menu).section==MENU_SECTION_ALARMS),
+                 s_id_reset==current_id);
 }
 
 static void menu_cell_animated_draw(GContext* ctx, const Layer* cell_layer, char* text, char* subtext, bool animate)
