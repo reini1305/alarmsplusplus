@@ -48,6 +48,7 @@ static char s_snooze_text[12];
 static bool s_hide_unused_alarms;
 static char s_id_enabled[NUM_ALARMS];
 static char s_num_enabled;
+static int8_t s_id_reset = -1;
 
 extern const PebbleProcessInfo __pbl_app_info;
 static char version_text[15];
@@ -188,7 +189,7 @@ static void menu_draw_row(GContext* ctx, const Layer* cell_layer, MenuIndex* cel
 
 static void menu_draw_row_alarms(GContext* ctx, const Layer* cell_layer, uint16_t row_index) {
   Alarm* current_alarm = &s_alarms[row_index];
-  alarm_draw_row(current_alarm,ctx,row_index==menu_layer_get_selected_index(s_menu).row);
+  alarm_draw_row(current_alarm,ctx,row_index==menu_layer_get_selected_index(s_menu).row,s_id_reset==row_index);
 }
 
 static void menu_cell_animated_draw(GContext* ctx, const Layer* cell_layer, char* text, char* subtext, bool animate)
@@ -244,13 +245,24 @@ static void menu_selection_changed(struct MenuLayer *menu_layer, MenuIndex new_i
   else
     s_scroll_row_index = -1; // disable scrolling
   app_timer_reschedule(s_scroll_timer,1000);
+  //s_id_reset = -1;
   refresh_timeout();
 }
 
 static void menu_select(struct MenuLayer* menu, MenuIndex* cell_index, void* callback_context) {
+  int8_t current_id = s_hide_unused_alarms?s_id_enabled[cell_index->row]:cell_index->row;
   switch (cell_index->section) {
     case MENU_SECTION_ALARMS:
-      menu_select_alarms(s_hide_unused_alarms?s_id_enabled[cell_index->row]:cell_index->row);
+      if(s_id_reset==current_id)  // the state is already reset
+      {
+        alarm_reset(&s_alarms[current_id]);
+        s_id_reset = -1;
+        update_id_enabled();
+        menu_layer_reload_data(s_menu);
+        layer_mark_dirty(menu_layer_get_layer(s_menu));
+      }
+      else
+        menu_select_alarms(s_hide_unused_alarms?s_id_enabled[cell_index->row]:cell_index->row);
       break;
     case MENU_SECTION_OTHER:
       menu_select_other(cell_index->row);
@@ -266,9 +278,26 @@ static void menu_select(struct MenuLayer* menu, MenuIndex* cell_index, void* cal
 }
 
 static void menu_select_long(struct MenuLayer* menu, MenuIndex* cell_index, void* callback_context) {
+  int8_t current_id = s_hide_unused_alarms?s_id_enabled[cell_index->row]:cell_index->row;
   switch (cell_index->section) {
     case MENU_SECTION_ALARMS:
-      alarm_toggle_enable(&s_alarms[s_hide_unused_alarms?s_id_enabled[cell_index->row]:cell_index->row]);
+      if(s_id_reset==current_id)  // the state is already reset
+      {
+        alarm_toggle_enable(&s_alarms[current_id]);
+        s_id_reset = -1;
+      }
+      else
+      {
+        if(s_alarms[current_id].enabled)
+        {
+          alarm_toggle_enable(&s_alarms[current_id]);
+        }
+        else
+        {
+          s_id_reset=current_id;
+        }
+      }
+      //alarm_toggle_enable(&s_alarms[current_id]);
       update_id_enabled();
       menu_layer_reload_data(menu);
       layer_mark_dirty(menu_layer_get_layer(menu));

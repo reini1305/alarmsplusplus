@@ -21,7 +21,7 @@ time_t clock_to_timestamp_precise(WeekDay day, int hour, int minute)
   return (clock_to_timestamp(day, hour, minute)/60)*60;
 }
 
-void alarm_draw_row(Alarm* alarm, GContext* ctx, bool selected)
+void alarm_draw_row(Alarm* alarm, GContext* ctx, bool selected, bool reset)
 {
 #ifdef PBL_COLOR
   if (selected) {
@@ -58,8 +58,9 @@ void alarm_draw_row(Alarm* alarm, GContext* ctx, bool selected)
                      GTextAlignmentLeft, NULL);
   
   // draw activity state
-  char state[4];
-  snprintf(state, sizeof(state), "%s",alarm->enabled? _("ON"):_("OFF"));
+  char state[]={"RST"};
+  if(!reset)
+    snprintf(state, sizeof(state), "%s",alarm->enabled? _("ON"):_("OFF"));
   graphics_draw_text(ctx, state,font,
                      GRect(3, alarm_has_description(alarm)?7:-3, 144 - 5, 28), GTextOverflowModeFill,
                      GTextAlignmentRight, NULL);
@@ -235,4 +236,15 @@ void alarm_set_language(void)
 bool alarm_has_description(Alarm *alarm)
 {
   return alarm->description[0];
+}
+
+void alarm_reset(Alarm *alarm)
+{
+  alarm->hour=0;
+  alarm->minute=0;
+  alarm->enabled=false;
+  alarm->alarm_id=-1;
+  for (int weekday=0; weekday<7;weekday++)
+    alarm->weekdays_active[weekday]=true;
+
 }
