@@ -244,6 +244,7 @@ void alarm_reset(Alarm *alarm)
   alarm->minute=0;
   alarm->enabled=false;
   alarm->alarm_id=-1;
+  alarm->description[0]=0;
   for (int weekday=0; weekday<7;weekday++)
     alarm->weekdays_active[weekday]=true;
 
