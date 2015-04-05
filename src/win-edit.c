@@ -163,9 +163,15 @@ void am_pm_window_load(Window* window)
 
   s_am_pm_actionbar = action_bar_layer_create();
   action_bar_layer_set_click_config_provider(s_am_pm_actionbar, click_config_provider);
+#ifdef PBL_COLOR
+  action_bar_layer_set_icon_animated(s_am_pm_actionbar,BUTTON_ID_UP,up_icon,true);
+  action_bar_layer_set_icon_animated(s_am_pm_actionbar,BUTTON_ID_DOWN,down_icon,true);
+  action_bar_layer_set_icon_animated(s_am_pm_actionbar,BUTTON_ID_SELECT,check_icon,true);
+#else
   action_bar_layer_set_icon(s_am_pm_actionbar,BUTTON_ID_UP,up_icon);
   action_bar_layer_set_icon(s_am_pm_actionbar,BUTTON_ID_DOWN,down_icon);
   action_bar_layer_set_icon(s_am_pm_actionbar,BUTTON_ID_SELECT,check_icon);
+#endif
   action_bar_layer_add_to_window(s_am_pm_actionbar,window);
 
   s_am_pm_textlayer = text_layer_create(GRect(0, bounds.size.h/2-21, bounds.size.w-ACTION_BAR_WIDTH, bounds.size.h));
