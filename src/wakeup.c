@@ -262,6 +262,12 @@ void perform_wakeup_tasks(Alarm* alarms, bool *snooze)
     window_stack_push(s_main_window, true);
     //wakeup_handler(id, (int32_t)alarms);
   }
+  else if(launch_reason() == APP_LAUNCH_WORKER)  // worker woke us because something is with the current time
+  {
+    reschedule_wakeup(alarms);
+    APP_LOG(APP_LOG_LEVEL_DEBUG,"Worker woke me up!");
+    // app should end here without a window
+  }
   else{
     *snooze=false;
     win_main_init(alarms);

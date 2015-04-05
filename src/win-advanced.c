@@ -3,13 +3,14 @@
 #include "storage.h"
 #include "localize.h"
 
-#define MENU_ROW_COUNT 4
+#define MENU_ROW_COUNT 5
 
 #define MENU_ROW_LONGPRESS     0
 #define MENU_ROW_VIBRATION     2
-//#define MENU_ROW_FLIP          1
+//#define MENU_ROW_FLIP        1
 #define MENU_ROW_DURATION      3
 #define MENU_ROW_AUTO_SNOOZE   1
+#define MENU_ROW_TRACKING      4
 
 static void window_load(Window* window);
 static void window_unload(Window* window);
@@ -31,6 +32,7 @@ static int s_vibration_pattern;
 //static bool s_flip_to_snooze;
 static int s_vibration_duration;
 static bool s_auto_snooze;
+static bool s_background_tracking;
 
 static int16_t s_scroll_index;
 static int16_t s_scroll_row_index;
@@ -48,6 +50,7 @@ void win_advanced_init(void) {
   //s_flip_to_snooze = load_persistent_storage_bool(FLIP_TO_SNOOZE_KEY, false);
   s_vibration_duration = load_persistent_storage_int(VIBRATION_DURATION_KEY,2);
   s_auto_snooze = load_persistent_storage_bool(AUTO_SNOOZE_KEY,true);
+  s_background_tracking = load_persistent_storage_bool(BACKGROUND_TRACKING_KEY,false);
   refresh_timeout();
   s_scroll_timer = app_timer_register(500,scroll_timer_callback,NULL);
 }
@@ -166,6 +169,10 @@ static void menu_draw_row(GContext* ctx, const Layer* cell_layer, MenuIndex* cel
     text = _("Snooze after Vibration End");
     subtext = s_auto_snooze?_("ON"):_("OFF");
       break;
+    case MENU_ROW_TRACKING:
+      text = _("Automatic DST update");
+      subtext = s_background_tracking?_("ON"):_("OFF");
+      break;
     case MENU_ROW_DURATION:
       text = _("Vibration Duration");
     switch (s_vibration_duration) {
@@ -220,6 +227,14 @@ static void menu_select(struct MenuLayer* menu, MenuIndex* cell_index, void* cal
     case MENU_ROW_AUTO_SNOOZE:
       s_auto_snooze=!s_auto_snooze;
       persist_write_bool(AUTO_SNOOZE_KEY,s_auto_snooze);
+      break;
+    case MENU_ROW_TRACKING:
+      s_background_tracking=!s_background_tracking;
+      persist_write_bool(BACKGROUND_TRACKING_KEY,s_background_tracking);
+      if(s_background_tracking)
+        app_worker_launch();
+      else
+        app_worker_kill();
       break;
     case MENU_ROW_VIBRATION:
       s_vibration_pattern++;
