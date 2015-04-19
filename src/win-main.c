@@ -38,6 +38,7 @@ static void menu_select_other(uint16_t row_index);
 static void menu_selection_changed(struct MenuLayer *menu_layer, MenuIndex new_index, MenuIndex old_index, void *callback_context);
 static void update_id_enabled(void);
 static void scroll_timer_callback(void* data);
+static void reset_timer_callback(void* data);
 
 static Window*    s_window;
 static MenuLayer* s_menu;
@@ -48,7 +49,10 @@ static char s_snooze_text[12];
 static bool s_hide_unused_alarms;
 static char s_id_enabled[NUM_ALARMS];
 static char s_num_enabled;
+
 static int8_t s_id_reset = -1;
+static bool s_can_be_reset = false;
+static AppTimer *s_reset_timer;
 
 extern const PebbleProcessInfo __pbl_app_info;
 static char version_text[15];
@@ -76,6 +80,7 @@ void win_main_init(Alarm* alarms) {
   refresh_timeout();
   snprintf(version_text, sizeof(version_text), "Alarms++ v%d.%d",__pbl_app_info.process_version.major,__pbl_app_info.process_version.minor);
   s_scroll_timer = app_timer_register(500,scroll_timer_callback,NULL);
+  s_reset_timer = app_timer_register(2000,reset_timer_callback,NULL);
 }
 
 void win_main_show(void) {
@@ -101,7 +106,9 @@ static void window_load(Window* window) {
   });
   // Bind the menu layer's click config provider to the window for interactivity
   menu_layer_set_click_config_onto_window(s_menu, s_window);
-  
+#ifdef PBL_COLOR
+  //menu_layer_enable_custom_highlight(s_menu,true);
+#endif
   // Add it to the window for display
   layer_add_child(window_layer, menu_layer_get_layer(s_menu));
   
@@ -189,9 +196,13 @@ static void menu_draw_row(GContext* ctx, const Layer* cell_layer, MenuIndex* cel
 
 static void menu_draw_row_alarms(GContext* ctx, const Layer* cell_layer, uint16_t row_index) {
   int8_t current_id = s_hide_unused_alarms?s_id_enabled[row_index]:row_index;
+#ifdef PBL_COLOR
   alarm_draw_row(&s_alarms[current_id],ctx,
-                 (row_index==menu_layer_get_selected_index(s_menu).row) && (menu_layer_get_selected_index(s_menu).section==MENU_SECTION_ALARMS),
+                 menu_cell_layer_is_highlighted(cell_layer),
                  s_id_reset==current_id);
+#else
+  alarm_draw_row(&s_alarms[current_id],ctx,true,s_id_reset==current_id);
+#endif
 }
 
 static void menu_cell_animated_draw(GContext* ctx, const Layer* cell_layer, char* text, char* subtext, bool animate)
@@ -279,30 +290,43 @@ static void menu_select(struct MenuLayer* menu, MenuIndex* cell_index, void* cal
   refresh_timeout();
 }
 
+static void reset_timer_callback(void *data)
+{
+  s_can_be_reset=false;
+}
+
 static void menu_select_long(struct MenuLayer* menu, MenuIndex* cell_index, void* callback_context) {
   int8_t current_id = s_hide_unused_alarms?s_id_enabled[cell_index->row]:cell_index->row;
   switch (cell_index->section) {
     case MENU_SECTION_ALARMS:
-      if(s_id_reset==current_id)  // the state is already reset
-      {
+      if(!s_can_be_reset)
         alarm_toggle_enable(&s_alarms[current_id]);
-        s_id_reset = -1;
-      }
       else
       {
-        if(s_alarms[current_id].enabled)
+        if(s_id_reset==current_id)  // the state is already reset
         {
           alarm_toggle_enable(&s_alarms[current_id]);
+          s_id_reset = -1;
         }
         else
         {
-          s_id_reset=current_id;
+          if(s_alarms[current_id].enabled)
+          {
+            alarm_toggle_enable(&s_alarms[current_id]);
+          }
+          else
+          {
+            s_id_reset=current_id;
+          }
         }
+        //alarm_toggle_enable(&s_alarms[current_id]);
       }
-      //alarm_toggle_enable(&s_alarms[current_id]);
       update_id_enabled();
       menu_layer_reload_data(menu);
       layer_mark_dirty(menu_layer_get_layer(menu));
+      if(!app_timer_reschedule(s_reset_timer,2000))
+        s_reset_timer=app_timer_register(2000,reset_timer_callback,NULL);
+      s_can_be_reset=true;
       break;
     case MENU_SECTION_OTHER:
       break;

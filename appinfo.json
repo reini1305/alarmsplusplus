@@ -3,8 +3,8 @@
   "shortName": "Alarms++",
   "longName": "Alarms++",
   "companyName": "Christian Reinbacher",
-  "versionCode": 46,
-  "versionLabel": "3.0",
+  "versionCode": 47,
+  "versionLabel": "3.1",
   "watchapp": {
     "watchface": false
   },
@@ -54,6 +54,32 @@
         "name": "IMAGE_ACTION_ICON_ZZ",
         "file": "images/action_icon_zz.png"
       },
+      {
+      "type": "png",
+      "name": "IMAGE_ACTION_ICON_CHECK_INV",
+      "file": "images/action_icon_check_inv.png"
+      },
+      {
+      "type": "png",
+      "name": "IMAGE_ACTION_ICON_UP_INV",
+      "file": "images/action_icon_up_inv.png"
+      },
+      {
+      "type": "png",
+      "name": "IMAGE_ACTION_ICON_DOWN_INV",
+      "file": "images/action_icon_down_inv.png"
+      },
+      {
+      "type": "png",
+      "name": "IMAGE_ACTION_ICON_CROSS_INV",
+      "file": "images/action_icon_cross_inv.png"
+      },
+      {
+      "type": "png",
+      "name": "IMAGE_ACTION_ICON_ZZ_INV",
+      "file": "images/action_icon_zz_inv.png"
+      },
+
       {
         "type": "raw",
         "name": "LOCALE_ENGLISH",

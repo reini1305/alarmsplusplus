@@ -95,9 +95,15 @@ void win_edit_init(void)
   number_window_set_max(minute_window,59);
   number_window_set_step_size(minute_window,1);
   
+#ifdef PBL_COLOR
+  check_icon = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_ACTION_ICON_CHECK_INV);
+  up_icon = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_ACTION_ICON_UP_INV);
+  down_icon = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_ACTION_ICON_DOWN_INV);
+#else
   check_icon = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_ACTION_ICON_CHECK);
   up_icon = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_ACTION_ICON_UP);
   down_icon = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_ACTION_ICON_DOWN);
+#endif
   
   tertiary_text_init();
 
@@ -163,15 +169,9 @@ void am_pm_window_load(Window* window)
 
   s_am_pm_actionbar = action_bar_layer_create();
   action_bar_layer_set_click_config_provider(s_am_pm_actionbar, click_config_provider);
-#ifdef PBL_COLOR
-  action_bar_layer_set_icon_animated(s_am_pm_actionbar,BUTTON_ID_UP,up_icon,true);
-  action_bar_layer_set_icon_animated(s_am_pm_actionbar,BUTTON_ID_DOWN,down_icon,true);
-  action_bar_layer_set_icon_animated(s_am_pm_actionbar,BUTTON_ID_SELECT,check_icon,true);
-#else
   action_bar_layer_set_icon(s_am_pm_actionbar,BUTTON_ID_UP,up_icon);
   action_bar_layer_set_icon(s_am_pm_actionbar,BUTTON_ID_DOWN,down_icon);
   action_bar_layer_set_icon(s_am_pm_actionbar,BUTTON_ID_SELECT,check_icon);
-#endif
   action_bar_layer_add_to_window(s_am_pm_actionbar,window);
 
   s_am_pm_textlayer = text_layer_create(GRect(0, bounds.size.h/2-21, bounds.size.w-ACTION_BAR_WIDTH, bounds.size.h));
@@ -259,8 +259,22 @@ static void menu_draw_header(GContext* ctx, const Layer* cell_layer, uint16_t se
 }
 
 static void menu_draw_row(GContext* ctx, const Layer* cell_layer, MenuIndex* cell_index, void* callback_context) {
+#ifdef PBL_COLOR
+  if(menu_cell_layer_is_highlighted(cell_layer))
+  {
+    graphics_context_set_compositing_mode(ctx, GCompOpAssignInverted);
+    graphics_context_set_fill_color(ctx, GColorBlack);
+    graphics_context_set_text_color(ctx, GColorWhite);
+    graphics_fill_rect(ctx,GRect(0,0,144,28),0,GCornerNone);
+    
+  }
+  else{
+    graphics_context_set_compositing_mode(ctx, GCompOpAssign);
+  }
+#else
   graphics_context_set_text_color(ctx, GColorBlack);
   graphics_context_set_fill_color(ctx, GColorBlack);
+#endif
   char* text = NULL;
   GFont font = NULL;
   bool draw_checkmark=false;

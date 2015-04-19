@@ -147,8 +147,8 @@ static void main_window_load(Window *window) {
   action_bar = action_bar_layer_create();
   action_bar_layer_set_click_config_provider(action_bar, click_config_provider);
 #ifdef PBL_COLOR
-  action_bar_layer_set_icon_animated(action_bar,BUTTON_ID_UP,gbitmap_create_with_resource(RESOURCE_ID_IMAGE_ACTION_ICON_CROSS),true);
-  action_bar_layer_set_icon_animated(action_bar,BUTTON_ID_DOWN,gbitmap_create_with_resource(RESOURCE_ID_IMAGE_ACTION_ICON_ZZ),true);
+  action_bar_layer_set_icon_animated(action_bar,BUTTON_ID_UP,gbitmap_create_with_resource(RESOURCE_ID_IMAGE_ACTION_ICON_CROSS_INV),true);
+  action_bar_layer_set_icon_animated(action_bar,BUTTON_ID_DOWN,gbitmap_create_with_resource(RESOURCE_ID_IMAGE_ACTION_ICON_ZZ_INV),true);
 #else
   action_bar_layer_set_icon(action_bar,BUTTON_ID_UP,gbitmap_create_with_resource(RESOURCE_ID_IMAGE_ACTION_ICON_CROSS));
   action_bar_layer_set_icon(action_bar,BUTTON_ID_DOWN,gbitmap_create_with_resource(RESOURCE_ID_IMAGE_ACTION_ICON_ZZ));
