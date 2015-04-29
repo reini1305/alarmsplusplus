@@ -15,7 +15,7 @@
 static Window *s_main_window;
 static TextLayer *s_output_layer;
 static TextLayer *s_description_layer;
-static InverterLayer *s_inverter_layer;
+//static InverterLayer *s_inverter_layer;
 static ActionBarLayer *action_bar;
 static BitmapLayer *s_bitmap_layer;
 static GBitmap *s_logo;
@@ -183,8 +183,8 @@ static void main_window_load(Window *window) {
     layer_add_child(window_get_root_layer(window),bitmap_layer_get_layer(s_bitmap_layer));
   }
   
-  s_inverter_layer = inverter_layer_create(GRect(0,0,bounds.size.w,bounds.size.h));
-  layer_add_child(window_get_root_layer(window), inverter_layer_get_layer(s_inverter_layer));
+//  s_inverter_layer = inverter_layer_create(GRect(0,0,bounds.size.w,bounds.size.h));
+//  layer_add_child(window_get_root_layer(window), inverter_layer_get_layer(s_inverter_layer));
   s_vibration_pattern = load_persistent_storage_int(VIBRATION_PATTERN_KEY,0);
   s_vibration_duration = load_persistent_storage_int(VIBRATION_DURATION_KEY, 2);
   s_auto_snooze = load_persistent_storage_bool(AUTO_SNOOZE_KEY, true);

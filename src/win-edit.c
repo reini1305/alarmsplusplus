@@ -25,7 +25,7 @@ static char s_am_pm_textbuffer[3];
 static Window *s_window;
 static MenuLayer* s_menu;
 static NumberWindow *hour_window,*minute_window;
-static GBitmap *check_icon,*up_icon,*down_icon;
+static GBitmap *check_icon,*check_icon_inv,*up_icon,*down_icon;
 static bool s_is_am;
 static bool s_select_all;
 
@@ -97,6 +97,7 @@ void win_edit_init(void)
   
 #ifdef PBL_COLOR
   check_icon = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_ACTION_ICON_CHECK_INV);
+  check_icon_inv = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_ACTION_ICON_CHECK);
   up_icon = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_ACTION_ICON_UP_INV);
   down_icon = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_ACTION_ICON_DOWN_INV);
 #else
@@ -260,17 +261,17 @@ static void menu_draw_header(GContext* ctx, const Layer* cell_layer, uint16_t se
 
 static void menu_draw_row(GContext* ctx, const Layer* cell_layer, MenuIndex* cell_index, void* callback_context) {
 #ifdef PBL_COLOR
-  if(menu_cell_layer_is_highlighted(cell_layer))
-  {
-    graphics_context_set_compositing_mode(ctx, GCompOpAssignInverted);
-    graphics_context_set_fill_color(ctx, GColorBlack);
-    graphics_context_set_text_color(ctx, GColorWhite);
-    graphics_fill_rect(ctx,GRect(0,0,144,28),0,GCornerNone);
-    
-  }
-  else{
-    graphics_context_set_compositing_mode(ctx, GCompOpAssign);
-  }
+//  if(menu_cell_layer_is_highlighted(cell_layer))
+//  {
+//    graphics_context_set_compositing_mode(ctx, GCompOpAssign);
+////    graphics_context_set_fill_color(ctx, GColorBlack);
+////    graphics_context_set_text_color(ctx, GColorWhite);
+////    graphics_fill_rect(ctx,GRect(0,0,144,28),0,GCornerNone);
+//    
+//  }
+//  else{
+//    graphics_context_set_compositing_mode(ctx, GCompOpAssignInverted);
+//  }
 #else
   graphics_context_set_text_color(ctx, GColorBlack);
   graphics_context_set_fill_color(ctx, GColorBlack);
@@ -340,7 +341,16 @@ static void menu_draw_row(GContext* ctx, const Layer* cell_layer, MenuIndex* cel
                      GRect(3, -3, 144 - 33, 28), GTextOverflowModeWordWrap,
                      GTextAlignmentLeft, NULL);
   if(draw_checkmark)
+  {
+#if PBL_COLOR
+  if(menu_cell_layer_is_highlighted(cell_layer))
     graphics_draw_bitmap_in_rect(ctx, check_icon, GRect(144 - 3 - 16, 6, 16, 16));
+  else
+    graphics_draw_bitmap_in_rect(ctx, check_icon_inv, GRect(144 - 3 - 16, 6, 16, 16));
+#else
+    graphics_draw_bitmap_in_rect(ctx, check_icon, GRect(144 - 3 - 16, 6, 16, 16));
+#endif
+  }
 }
 
 static void menu_select(struct MenuLayer* menu, MenuIndex* cell_index, void* callback_context) {
