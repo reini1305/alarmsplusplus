@@ -209,6 +209,9 @@ void window_load(Window* window)
   // Bind the menu layer's click config provider to the window for interactivity
   menu_layer_set_click_config_onto_window(s_menu, s_window);
   
+#ifdef PBL_COLOR
+  menu_layer_pad_bottom_enable(s_menu,false);
+#endif
   // Add it to the window for display
   layer_add_child(window_layer, menu_layer_get_layer(s_menu));
 }

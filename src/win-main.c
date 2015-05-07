@@ -42,6 +42,9 @@ static void reset_timer_callback(void* data);
 
 static Window*    s_window;
 static MenuLayer* s_menu;
+#ifdef PBL_SDK_3
+static StatusBarLayer *s_status_layer;
+#endif
 static GBitmap* s_statusbar_bitmap;
 static Alarm* s_alarms;
 static int s_snooze_delay;
@@ -91,6 +94,16 @@ static void window_load(Window* window) {
   Layer *window_layer = window_get_root_layer(s_window);
   GRect bounds = layer_get_frame(window_layer);
   
+#ifdef PBL_SDK_3
+  s_status_layer = status_bar_layer_create();
+  // Change the status bar width to make space for the action bar
+  //  GRect frame = GRect(0, 0, width, STATUS_BAR_LAYER_HEIGHT);
+  //  layer_set_frame(status_bar_layer_get_layer(status_layer), frame);
+  layer_add_child(window_layer, status_bar_layer_get_layer(s_status_layer));
+  bounds.size.h-=STATUS_BAR_LAYER_HEIGHT;
+  bounds.origin.y+=STATUS_BAR_LAYER_HEIGHT;
+#endif
+  
   // Create the menu layer
   s_menu = menu_layer_create(bounds);
   menu_layer_set_callbacks(s_menu, NULL, (MenuLayerCallbacks) {
@@ -107,7 +120,7 @@ static void window_load(Window* window) {
   // Bind the menu layer's click config provider to the window for interactivity
   menu_layer_set_click_config_onto_window(s_menu, s_window);
 #ifdef PBL_COLOR
-  //menu_layer_enable_custom_highlight(s_menu,true);
+  menu_layer_pad_bottom_enable(s_menu,false);
 #endif
   // Add it to the window for display
   layer_add_child(window_layer, menu_layer_get_layer(s_menu));

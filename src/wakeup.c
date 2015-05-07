@@ -231,7 +231,9 @@ void perform_wakeup_tasks(Alarm* alarms, bool *snooze)
     .load = main_window_load,
     .unload = main_window_unload,
   });
+#ifndef PBL_COLOR
   window_set_fullscreen(s_main_window,true);
+#endif
   
   //s_flip_to_snooze = load_persistent_storage_bool(FLIP_TO_SNOOZE_KEY, false);
   
