@@ -12,25 +12,35 @@
 #include "debug.h"
 #include "timeout.h"
 
+static void time_window_load(Window* window);
+static void time_window_unload(Window* window);
+static void click_config_provider(void *context);
+
+static Window *s_time_window;
+static Layer *s_canvas_layer;
+static TextLayer *s_input_layers[3];
+
+static char s_value_buffers[3][3];
+static int s_selection;
+static char s_digits[3];
+static char s_max[3];
+static char s_min[3];
+static bool s_withampm;
+#define PIN_WINDOW_SPACING 24
+static const GPathInfo PATH_INFO = {
+  .num_points = 3,
+  .points = (GPoint []) {{0, -5}, {5,5}, {-5, 5}}
+};
+static GPath *s_my_path_ptr;
+
 static void window_load(Window* window);
 static void window_unload(Window* window);
-static void am_pm_window_load(Window* window);
-static void am_pm_window_unload(Window* window);
-
-static Window *s_am_pm_window;
-static ActionBarLayer *s_am_pm_actionbar;
-static TextLayer *s_am_pm_textlayer;
-static char s_am_pm_textbuffer[3];
 
 static Window *s_window;
 static MenuLayer* s_menu;
-static NumberWindow *hour_window,*minute_window;
-static GBitmap *check_icon,*check_icon_inv,*up_icon,*down_icon;
+static GBitmap *check_icon,*check_icon_inv;
 static bool s_is_am;
 static bool s_select_all;
-
-static void progress_to_minutes(NumberWindow *window,void* context);
-static void progress_to_days(NumberWindow *window,void* context);
 
 // Menu stuff
 #define MENU_SECTION_WEEKDAYS 1
@@ -54,7 +64,6 @@ static Alarm *current_alarm;
 //static char *russian[7] = {"Воскресенье","Понедельник","Вторник","Среда","Четверг","Пятница","Суббота"};
 //static char **weekday_names=english;
 
-
 void win_edit_init(void)
 {
   s_window = window_create();
@@ -63,132 +72,188 @@ void win_edit_init(void)
     .unload = window_unload
   });
   
-  s_am_pm_window = window_create();
-  window_set_window_handlers(s_am_pm_window, (WindowHandlers) {
-    .load = am_pm_window_load,
-    .unload = am_pm_window_unload
+  s_time_window = window_create();
+  window_set_window_handlers(s_time_window, (WindowHandlers) {
+    .load = time_window_load,
+    .unload = time_window_unload,
   });
-  // Use selocale() to obtain the system locale for translation
-  char *sys_locale = setlocale(LC_ALL, "");
-  if (strcmp("de_DE", sys_locale) == 0) {
-    //weekday_names = german;
-    hour_window = number_window_create("Stunde",(NumberWindowCallbacks){.selected=progress_to_minutes},NULL);
-    minute_window = number_window_create("Minute",(NumberWindowCallbacks){.selected=progress_to_days},NULL);
-  } else if (strcmp("fr_FR", sys_locale) == 0) {
-    //weekday_names = french;
-    hour_window = number_window_create("heure",(NumberWindowCallbacks){.selected=progress_to_minutes},NULL);
-    minute_window = number_window_create("minute",(NumberWindowCallbacks){.selected=progress_to_days},NULL);
-  } else if (strcmp("es_ES", sys_locale) == 0) {
-    //weekday_names = spanish;
-    hour_window = number_window_create("hora",(NumberWindowCallbacks){.selected=progress_to_minutes},NULL);
-    minute_window = number_window_create("minuto",(NumberWindowCallbacks){.selected=progress_to_days},NULL);
-  } else {
-    hour_window = number_window_create("Hour",(NumberWindowCallbacks){.selected=progress_to_minutes},NULL);
-    minute_window = number_window_create("Minute",(NumberWindowCallbacks){.selected=progress_to_days},NULL);
-  }
   
-  number_window_set_min(hour_window,0);
-  number_window_set_max(hour_window,23);
-  number_window_set_step_size(hour_window,1);
-
-  number_window_set_min(minute_window,0);
-  number_window_set_max(minute_window,59);
-  number_window_set_step_size(minute_window,1);
-  
+  tertiary_text_init();
 #ifdef PBL_COLOR
   check_icon = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_ACTION_ICON_CHECK_INV);
   check_icon_inv = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_ACTION_ICON_CHECK);
-  up_icon = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_ACTION_ICON_UP_INV);
-  down_icon = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_ACTION_ICON_DOWN_INV);
 #else
   check_icon = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_ACTION_ICON_CHECK);
-  up_icon = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_ACTION_ICON_UP);
-  down_icon = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_ACTION_ICON_DOWN);
 #endif
-  
-  tertiary_text_init();
-
+  s_my_path_ptr= gpath_create(&PATH_INFO);
 }
 
 void win_edit_show(Alarm *alarm){
   memcpy(&temp_alarm,alarm,sizeof(Alarm));
   current_alarm = alarm;
   s_select_all = false;
+  s_max[0]=1;s_min[0]=0;
+  s_max[2]=59;s_min[2]=0;
   if(clock_is_24h_style())
   {
-    number_window_set_value(hour_window,temp_alarm.hour);
-    window_stack_push(number_window_get_window(hour_window),true);
+    s_withampm=false;
+    s_max[1]=23;s_min[1]=0;
+    s_selection = 1;
   }
   else
   {
-    number_window_set_min(hour_window,1);
-    number_window_set_max(hour_window,12);
+    s_withampm=true;
+    s_max[1]=12;s_min[1]=1;
     int hour;
     convert_24_to_12(temp_alarm.hour, &hour, &s_is_am);
     temp_alarm.hour = hour;
-    number_window_set_value(hour_window,temp_alarm.hour);
-    snprintf(s_am_pm_textbuffer,sizeof(s_am_pm_textbuffer),s_is_am?"AM":"PM");
-    window_stack_push(s_am_pm_window,true);
+    s_digits[0] = s_is_am;
+    s_selection = 0;
   }
+  s_digits[1] = temp_alarm.hour;
+  s_digits[2] = temp_alarm.minute;
+  window_stack_push(s_time_window,true);
 }
 
-void progress_to_days(NumberWindow *window,void* context)
-{
-  temp_alarm.minute = number_window_get_value(window);
-  window_stack_push(s_window,true);
-  refresh_timeout();
-}
+// Time input window stuff
 
-void progress_to_minutes(NumberWindow *window,void* context)
-{
-  temp_alarm.hour = number_window_get_value(window);
-  number_window_set_value(minute_window,temp_alarm.minute);
+static void update_ui(Layer *layer, GContext *ctx) {
   
-  window_stack_push(number_window_get_window(minute_window),true);
-  refresh_timeout();
-}
-
-static void up_down_click_handler(ClickRecognizerRef recognizer, void *context) {
-  s_is_am=!s_is_am;
-  snprintf(s_am_pm_textbuffer,sizeof(s_am_pm_textbuffer),s_is_am?"AM":"PM");
+  for(int i = 0; i < 3; i++) {
+#ifdef PBL_COLOR
+    text_layer_set_background_color(s_input_layers[i], (i == s_selection) ? GColorDukeBlue : GColorDarkGray);
+    if(i==s_selection)
+    {
+      GPoint selection_center = {
+        .x = (int16_t) (s_withampm?23:2) + i * (PIN_WINDOW_SPACING + PIN_WINDOW_SPACING),
+        .y = (int16_t) 50,
+      };
+      gpath_rotate_to(s_my_path_ptr, 0);
+      gpath_move_to(s_my_path_ptr, selection_center);
+      graphics_context_set_fill_color(ctx,GColorDukeBlue);
+      gpath_draw_filled(ctx, s_my_path_ptr);
+      gpath_rotate_to(s_my_path_ptr, TRIG_MAX_ANGLE/2);
+      selection_center.y = 110;
+      gpath_move_to(s_my_path_ptr, selection_center);
+      gpath_draw_filled(ctx, s_my_path_ptr);
+    }
+#else
+    text_layer_set_background_color(s_input_layers[i], (i == s_selection) ? GColorBlack : GColorWhite);
+    text_layer_set_text_color(s_input_layers[i], (i == s_selection) ? GColorWhite : GColorBlack);
+    if(i==s_selection)
+    {
+      GPoint selection_center = {
+        .x = (int16_t) (s_withampm?23:2) + i * (PIN_WINDOW_SPACING + PIN_WINDOW_SPACING),
+        .y = (int16_t) 50,
+      };
+      gpath_rotate_to(s_my_path_ptr, 0);
+      gpath_move_to(s_my_path_ptr, selection_center);
+      graphics_context_set_fill_color(ctx,GColorBlack);
+      gpath_draw_filled(ctx, s_my_path_ptr);
+      gpath_rotate_to(s_my_path_ptr, TRIG_MAX_ANGLE/2);
+      selection_center.y = 110;
+      gpath_move_to(s_my_path_ptr, selection_center);
+      gpath_draw_filled(ctx, s_my_path_ptr);
+    }
+#endif
+    if(i>0)
+      snprintf(s_value_buffers[i], sizeof("00"), "%02d", s_digits[i]);
+    else
+      snprintf(s_value_buffers[0], sizeof("AM"), s_digits[i]?"AM":"PM");
+    text_layer_set_text(s_input_layers[i], s_value_buffers[i]);
+  }
+  layer_set_hidden(text_layer_get_layer(s_input_layers[0]),!s_withampm);
+  // draw the :
+#ifdef PBL_COLOR
+  graphics_context_set_text_color(ctx,GColorDukeBlue);
+#else
+  graphics_context_set_text_color(ctx,GColorBlack);
+#endif
+  graphics_draw_text(ctx,":",fonts_get_system_font(FONT_KEY_GOTHIC_28_BOLD),GRect(s_withampm?144/2+20:144/2,58,40,20),
+                     GTextOverflowModeWordWrap,GTextAlignmentLeft,NULL);
 }
 
 static void select_click_handler(ClickRecognizerRef recognizer, void *context) {
-  window_stack_push(number_window_get_window(hour_window),true);
+  // Next column
+  s_selection++;
+  
+  if(s_selection == 3) {
+    temp_alarm.hour = s_digits[1];
+    temp_alarm.minute = s_digits[2];
+    s_is_am = s_digits[0];
+    window_stack_push(s_window,true);
+  }
+  else
+    layer_mark_dirty(s_canvas_layer);
+}
+
+static void back_click_handler(ClickRecognizerRef recognizer, void *context) {
+  // Previous column
+  s_selection--;
+  
+  if(s_selection == (s_withampm? -1:0)) {
+    window_stack_pop(true);
+  }
+  else
+    layer_mark_dirty(s_canvas_layer);
+}
+
+static void up_click_handler(ClickRecognizerRef recognizer, void *context) {
+  s_digits[s_selection] += (s_digits[s_selection] == s_max[s_selection]) ? -s_max[s_selection] : 1;
+  
+  layer_mark_dirty(s_canvas_layer);
+}
+
+static void down_click_handler(ClickRecognizerRef recognizer, void *context) {
+  s_digits[s_selection] -= (s_digits[s_selection] == 0) ? -s_max[s_selection] : 1;
+  
+  layer_mark_dirty(s_canvas_layer);
 }
 
 static void click_config_provider(void *context) {
-  // Register the ClickHandlers
   window_single_click_subscribe(BUTTON_ID_SELECT, select_click_handler);
-  window_single_click_subscribe(BUTTON_ID_UP, up_down_click_handler);
-  window_single_click_subscribe(BUTTON_ID_DOWN, up_down_click_handler);
+  window_single_repeating_click_subscribe(BUTTON_ID_UP, 70, up_click_handler);
+  window_single_repeating_click_subscribe(BUTTON_ID_DOWN, 70, down_click_handler);
+  window_single_click_subscribe(BUTTON_ID_BACK, back_click_handler);
 }
 
-void am_pm_window_load(Window* window)
-{
-  GRect bounds = layer_get_bounds(window_get_root_layer(window));
-
-  s_am_pm_actionbar = action_bar_layer_create();
-  action_bar_layer_set_click_config_provider(s_am_pm_actionbar, click_config_provider);
-  action_bar_layer_set_icon(s_am_pm_actionbar,BUTTON_ID_UP,up_icon);
-  action_bar_layer_set_icon(s_am_pm_actionbar,BUTTON_ID_DOWN,down_icon);
-  action_bar_layer_set_icon(s_am_pm_actionbar,BUTTON_ID_SELECT,check_icon);
-  action_bar_layer_add_to_window(s_am_pm_actionbar,window);
-
-  s_am_pm_textlayer = text_layer_create(GRect(0, bounds.size.h/2-21, bounds.size.w-ACTION_BAR_WIDTH, bounds.size.h));
-  text_layer_set_text_alignment(s_am_pm_textlayer, GTextAlignmentCenter);
-  text_layer_set_font(s_am_pm_textlayer,fonts_get_system_font(FONT_KEY_BITHAM_42_BOLD));
-  text_layer_set_text(s_am_pm_textlayer,s_am_pm_textbuffer);
-  layer_add_child(window_get_root_layer(window), text_layer_get_layer(s_am_pm_textlayer));
-}
-
-void am_pm_window_unload(Window *window)
-{
-  action_bar_layer_destroy(s_am_pm_actionbar);
-  text_layer_destroy(s_am_pm_textlayer);
+static void time_window_load(Window *window) {
+  Layer *window_layer = window_get_root_layer(window);
+  GRect bounds = layer_get_bounds(window_layer);
   
+  // init hands
+  s_canvas_layer = layer_create(bounds);
+  layer_set_update_proc(s_canvas_layer, update_ui);
+  layer_add_child(window_layer, s_canvas_layer);
+  
+  for(int i = 0; i < 3; i++) {
+    s_input_layers[i] = text_layer_create(GRect((s_withampm?3:-18) + i * (PIN_WINDOW_SPACING + PIN_WINDOW_SPACING), 60, 40, 40));
+#ifdef PBL_COLOR
+    text_layer_set_text_color(s_input_layers[i], GColorWhite);
+    text_layer_set_background_color(s_input_layers[i], GColorDarkGray);
+#else
+    text_layer_set_text_color(s_input_layers[i], GColorBlack);
+    text_layer_set_background_color(s_input_layers[i], GColorWhite);
+#endif
+    text_layer_set_text(s_input_layers[i], "00");
+    text_layer_set_font(s_input_layers[i], fonts_get_system_font(FONT_KEY_GOTHIC_28_BOLD));
+    text_layer_set_text_alignment(s_input_layers[i], GTextAlignmentCenter);
+    layer_add_child(window_layer, text_layer_get_layer(s_input_layers[i]));
+  }
+  window_set_click_config_provider(window, click_config_provider);
+  layer_mark_dirty(s_canvas_layer);
 }
 
+static void time_window_unload(Window *window) {
+  for(int i = 0; i < 3; i++) {
+    text_layer_destroy(s_input_layers[i]);
+  }
+  layer_destroy(s_canvas_layer);
+  //window_destroy(window);
+}
+
+
+// Alarm options window stuff
 void window_load(Window* window)
 {
   Layer *window_layer = window_get_root_layer(s_window);
@@ -368,7 +433,6 @@ static void menu_select(struct MenuLayer* menu, MenuIndex* cell_index, void* cal
           memcpy(current_alarm,&temp_alarm,sizeof(Alarm));
           window_stack_pop(true);
           window_stack_pop(false);
-          window_stack_pop(false);
         }
         else
         {
@@ -386,8 +450,6 @@ static void menu_select(struct MenuLayer* menu, MenuIndex* cell_index, void* cal
             temp_alarm.hour = ((temp_alarm.hour+12)%12) + 12;
           memcpy(current_alarm,&temp_alarm,sizeof(Alarm));
           window_stack_pop(true);
-          window_stack_pop(false);
-          window_stack_pop(false);
           window_stack_pop(false);
         }
       }
