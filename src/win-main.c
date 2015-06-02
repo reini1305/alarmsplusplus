@@ -99,6 +99,7 @@ static void window_load(Window* window) {
   // Change the status bar width to make space for the action bar
   //  GRect frame = GRect(0, 0, width, STATUS_BAR_LAYER_HEIGHT);
   //  layer_set_frame(status_bar_layer_get_layer(status_layer), frame);
+  status_bar_layer_set_colors(s_status_layer,GColorDukeBlue,GColorWhite);
   layer_add_child(window_layer, status_bar_layer_get_layer(s_status_layer));
   bounds.size.h-=STATUS_BAR_LAYER_HEIGHT;
   bounds.origin.y+=STATUS_BAR_LAYER_HEIGHT;
