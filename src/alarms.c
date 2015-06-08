@@ -18,15 +18,7 @@ static char *weekday_names=english;
 
 time_t clock_to_timestamp_precise(WeekDay day, int hour, int minute)
 {
-  time_t timestamp = (clock_to_timestamp(day, hour, minute)/60)*60;
-  time_t now = time(NULL);
-  struct tm *tick_time = localtime(&now);
-  struct tm *gm_time = gmtime(&now);
-  time_t timezoneoffset = 60 * (60 * (24 * (tick_time->tm_wday - gm_time->tm_wday) + tick_time->tm_hour - gm_time->tm_hour) + tick_time->tm_min - gm_time->tm_min);
-  // Correct for transitions at the end of the week.
-  if (timezoneoffset > SECONDS_IN_WEEK/2) timezoneoffset -= SECONDS_IN_WEEK;
-  if (timezoneoffset < -SECONDS_IN_WEEK/2) timezoneoffset += SECONDS_IN_WEEK;
-  return timestamp + timezoneoffset;
+  return (clock_to_timestamp(day, hour, minute)/60)*60;
 }
 
 void alarm_draw_row(Alarm* alarm, GContext* ctx, bool selected, bool reset)
