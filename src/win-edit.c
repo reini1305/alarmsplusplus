@@ -192,6 +192,7 @@ static void select_click_handler(ClickRecognizerRef recognizer, void *context) {
     temp_alarm.minute = s_digits[1];
     s_is_am = s_digits[2];
     window_stack_push(s_window,true);
+    s_selection--;
   }
   else
     layer_mark_dirty(s_canvas_layer);

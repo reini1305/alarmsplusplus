@@ -24,7 +24,7 @@ time_t clock_to_timestamp_precise(WeekDay day, int hour, int minute)
 void alarm_draw_row(Alarm* alarm, GContext* ctx, bool selected, bool reset)
 {
 #ifdef PBL_COLOR
-  if(alarm->enabled){
+  /*if(alarm->enabled){
     graphics_context_set_text_color(ctx, GColorIslamicGreen);
   }
   else{
@@ -32,9 +32,9 @@ void alarm_draw_row(Alarm* alarm, GContext* ctx, bool selected, bool reset)
   }
   if(selected)
   {
-    graphics_context_set_fill_color(ctx,GColorBlack);
+    graphics_context_set_fill_color(ctx,GColorBlue);
     graphics_fill_rect(ctx,GRect(0,0,144,alarm_has_description(alarm)?52:32),0,GCornerNone);
-  }
+  }*/
   
 #else
   graphics_context_set_text_color(ctx, GColorBlack);

@@ -44,6 +44,7 @@ static Window*    s_window;
 static MenuLayer* s_menu;
 #ifdef PBL_SDK_3
 static StatusBarLayer *s_status_layer;
+static Layer *s_battery_layer;
 #endif
 static GBitmap* s_statusbar_bitmap;
 static Alarm* s_alarms;
@@ -90,6 +91,20 @@ void win_main_show(void) {
   window_stack_push(s_window, false);
 }
 
+#ifdef PBL_SDK_3
+static void battery_proc(Layer *layer, GContext *ctx) {
+  // Emulator battery meter on Aplite
+  graphics_context_set_stroke_color(ctx, GColorWhite);
+  graphics_draw_rect(ctx, GRect(126, 4, 14, 8));
+  graphics_draw_line(ctx, GPoint(140, 6), GPoint(140, 9));
+  
+  BatteryChargeState state = battery_state_service_peek();
+  int width = (int)(float)(((float)state.charge_percent / 100.0F) * 10.0F);
+  graphics_context_set_fill_color(ctx, GColorWhite);
+  graphics_fill_rect(ctx, GRect(128, 6, width, 4), 0, GCornerNone);
+}
+#endif
+
 static void window_load(Window* window) {
   Layer *window_layer = window_get_root_layer(s_window);
   GRect bounds = layer_get_frame(window_layer);
@@ -99,8 +114,12 @@ static void window_load(Window* window) {
   // Change the status bar width to make space for the action bar
   //  GRect frame = GRect(0, 0, width, STATUS_BAR_LAYER_HEIGHT);
   //  layer_set_frame(status_bar_layer_get_layer(status_layer), frame);
-  status_bar_layer_set_colors(s_status_layer,GColorDukeBlue,GColorWhite);
+  status_bar_layer_set_colors(s_status_layer,GColorBlue,GColorWhite);
   layer_add_child(window_layer, status_bar_layer_get_layer(s_status_layer));
+  // Show legacy battery meter
+  s_battery_layer = layer_create(GRect(bounds.origin.x, bounds.origin.y, bounds.size.w, STATUS_BAR_LAYER_HEIGHT));
+  layer_set_update_proc(s_battery_layer, battery_proc);
+  layer_add_child(window_layer, s_battery_layer);
   bounds.size.h-=STATUS_BAR_LAYER_HEIGHT;
   bounds.origin.y+=STATUS_BAR_LAYER_HEIGHT;
 #endif
@@ -122,6 +141,7 @@ static void window_load(Window* window) {
   menu_layer_set_click_config_onto_window(s_menu, s_window);
 #ifdef PBL_COLOR
   menu_layer_pad_bottom_enable(s_menu,false);
+  menu_layer_set_highlight_colors(s_menu,GColorBlue,GColorWhite);
 #endif
   // Add it to the window for display
   layer_add_child(window_layer, menu_layer_get_layer(s_menu));
@@ -183,7 +203,7 @@ static void menu_draw_header(GContext* ctx, const Layer* cell_layer, uint16_t se
   {
     graphics_context_set_text_color(ctx, GColorWhite);
     #ifdef PBL_COLOR
-        graphics_context_set_fill_color(ctx, GColorDukeBlue);
+        graphics_context_set_fill_color(ctx, GColorBlue);
     #else
         graphics_context_set_fill_color(ctx, GColorBlack);
     #endif
