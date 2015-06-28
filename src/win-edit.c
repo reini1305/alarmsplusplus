@@ -210,13 +210,25 @@ static void back_click_handler(ClickRecognizerRef recognizer, void *context) {
 }
 
 static void up_click_handler(ClickRecognizerRef recognizer, void *context) {
-  s_digits[s_selection] += (s_digits[s_selection] == s_max[s_selection]) ? -s_max[s_selection] : 1;
+  if(s_selection == 0 && s_withampm && s_digits[s_selection] == s_max[s_selection] - 1)
+    s_digits[2] = !s_digits[2];
   
+  s_digits[s_selection] += s_digits[s_selection] == s_max[s_selection] ? -s_max[s_selection] : 1;
+
+  if(s_selection == 0 && s_withampm && s_digits[0] == 0)
+    s_digits[0] = 1;
+	
   layer_mark_dirty(s_canvas_layer);
 }
 
 static void down_click_handler(ClickRecognizerRef recognizer, void *context) {
+  if(s_selection == 0 && s_withampm && s_digits[s_selection] == s_max[s_selection])
+    s_digits[2] = !s_digits[2];
+	  
   s_digits[s_selection] -= (s_digits[s_selection] == 0) ? -s_max[s_selection] : 1;
+	
+  if(s_selection == 0 && s_withampm && s_digits[0] == 0)
+    s_digits[0] = s_max[0];
   
   layer_mark_dirty(s_canvas_layer);
 }
