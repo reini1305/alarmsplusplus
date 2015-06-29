@@ -9,8 +9,8 @@ static bool snooze;
 void init(void)
 {
   load_persistent_storage_alarms(alarms);
-  if(load_persistent_storage_bool(BACKGROUND_TRACKING_KEY, false))
-    app_worker_launch();
+  //if(load_persistent_storage_bool(BACKGROUND_TRACKING_KEY, false))
+  //  app_worker_launch();
   perform_wakeup_tasks(alarms,&snooze);
 }
 

@@ -78,11 +78,19 @@ static void click_config_provider(void *context) {
   window_single_click_subscribe(BUTTON_ID_SELECT, do_nothing_click_handler);
   window_single_click_subscribe(BUTTON_ID_BACK, do_nothing_click_handler);
   bool longpress_dismiss = load_persistent_storage_bool(LONGPRESS_DISMISS_KEY,false);
+#if PBL_SDK_3
   if(longpress_dismiss)
-    window_long_click_subscribe(BUTTON_ID_UP,1000,dismiss_click_handler,NULL);
+    window_long_click_subscribe(BUTTON_ID_DOWN,1000,dismiss_click_handler,NULL);
   else
-    window_single_click_subscribe(BUTTON_ID_UP, dismiss_click_handler);
+    window_single_click_subscribe(BUTTON_ID_DOWN, dismiss_click_handler);
+  window_single_click_subscribe(BUTTON_ID_UP, snooze_click_handler);
+#else
+  if(longpress_dismiss)
+  window_long_click_subscribe(BUTTON_ID_UP,1000,dismiss_click_handler,NULL);
+  else
+  window_single_click_subscribe(BUTTON_ID_UP, dismiss_click_handler);
   window_single_click_subscribe(BUTTON_ID_DOWN, snooze_click_handler);
+#endif
 }
 
 void do_vibrate(void) {
@@ -148,9 +156,9 @@ static void main_window_load(Window *window) {
   
   action_bar = action_bar_layer_create();
   action_bar_layer_set_click_config_provider(action_bar, click_config_provider);
-#ifdef PBL_COLOR
-  action_bar_layer_set_icon_animated(action_bar,BUTTON_ID_UP,gbitmap_create_with_resource(RESOURCE_ID_IMAGE_ACTION_ICON_CROSS_INV),true);
-  action_bar_layer_set_icon_animated(action_bar,BUTTON_ID_DOWN,gbitmap_create_with_resource(RESOURCE_ID_IMAGE_ACTION_ICON_ZZ_INV),true);
+#ifdef PBL_SDK_3
+  action_bar_layer_set_icon_animated(action_bar,BUTTON_ID_DOWN,gbitmap_create_with_resource(RESOURCE_ID_IMAGE_ACTION_ICON_CROSS_INV),true);
+  action_bar_layer_set_icon_animated(action_bar,BUTTON_ID_UP,gbitmap_create_with_resource(RESOURCE_ID_IMAGE_ACTION_ICON_ZZ_INV),true);
 #else
   action_bar_layer_set_icon(action_bar,BUTTON_ID_UP,gbitmap_create_with_resource(RESOURCE_ID_IMAGE_ACTION_ICON_CROSS));
   action_bar_layer_set_icon(action_bar,BUTTON_ID_DOWN,gbitmap_create_with_resource(RESOURCE_ID_IMAGE_ACTION_ICON_ZZ));

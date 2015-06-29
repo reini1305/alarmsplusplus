@@ -3,14 +3,14 @@
 #include "storage.h"
 #include "localize.h"
 
-#define MENU_ROW_COUNT 5
+#define MENU_ROW_COUNT 4
 
 #define MENU_ROW_LONGPRESS     0
 #define MENU_ROW_VIBRATION     2
 //#define MENU_ROW_FLIP        1
 #define MENU_ROW_DURATION      3
 #define MENU_ROW_AUTO_SNOOZE   1
-#define MENU_ROW_TRACKING      4
+//#define MENU_ROW_TRACKING      4
 
 static void window_load(Window* window);
 static void window_unload(Window* window);
@@ -80,6 +80,7 @@ static void window_load(Window* window) {
   
 #ifdef PBL_COLOR
   menu_layer_pad_bottom_enable(s_menu,false);
+  menu_layer_set_highlight_colors(s_menu,GColorBlue,GColorWhite);
 #endif
   // Add it to the window for display
   layer_add_child(window_layer, menu_layer_get_layer(s_menu));
@@ -113,7 +114,7 @@ static int16_t menu_header_height(struct MenuLayer *menu, uint16_t section_index
 static void menu_draw_header(GContext* ctx, const Layer* cell_layer, uint16_t section_index, void* callback_context) {
     graphics_context_set_text_color(ctx, GColorWhite);
     #ifdef PBL_COLOR
-      graphics_context_set_fill_color(ctx, GColorDukeBlue);
+      graphics_context_set_fill_color(ctx, GColorBlue);
     #else
       graphics_context_set_fill_color(ctx, GColorBlack);
     #endif
@@ -172,10 +173,10 @@ static void menu_draw_row(GContext* ctx, const Layer* cell_layer, MenuIndex* cel
     text = _("Snooze after Vibration End");
     subtext = s_auto_snooze?_("ON"):_("OFF");
       break;
-    case MENU_ROW_TRACKING:
+    /*case MENU_ROW_TRACKING:
       text = _("Automatic DST update");
       subtext = s_background_tracking?_("ON"):_("OFF");
-      break;
+      break;*/
     case MENU_ROW_DURATION:
       text = _("Vibration Duration");
     switch (s_vibration_duration) {
@@ -231,14 +232,14 @@ static void menu_select(struct MenuLayer* menu, MenuIndex* cell_index, void* cal
       s_auto_snooze=!s_auto_snooze;
       persist_write_bool(AUTO_SNOOZE_KEY,s_auto_snooze);
       break;
-    case MENU_ROW_TRACKING:
+    /*case MENU_ROW_TRACKING:
       s_background_tracking=!s_background_tracking;
       persist_write_bool(BACKGROUND_TRACKING_KEY,s_background_tracking);
       if(s_background_tracking)
         app_worker_launch();
       else
         app_worker_kill();
-      break;
+      break;*/
     case MENU_ROW_VIBRATION:
       s_vibration_pattern++;
       if(s_vibration_pattern>3)
