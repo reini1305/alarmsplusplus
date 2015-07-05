@@ -145,9 +145,10 @@ static void window_load(Window* window) {
 #endif
   // Add it to the window for display
   layer_add_child(window_layer, menu_layer_get_layer(s_menu));
-  
+#ifdef PBL_SDK_2
   s_statusbar_bitmap = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_STATUS);
   window_set_status_bar_icon(window,s_statusbar_bitmap);
+#endif
 }
 
 static void window_unload(Window* window) {
@@ -395,7 +396,7 @@ static void update_id_enabled(void)
   int id=0;
   s_num_enabled=0;
   for (int i=0; i<NUM_ALARMS; i++) {
-    if(s_alarms[i].enabled)
+    if(alarm_is_set(&s_alarms[i]))
     {
       s_id_enabled[id++]=i;
       s_num_enabled++;

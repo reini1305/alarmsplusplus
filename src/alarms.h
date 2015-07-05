@@ -38,6 +38,7 @@ void alarm_reset(Alarm *alarm);
 void reschedule_wakeup(Alarm *alarms);
 void convert_24_to_12(int hour_int, int* hour_out, bool* am);
 bool alarm_is_one_time(Alarm *alarm);
+bool alarm_is_set(Alarm *alarm);
 void alarm_set_language(void);
 bool alarm_has_description(Alarm *alarm);
 #endif
