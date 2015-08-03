@@ -168,7 +168,11 @@ static void main_window_load(Window *window) {
   // Create output TextLayer
   s_output_layer = text_layer_create(GRect(0, bounds.size.h/2-21-(clock_is_24h_style()?0:21), bounds.size.w-ACTION_BAR_WIDTH, bounds.size.h));
   text_layer_set_text_alignment(s_output_layer, GTextAlignmentCenter);
+#ifdef PBL_SDK_2
   text_layer_set_font(s_output_layer,fonts_get_system_font(FONT_KEY_BITHAM_42_BOLD));
+#else
+  text_layer_set_font(s_output_layer,fonts_get_system_font(FONT_KEY_BITHAM_42_MEDIUM_NUMBERS));
+#endif
   //snprintf(output_text, sizeof(output_text), "00:00");
   text_layer_set_text(s_output_layer, output_text);
   layer_add_child(window_get_root_layer(window), text_layer_get_layer(s_output_layer));

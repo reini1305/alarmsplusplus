@@ -242,7 +242,7 @@ bool alarm_has_description(Alarm *alarm)
 bool alarm_is_set(Alarm *alarm)
 {
   // alarm is set if it doesn't have the default settings
-  bool retval=alarm->enabled || alarm->hour || alarm->minute;
+  bool retval=alarm->enabled || alarm->hour || alarm->minute || alarm_has_description(alarm);
   for (int i=0; i<7; i++) {
     retval = retval || !alarm->weekdays_active[i];
   }
