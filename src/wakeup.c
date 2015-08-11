@@ -207,7 +207,7 @@ static void main_window_load(Window *window) {
   // switch off vibration after x minutes
   switch (s_vibration_duration) {
     case 0:
-      s_vibration_duration = 2;
+      s_vibration_duration = 30;
       break;
     case 1:
     s_vibration_duration = 60;
@@ -217,6 +217,12 @@ static void main_window_load(Window *window) {
     break;
     case 3:
     s_vibration_duration = 300;
+    break;
+    case 4:
+    s_vibration_duration = 2;
+    break;
+    case 5:
+    s_vibration_duration = 10;
     break;
     default:
     break;

@@ -17,7 +17,7 @@
   "1692208562": "Shake to snooze",
   "1699755029": "Update alarm",
   "1712988009": "Description",
-  "1788420247": "2 seconds",
+  "1788420247": "30 seconds",
   "193465408": "OFF",
   "1979939354": "Snooze after vibration end",
   "2089174734": "Help",
@@ -40,5 +40,7 @@
   "954229021": "Disabled alarms",
   "979900143": "Constant",
   "982379394": "Long press",
+  "1105577062": "2 seconds",
+  "1652817493": "10 seconds",
   "77815194": "Automatic DST/timezone update"
 }

@@ -192,6 +192,12 @@ static void menu_draw_row(GContext* ctx, const Layer* cell_layer, MenuIndex* cel
       case 3:
       subtext = _("5 minutes");
       break;
+      case 4:
+      subtext = _("2 seconds");
+      break;
+      case 5:
+      subtext = _("10 seconds");
+      break;
       default:
       break;
     }
@@ -248,7 +254,7 @@ static void menu_select(struct MenuLayer* menu, MenuIndex* cell_index, void* cal
       break;
     case MENU_ROW_DURATION:
       s_vibration_duration++;
-      if(s_vibration_duration>3)
+      if(s_vibration_duration>5)
         s_vibration_duration=0;
       persist_write_int(VIBRATION_DURATION_KEY,s_vibration_duration);
     break;
