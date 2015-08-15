@@ -12,13 +12,12 @@
 #define MENU_SECTION_ALARMS   0
 #define MENU_SECTION_OTHER   1
 
-#define MENU_ROW_COUNT_OTHER 4
+#define MENU_ROW_COUNT_OTHER 3
 #define MENU_ROW_COUNT_ALARMS NUM_ALARMS
 
-#define MENU_ROW_OTHER_ABOUT         3
-#define MENU_ROW_OTHER_SNOOZE        1
-#define MENU_ROW_OTHER_HIDE          0
-#define MENU_ROW_OTHER_ADVANCED      2
+#define MENU_ROW_OTHER_ABOUT         2
+#define MENU_ROW_OTHER_SNOOZE        0
+#define MENU_ROW_OTHER_ADVANCED      1
 
 static void window_load(Window* window);
 static void window_unload(Window* window);
@@ -31,6 +30,7 @@ static void menu_draw_header(GContext* ctx, const Layer* cell_layer, uint16_t se
 static void menu_draw_row(GContext* ctx, const Layer* cell_layer, MenuIndex* cell_index, void* callback_context);
 static void menu_draw_row_alarms(GContext* ctx, const Layer* cell_layer, uint16_t row_index);
 static void menu_draw_row_other(GContext* ctx, const Layer* cell_layer, uint16_t row_index);
+static void menu_draw_row_add(GContext* ctx, bool selected);
 static void menu_select(struct MenuLayer* menu, MenuIndex* cell_index, void* callback_context);
 static void menu_select_long(struct MenuLayer* menu, MenuIndex* cell_index, void* callback_context);
 static void menu_select_alarms(uint16_t row_index);
@@ -50,8 +50,7 @@ static GBitmap* s_statusbar_bitmap;
 static Alarm* s_alarms;
 static int s_snooze_delay;
 static char s_snooze_text[12];
-static bool s_hide_unused_alarms;
-static char s_id_enabled[NUM_ALARMS];
+static int8_t s_id_enabled[NUM_ALARMS];
 static char s_num_enabled;
 
 static int8_t s_id_reset = -1;
@@ -79,7 +78,6 @@ void win_main_init(Alarm* alarms) {
   win_advanced_init();
   alarm_set_language();
   s_snooze_delay = load_persistent_storage_int(SNOOZE_KEY,10);
-  s_hide_unused_alarms = load_persistent_storage_bool(HIDE_UNUSED_ALARMS_KEY,false);
   update_id_enabled();
   refresh_timeout();
   snprintf(version_text, sizeof(version_text), "Alarms++ v%d.%d",__pbl_app_info.process_version.major,__pbl_app_info.process_version.minor);
@@ -168,10 +166,7 @@ static uint16_t menu_num_sections(struct MenuLayer* menu, void* callback_context
 static uint16_t menu_num_rows(struct MenuLayer* menu, uint16_t section_index, void* callback_context) {
   switch (section_index) {
     case MENU_SECTION_ALARMS:
-      if(s_hide_unused_alarms)
-        return s_num_enabled;
-      else
-        return MENU_ROW_COUNT_ALARMS;
+    return get_next_free_slot(s_alarms)>0?s_num_enabled+1:s_num_enabled;
     case MENU_SECTION_OTHER:
       return MENU_ROW_COUNT_OTHER;
     default:
@@ -185,8 +180,16 @@ static int16_t menu_cell_height(struct MenuLayer *menu, MenuIndex *cell_index, v
       return 38;
       break;
     case MENU_SECTION_ALARMS:
-      if(alarm_has_description(&s_alarms[s_hide_unused_alarms?s_id_enabled[cell_index->row]:cell_index->row]))
-        return 52;
+      if (get_next_free_slot(s_alarms)>0) {
+        if(cell_index->row==0)
+          return 32;
+        else
+          if(alarm_has_description(&s_alarms[s_id_enabled[cell_index->row]]))
+            return 52;
+      }
+      else
+        if(alarm_has_description(&s_alarms[s_id_enabled[cell_index->row]]))
+          return 52;
       break;
   }
   return 32;
@@ -221,7 +224,15 @@ static void menu_draw_header(GContext* ctx, const Layer* cell_layer, uint16_t se
 static void menu_draw_row(GContext* ctx, const Layer* cell_layer, MenuIndex* cell_index, void* callback_context) {
   switch (cell_index->section) {
     case MENU_SECTION_ALARMS:
-      menu_draw_row_alarms(ctx, cell_layer, cell_index->row);
+      if(get_next_free_slot(s_alarms)>0)
+      {
+        if(cell_index->row==0)
+          menu_draw_row_add(ctx,menu_cell_layer_is_highlighted(cell_layer));
+        else
+          menu_draw_row_alarms(ctx, cell_layer, cell_index->row-1);
+      }
+      else
+        menu_draw_row_alarms(ctx, cell_layer, cell_index->row);
       break;
     case MENU_SECTION_OTHER:
       menu_draw_row_other(ctx, cell_layer, cell_index->row);
@@ -229,8 +240,28 @@ static void menu_draw_row(GContext* ctx, const Layer* cell_layer, MenuIndex* cel
   }
 }
 
+static void menu_draw_row_add(GContext* ctx, bool selected) {
+  // draw a plus sign, consisting of two lines
+  int8_t size = 20;
+#ifdef PBL_COLOR
+  if(selected)
+    graphics_context_set_stroke_color(ctx,GColorWhite);
+  else
+    graphics_context_set_stroke_color(ctx,GColorBlue);
+  graphics_context_set_stroke_width(ctx,2);
+  graphics_draw_line(ctx, GPoint(144/2,(32-size)/2), GPoint(144/2,32-(32-size)/2));
+  graphics_draw_line(ctx, GPoint((144-size)/2,16), GPoint((144+size)/2,16));
+#else
+  graphics_context_set_stroke_color(ctx,GColorBlack);
+  graphics_draw_line(ctx, GPoint(144/2,(32-size)/2), GPoint(144/2,32-(32-size)/2));
+  graphics_draw_line(ctx, GPoint((144-size)/2,16), GPoint((144+size)/2,16));
+  graphics_draw_line(ctx, GPoint(144/2-1,(32-size)/2), GPoint(144/2-1,32-(32-size)/2));
+  graphics_draw_line(ctx, GPoint((144-size)/2,16-1), GPoint((144+size)/2,16-1));
+#endif
+}
+
 static void menu_draw_row_alarms(GContext* ctx, const Layer* cell_layer, uint16_t row_index) {
-  int8_t current_id = s_hide_unused_alarms?s_id_enabled[row_index]:row_index;
+  int8_t current_id = s_id_enabled[row_index];
 #ifdef PBL_COLOR
   alarm_draw_row(&s_alarms[current_id],ctx,
                  menu_cell_layer_is_highlighted(cell_layer),
@@ -273,10 +304,6 @@ static void menu_draw_row_other(GContext* ctx, const Layer* cell_layer, uint16_t
     text = _("Snooze Delay");
     subtext = s_snooze_text;
       break;
-    case MENU_ROW_OTHER_HIDE:
-    text = _("Disabled Alarms");
-    subtext = s_hide_unused_alarms?_("Hide"):_("Show");
-      break;
     case MENU_ROW_OTHER_ADVANCED:
     text = _("Advanced Options");
     subtext = _("Click");
@@ -298,7 +325,7 @@ static void menu_selection_changed(struct MenuLayer *menu_layer, MenuIndex new_i
 }
 
 static void menu_select(struct MenuLayer* menu, MenuIndex* cell_index, void* callback_context) {
-  int8_t current_id = s_hide_unused_alarms?s_id_enabled[cell_index->row]:cell_index->row;
+  int8_t current_id = s_id_enabled[cell_index->row];
   switch (cell_index->section) {
     case MENU_SECTION_ALARMS:
       if(s_id_reset==current_id)  // the state is already reset
@@ -310,15 +337,10 @@ static void menu_select(struct MenuLayer* menu, MenuIndex* cell_index, void* cal
         layer_mark_dirty(menu_layer_get_layer(s_menu));
       }
       else
-        menu_select_alarms(s_hide_unused_alarms?s_id_enabled[cell_index->row]:cell_index->row);
+        menu_select_alarms(current_id);
       break;
     case MENU_SECTION_OTHER:
       menu_select_other(cell_index->row);
-      if(cell_index->row==MENU_ROW_OTHER_HIDE)
-      {
-        menu_layer_reload_data(menu);
-        menu_layer_set_selected_index(menu,(MenuIndex){.row=0,.section=1},MenuRowAlignCenter,false);
-      }
       layer_mark_dirty(menu_layer_get_layer(menu));
       break;
   }
@@ -331,7 +353,7 @@ static void reset_timer_callback(void *data)
 }
 
 static void menu_select_long(struct MenuLayer* menu, MenuIndex* cell_index, void* callback_context) {
-  int8_t current_id = s_hide_unused_alarms?s_id_enabled[cell_index->row]:cell_index->row;
+  int8_t current_id = s_id_enabled[cell_index->row];
   switch (cell_index->section) {
     case MENU_SECTION_ALARMS:
       if(!s_can_be_reset)
@@ -370,7 +392,16 @@ static void menu_select_long(struct MenuLayer* menu, MenuIndex* cell_index, void
 
 static void menu_select_alarms(uint16_t row_index) {
   // Show the settings dialog
-  win_edit_show(&s_alarms[row_index]);
+  int8_t next_slot = get_next_free_slot(s_alarms);
+  if(next_slot>0)
+  {
+    if (row_index==0)
+      win_edit_show(&s_alarms[next_slot]);
+    else
+      win_edit_show(&s_alarms[row_index-1]);
+  }
+  else
+    win_edit_show(&s_alarms[row_index]);
 }
 
 static void menu_select_other(uint16_t row_index) {
@@ -380,10 +411,6 @@ static void menu_select_other(uint16_t row_index) {
       break;
     case MENU_ROW_OTHER_ABOUT:
       win_about_show();
-      break;
-    case MENU_ROW_OTHER_HIDE:
-      s_hide_unused_alarms=!s_hide_unused_alarms;
-      persist_write_bool(HIDE_UNUSED_ALARMS_KEY,s_hide_unused_alarms);
       break;
     case MENU_ROW_OTHER_ADVANCED:
       win_advanced_show();

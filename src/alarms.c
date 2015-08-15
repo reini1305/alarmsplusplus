@@ -249,6 +249,16 @@ bool alarm_is_set(Alarm *alarm)
   return retval;
 }
 
+int8_t get_next_free_slot(Alarm *alarms)
+{
+  for (int8_t i=0; i<NUM_ALARMS; i++) {
+    if (!alarm_is_set(&alarms[i])) {
+      return i;
+    }
+  }
+  return -1;
+}
+
 void alarm_reset(Alarm *alarm)
 {
   alarm->hour=0;
