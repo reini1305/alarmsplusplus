@@ -247,7 +247,7 @@ static void menu_draw_row_add(GContext* ctx, bool selected) {
   if(selected)
     graphics_context_set_stroke_color(ctx,GColorWhite);
   else
-    graphics_context_set_stroke_color(ctx,GColorBlue);
+    graphics_context_set_stroke_color(ctx,GColorBlack);
   graphics_context_set_stroke_width(ctx,2);
   graphics_draw_line(ctx, GPoint(144/2,(32-size)/2), GPoint(144/2,32-(32-size)/2));
   graphics_draw_line(ctx, GPoint((144-size)/2,16), GPoint((144+size)/2,16));
@@ -325,7 +325,13 @@ static void menu_selection_changed(struct MenuLayer *menu_layer, MenuIndex new_i
 }
 
 static void menu_select(struct MenuLayer* menu, MenuIndex* cell_index, void* callback_context) {
-  int8_t current_id = s_id_enabled[cell_index->row];
+  int8_t current_id=-2;
+  if(get_next_free_slot(s_alarms)>0){
+    if(cell_index->row>0)
+      current_id=s_id_enabled[cell_index->row-1];
+  }
+  else
+    current_id=s_id_enabled[cell_index->row];
   switch (cell_index->section) {
     case MENU_SECTION_ALARMS:
       if(s_id_reset==current_id)  // the state is already reset
@@ -337,7 +343,7 @@ static void menu_select(struct MenuLayer* menu, MenuIndex* cell_index, void* cal
         layer_mark_dirty(menu_layer_get_layer(s_menu));
       }
       else
-        menu_select_alarms(current_id);
+        menu_select_alarms(cell_index->row);
       break;
     case MENU_SECTION_OTHER:
       menu_select_other(cell_index->row);
@@ -353,7 +359,14 @@ static void reset_timer_callback(void *data)
 }
 
 static void menu_select_long(struct MenuLayer* menu, MenuIndex* cell_index, void* callback_context) {
-  int8_t current_id = s_id_enabled[cell_index->row];
+  int8_t current_id;
+  if(get_next_free_slot(s_alarms)>0)
+    if(cell_index->row==0)
+      return;
+    else
+      current_id=s_id_enabled[cell_index->row-1];
+  else
+    current_id=s_id_enabled[cell_index->row];
   switch (cell_index->section) {
     case MENU_SECTION_ALARMS:
       if(!s_can_be_reset)
