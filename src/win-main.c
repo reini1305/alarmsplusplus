@@ -184,7 +184,7 @@ static int16_t menu_cell_height(struct MenuLayer *menu, MenuIndex *cell_index, v
         if(cell_index->row==0)
           return 32;
         else
-          if(alarm_has_description(&s_alarms[s_id_enabled[cell_index->row]]))
+          if(alarm_has_description(&s_alarms[s_id_enabled[cell_index->row-1]]))
             return 52;
       }
       else
