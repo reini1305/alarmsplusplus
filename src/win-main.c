@@ -166,7 +166,7 @@ static uint16_t menu_num_sections(struct MenuLayer* menu, void* callback_context
 static uint16_t menu_num_rows(struct MenuLayer* menu, uint16_t section_index, void* callback_context) {
   switch (section_index) {
     case MENU_SECTION_ALARMS:
-    return get_next_free_slot(s_alarms)>0?s_num_enabled+1:s_num_enabled;
+    return get_next_free_slot(s_alarms)>=0?s_num_enabled+1:s_num_enabled;
     case MENU_SECTION_OTHER:
       return MENU_ROW_COUNT_OTHER;
     default:
@@ -180,7 +180,7 @@ static int16_t menu_cell_height(struct MenuLayer *menu, MenuIndex *cell_index, v
       return 38;
       break;
     case MENU_SECTION_ALARMS:
-      if (get_next_free_slot(s_alarms)>0) {
+      if (get_next_free_slot(s_alarms)>=0) {
         if(cell_index->row==0)
           return 32;
         else
@@ -224,7 +224,7 @@ static void menu_draw_header(GContext* ctx, const Layer* cell_layer, uint16_t se
 static void menu_draw_row(GContext* ctx, const Layer* cell_layer, MenuIndex* cell_index, void* callback_context) {
   switch (cell_index->section) {
     case MENU_SECTION_ALARMS:
-      if(get_next_free_slot(s_alarms)>0)
+      if(get_next_free_slot(s_alarms)>=0)
       {
         if(cell_index->row==0)
           menu_draw_row_add(ctx,menu_cell_layer_is_highlighted(cell_layer));
@@ -326,7 +326,7 @@ static void menu_selection_changed(struct MenuLayer *menu_layer, MenuIndex new_i
 
 static void menu_select(struct MenuLayer* menu, MenuIndex* cell_index, void* callback_context) {
   int8_t current_id=-2;
-  if(get_next_free_slot(s_alarms)>0){
+  if(get_next_free_slot(s_alarms)>=0){
     if(cell_index->row>0)
       current_id=s_id_enabled[cell_index->row-1];
   }
@@ -360,7 +360,7 @@ static void reset_timer_callback(void *data)
 
 static void menu_select_long(struct MenuLayer* menu, MenuIndex* cell_index, void* callback_context) {
   int8_t current_id;
-  if(get_next_free_slot(s_alarms)>0)
+  if(get_next_free_slot(s_alarms)>=0)
     if(cell_index->row==0)
       return;
     else
@@ -406,7 +406,7 @@ static void menu_select_long(struct MenuLayer* menu, MenuIndex* cell_index, void
 static void menu_select_alarms(uint16_t row_index) {
   // Show the settings dialog
   int8_t next_slot = get_next_free_slot(s_alarms);
-  if(next_slot>0)
+  if(next_slot>=0)
   {
     if (row_index==0)
       win_edit_show(&s_alarms[next_slot]);
