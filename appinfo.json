@@ -99,6 +99,11 @@
         "type": "raw",
         "name": "LOCALE_GERMAN",
         "file": "locale_german.bin"
+      },
+      {
+        "type": "raw",
+        "name": "CLOCK_SEQUENCE",
+        "file": "clock_sequence.pdc"
       }
     ]
   },

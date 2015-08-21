@@ -18,6 +18,12 @@ static TextLayer *s_description_layer;
 #ifdef PBL_SDK_2
   static InverterLayer *s_inverter_layer;
 #endif
+#ifdef PBL_SDK_3
+  #define DELTA 13
+  static GDrawCommandSequence *s_command_seq;
+  static int s_index = 0;
+  static Layer *s_canvas_layer;
+#endif
 static ActionBarLayer *action_bar;
 static BitmapLayer *s_bitmap_layer;
 static GBitmap *s_logo;
@@ -150,6 +156,32 @@ static void handle_tick(struct tm *t, TimeUnits units_changed) {
     layer_mark_dirty(text_layer_get_layer(s_description_layer));
 }
 
+#ifdef PBL_SDK_3
+static void next_frame_handler(void *context) {
+  // Draw the next frame
+  layer_mark_dirty(s_canvas_layer);
+
+  // Continue the sequence
+  app_timer_register(DELTA, next_frame_handler, NULL);
+}
+
+static void update_proc(Layer *layer, GContext *ctx) {
+  // Get the next frame
+  GDrawCommandFrame *frame = gdraw_command_sequence_get_frame_by_index(s_command_seq, s_index);
+
+  // If another frame was found, draw it    
+  if (frame) {
+    gdraw_command_frame_draw(ctx, s_command_seq, frame, GPoint(0, 23));
+  }
+
+  // Advance to the next frame, wrapping if neccessary
+  int num_frames = gdraw_command_sequence_get_num_frames(s_command_seq);
+  s_index++;
+  if (s_index == num_frames) {
+    s_index = 0;
+  }
+}
+#endif
 
 static void main_window_load(Window *window) {
   GRect bounds = layer_get_bounds(window_get_root_layer(window));
@@ -166,7 +198,7 @@ static void main_window_load(Window *window) {
   action_bar_layer_add_to_window(action_bar,window);
   
   // Create output TextLayer
-  s_output_layer = text_layer_create(GRect(0, bounds.size.h/2-21-(clock_is_24h_style()?0:21), bounds.size.w-ACTION_BAR_WIDTH, bounds.size.h));
+  s_output_layer = text_layer_create(GRect(0, bounds.size.h/2-(clock_is_24h_style()?0:21), bounds.size.w-ACTION_BAR_WIDTH, bounds.size.h));
   text_layer_set_text_alignment(s_output_layer, GTextAlignmentCenter);
 #ifdef PBL_SDK_2
   text_layer_set_font(s_output_layer,fonts_get_system_font(FONT_KEY_BITHAM_42_BOLD));
@@ -189,12 +221,25 @@ static void main_window_load(Window *window) {
   }
   else
   {
+#ifdef PBL_SDK_3
+    s_command_seq = gdraw_command_sequence_create_with_resource(RESOURCE_ID_CLOCK_SEQUENCE);
+    // Create the canvas Layer
+    s_canvas_layer = layer_create(GRect(30-ACTION_BAR_WIDTH/2, 0, bounds.size.w, bounds.size.h));
+
+    // Set the LayerUpdateProc
+    layer_set_update_proc(s_canvas_layer, update_proc);
+
+    // Add to parent Window
+    layer_add_child(window_get_root_layer(window), s_canvas_layer);
+    app_timer_register(DELTA, next_frame_handler, NULL);
+#else
     // Create Bitmap
     s_bitmap_layer = bitmap_layer_create(GRect(0,10,bounds.size.w-ACTION_BAR_WIDTH, bounds.size.h));
     s_logo = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_LOGO);
     bitmap_layer_set_bitmap(s_bitmap_layer,s_logo);
     bitmap_layer_set_alignment(s_bitmap_layer,GAlignTop);
     layer_add_child(window_get_root_layer(window),bitmap_layer_get_layer(s_bitmap_layer));
+#endif
   }
 #ifdef PBL_SDK_2
   s_inverter_layer = inverter_layer_create(GRect(0,0,bounds.size.w,bounds.size.h));
