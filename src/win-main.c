@@ -411,10 +411,10 @@ static void menu_select_alarms(uint16_t row_index) {
     if (row_index==0)
       win_edit_show(&s_alarms[next_slot]);
     else
-      win_edit_show(&s_alarms[row_index-1]);
+      win_edit_show(&s_alarms[s_id_enabled[row_index-1]]);
   }
   else
-    win_edit_show(&s_alarms[row_index]);
+    win_edit_show(&s_alarms[s_id_enabled[row_index]]);
 }
 
 static void menu_select_other(uint16_t row_index) {
