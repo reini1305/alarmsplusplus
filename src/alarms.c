@@ -274,7 +274,7 @@ void alarm_reset(Alarm *alarm)
 bool is_24h()
 {
 #ifdef PBL_PLATFORM_BASALT
-  return false; //remove
+  //return false; //remove
 #endif
   return clock_is_24h_style();
 }
