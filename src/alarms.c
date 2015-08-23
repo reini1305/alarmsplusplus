@@ -44,7 +44,7 @@ void alarm_draw_row(Alarm* alarm, GContext* ctx, bool selected, bool reset)
   char alarm_time[6];
   int hour_out = alarm->hour;
   bool is_am = false;
-  if (!clock_is_24h_style())
+  if (!is_24h())
   {
     convert_24_to_12(alarm->hour, &hour_out, &is_am);
     graphics_draw_text(ctx, is_am?"A\nM":"P\nM",
@@ -269,4 +269,12 @@ void alarm_reset(Alarm *alarm)
   for (int weekday=0; weekday<7;weekday++)
     alarm->weekdays_active[weekday]=true;
 
+}
+
+bool is_24h()
+{
+#ifdef PBL_PLATFORM_BASALT
+  return false; //remove
+#endif
+  return clock_is_24h_style();
 }

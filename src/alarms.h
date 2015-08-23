@@ -42,4 +42,5 @@ bool alarm_is_set(Alarm *alarm);
 void alarm_set_language(void);
 bool alarm_has_description(Alarm *alarm);
 int8_t get_next_free_slot(Alarm *alarms);
+bool is_24h();
 #endif

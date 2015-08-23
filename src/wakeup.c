@@ -138,7 +138,7 @@ void cancel_vibe_timer_callback(void* data) {
 }*/
 
 static void update_text(struct tm *t) {
-  if(clock_is_24h_style())
+  if(is_24h())
     snprintf(output_text, sizeof(output_text), "%02d:%02d",t->tm_hour,t->tm_min);
   else
   {
@@ -198,12 +198,15 @@ static void main_window_load(Window *window) {
   action_bar_layer_add_to_window(action_bar,window);
   
   // Create output TextLayer
-  s_output_layer = text_layer_create(GRect(0, bounds.size.h/2-(clock_is_24h_style()?0:21), bounds.size.w-ACTION_BAR_WIDTH, bounds.size.h));
-  text_layer_set_text_alignment(s_output_layer, GTextAlignmentCenter);
+  
 #ifdef PBL_SDK_2
+  s_output_layer = text_layer_create(GRect(0, bounds.size.h/2-(is_24h()?0:21), bounds.size.w-ACTION_BAR_WIDTH, bounds.size.h));
+  text_layer_set_text_alignment(s_output_layer, GTextAlignmentCenter);
   text_layer_set_font(s_output_layer,fonts_get_system_font(FONT_KEY_BITHAM_42_BOLD));
 #else
-  text_layer_set_font(s_output_layer,fonts_get_system_font(FONT_KEY_BITHAM_42_MEDIUM_NUMBERS));
+  s_output_layer = text_layer_create(GRect(0, bounds.size.h/2-(is_24h()?0:4), bounds.size.w-ACTION_BAR_WIDTH, bounds.size.h));
+  text_layer_set_text_alignment(s_output_layer, GTextAlignmentCenter);
+  text_layer_set_font(s_output_layer,fonts_get_system_font(FONT_KEY_BITHAM_42_LIGHT));
 #endif
   //snprintf(output_text, sizeof(output_text), "00:00");
   text_layer_set_text(s_output_layer, output_text);

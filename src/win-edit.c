@@ -95,7 +95,7 @@ void win_edit_show(Alarm *alarm){
   s_max[2]=1;s_min[2]=0;
   s_max[1]=59;s_min[1]=0;
   int hour;
-  if(clock_is_24h_style())
+  if(is_24h())
   {
     s_withampm=false;
     s_max[0]=23;s_min[0]=0;
@@ -114,7 +114,7 @@ void win_edit_show(Alarm *alarm){
     time_t now = time(NULL);
     struct tm *t = localtime(&now);
     convert_24_to_12(t->tm_hour, &hour, &s_is_am);
-    s_digits[0] = clock_is_24h_style()?t->tm_hour:hour;
+    s_digits[0] = is_24h()?t->tm_hour:hour;
     s_digits[1] = t->tm_min;
     s_digits[2] = s_is_am;
   } else
@@ -451,7 +451,7 @@ static void menu_select(struct MenuLayer* menu, MenuIndex* cell_index, void* cal
       {
         // update timer, destroy windows
         temp_alarm.enabled=true;
-        if(clock_is_24h_style())
+        if(is_24h())
         {
           memcpy(current_alarm,&temp_alarm,sizeof(Alarm));
           window_stack_pop(true);
