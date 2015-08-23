@@ -17,6 +17,8 @@ static TextLayer *s_output_layer;
 static TextLayer *s_description_layer;
 #ifdef PBL_SDK_2
   static InverterLayer *s_inverter_layer;
+  static GBitmap *s_logo;
+  static BitmapLayer *s_bitmap_layer;
 #endif
 #ifdef PBL_SDK_3
   #define DELTA 13
@@ -25,8 +27,8 @@ static TextLayer *s_description_layer;
   static Layer *s_canvas_layer;
 #endif
 static ActionBarLayer *action_bar;
-static BitmapLayer *s_bitmap_layer;
-static GBitmap *s_logo;
+
+
 static char output_text[10];
 static bool *s_snooze;
 static Alarm *s_alarm;

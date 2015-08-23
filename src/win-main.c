@@ -45,8 +45,9 @@ static MenuLayer* s_menu;
 #ifdef PBL_SDK_3
 static StatusBarLayer *s_status_layer;
 static Layer *s_battery_layer;
-#endif
+#else
 static GBitmap* s_statusbar_bitmap;
+#endif
 static Alarm* s_alarms;
 static int s_snooze_delay;
 static char s_snooze_text[12];
