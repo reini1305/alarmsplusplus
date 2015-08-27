@@ -45,8 +45,9 @@ static MenuLayer* s_menu;
 #ifdef PBL_SDK_3
 static StatusBarLayer *s_status_layer;
 static Layer *s_battery_layer;
-#endif
+#else
 static GBitmap* s_statusbar_bitmap;
+#endif
 static Alarm* s_alarms;
 static int s_snooze_delay;
 static char s_snooze_text[12];
@@ -63,6 +64,33 @@ static char version_text[15];
 static int16_t s_scroll_index;
 static int16_t s_scroll_row_index;
 static AppTimer *s_scroll_timer;
+
+#ifdef PBL_SDK_3
+// ActionMenu Stuff
+static ActionMenu *s_action_menu;
+static ActionMenuLevel *s_root_level;
+int8_t s_selected_alarm;
+
+static void action_reset_performed_callback(ActionMenu *action_menu, const ActionMenuItem *action, void *context) {
+  alarm_reset(&s_alarms[s_selected_alarm]);
+}
+
+static void action_toggle_performed_callback(ActionMenu *action_menu, const ActionMenuItem *action, void *context) {
+  alarm_toggle_enable(&s_alarms[s_selected_alarm]);
+}
+
+static void init_action_menu() {
+  // Create the root level and secondary custom patterns level
+  s_root_level = action_menu_level_create(2);
+  
+  // Set up the actions for this level, using action context to pass types
+  action_menu_level_add_action(s_root_level, "Enable/Disable", action_toggle_performed_callback,
+                               NULL);
+  action_menu_level_add_action(s_root_level, "Delete", action_reset_performed_callback,
+                               NULL);
+  
+}
+#endif
 
 void win_main_init(Alarm* alarms) {
   s_alarms = alarms;
@@ -83,6 +111,9 @@ void win_main_init(Alarm* alarms) {
   snprintf(version_text, sizeof(version_text), "Alarms++ v%d.%d",__pbl_app_info.process_version.major,__pbl_app_info.process_version.minor);
   s_scroll_timer = app_timer_register(500,scroll_timer_callback,NULL);
   s_reset_timer = app_timer_register(2000,reset_timer_callback,NULL);
+#ifdef PBL_SDK_3
+  init_action_menu();
+#endif
 }
 
 void win_main_show(void) {
@@ -325,6 +356,7 @@ static void menu_selection_changed(struct MenuLayer *menu_layer, MenuIndex new_i
 }
 
 static void menu_select(struct MenuLayer* menu, MenuIndex* cell_index, void* callback_context) {
+#ifdef PBL_SDK_2
   int8_t current_id=-2;
   if(get_next_free_slot(s_alarms)>=0){
     if(cell_index->row>0)
@@ -332,8 +364,10 @@ static void menu_select(struct MenuLayer* menu, MenuIndex* cell_index, void* cal
   }
   else
     current_id=s_id_enabled[cell_index->row];
+#endif
   switch (cell_index->section) {
     case MENU_SECTION_ALARMS:
+#ifdef PBL_SDK_2
       if(s_id_reset==current_id)  // the state is already reset
       {
         alarm_reset(&s_alarms[current_id]);
@@ -343,6 +377,7 @@ static void menu_select(struct MenuLayer* menu, MenuIndex* cell_index, void* cal
         layer_mark_dirty(menu_layer_get_layer(s_menu));
       }
       else
+#endif
         menu_select_alarms(cell_index->row);
       break;
     case MENU_SECTION_OTHER:
@@ -358,17 +393,19 @@ static void reset_timer_callback(void *data)
   s_can_be_reset=false;
 }
 
+#ifdef PBL_SDK_2
 static void menu_select_long(struct MenuLayer* menu, MenuIndex* cell_index, void* callback_context) {
   int8_t current_id;
-  if(get_next_free_slot(s_alarms)>=0)
-    if(cell_index->row==0)
-      return;
-    else
-      current_id=s_id_enabled[cell_index->row-1];
-  else
-    current_id=s_id_enabled[cell_index->row];
   switch (cell_index->section) {
     case MENU_SECTION_ALARMS:
+
+      if(get_next_free_slot(s_alarms)>=0)
+        if(cell_index->row==0)
+          return;
+        else
+          current_id=s_id_enabled[cell_index->row-1];
+      else
+        current_id=s_id_enabled[cell_index->row];
       if(!s_can_be_reset)
         alarm_toggle_enable(&s_alarms[current_id]);
       else
@@ -402,6 +439,37 @@ static void menu_select_long(struct MenuLayer* menu, MenuIndex* cell_index, void
       break;
   }
 }
+#else
+static void menu_select_long(struct MenuLayer* menu, MenuIndex* cell_index, void* callback_context) {
+  // Configure the ActionMenu Window about to be shown
+  ActionMenuConfig config = (ActionMenuConfig) {
+    .root_level = s_root_level,
+    .colors = {
+      .background = GColorBlue,
+      .foreground = GColorWhite,
+    },
+    .align = ActionMenuAlignCenter
+  };
+
+  switch (cell_index->section) {
+    case MENU_SECTION_ALARMS:
+      if(get_next_free_slot(s_alarms)>=0)
+        if(cell_index->row==0)
+          return;
+        else
+          s_selected_alarm=s_id_enabled[cell_index->row-1];
+      else
+        s_selected_alarm=s_id_enabled[cell_index->row];
+      // Show the settings dialog
+      
+           // Show the ActionMenu
+      s_action_menu = action_menu_open(&config);
+      break;
+    case MENU_SECTION_OTHER:
+      break;
+  }
+}
+#endif
 
 static void menu_select_alarms(uint16_t row_index) {
   // Show the settings dialog
