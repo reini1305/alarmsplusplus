@@ -7,7 +7,7 @@
 //
 
 #include "storage.h"
-//#include "debug.h"
+#include "debug.h"
 
 void load_persistent_storage_alarms(Alarm *alarms)
 {

@@ -7,7 +7,7 @@
 //
 #include "alarms.h"
 #include "localize.h"
-//#include "debug.h"
+#include "debug.h"
 
 static char english[7] = {"SMTWTFS"};
 static char german[7] = {"SMDMDFS"};
