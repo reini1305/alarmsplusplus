@@ -7,7 +7,7 @@
 //
 #include "alarms.h"
 #include "localize.h"
-#include "debug.h"
+//#include "debug.h"
 
 static char english[7] = {"SMTWTFS"};
 static char german[7] = {"SMDMDFS"};
@@ -98,18 +98,16 @@ void alarm_toggle_enable(Alarm *alarm)
   if(alarm->enabled==false)
   {
     alarm->enabled=true;
-    alarm_schedule_wakeup(alarm);
   }
   else
   {
     alarm->enabled=false;
-    alarm_cancel_wakeup(alarm);
   }
 }
 
-void alarm_schedule_wakeup(Alarm *alarm)
+time_t alarm_get_time_of_wakeup(Alarm *alarm)
 {
-  alarm_cancel_wakeup(alarm);
+  //alarm_cancel_wakeup(alarm);
   if(alarm->enabled)
   {
     // Calculate time to wake up
@@ -137,68 +135,53 @@ void alarm_schedule_wakeup(Alarm *alarm)
         }
       }
     }
-    if(some_active)
-    {
-      t = localtime(&timestamp);
-      APP_LOG(APP_LOG_LEVEL_DEBUG,"Scheduled at %d.%d %d:%d",t->tm_mday, t->tm_mon+1,t->tm_hour,t->tm_min);
-      alarm->alarm_id = wakeup_schedule(timestamp,0,true);
-    }
-    else //maybe we have missed a today event. this takes then place next week
+    if(!some_active) //maybe we have missed a today event. this takes then place next week
     {
       if(alarm->weekdays_active[current_weekday])
       {
         some_active=true;
         timestamp = clock_to_timestamp_precise(TODAY,alarm->hour,alarm->minute);
-        t = localtime(&timestamp);
-        APP_LOG(APP_LOG_LEVEL_DEBUG,"Scheduled at %d.%d %d:%d",t->tm_mday, t->tm_mon+1,t->tm_hour,t->tm_min);
-        alarm->alarm_id = wakeup_schedule(timestamp,0,true);
       }
       else // one-time alert (no weekdays active)
       {
         timestamp = clock_to_timestamp_precise(TODAY,alarm->hour,alarm->minute);
         if((timestamp-now)>(60*60*24))
           timestamp = clock_to_timestamp_precise(current_weekday+1,alarm->hour,alarm->minute);
-        
-        t = localtime(&timestamp);
-        APP_LOG(APP_LOG_LEVEL_DEBUG,"Scheduled one-time event at %d.%d %d:%d",t->tm_mday, t->tm_mon+1,t->tm_hour,t->tm_min);
-        alarm->alarm_id = wakeup_schedule(timestamp,0,true);
       }
     }
-    if(some_active && alarm->alarm_id<0) // some error occured
-    {
-      switch (alarm->alarm_id) {
-        case E_RANGE:
-          alarm->alarm_id = wakeup_schedule(timestamp-120,0,true); //schedule alarm 2 minutes before the deadline, better than nothing...
-          APP_LOG(APP_LOG_LEVEL_DEBUG,"Had to reschedule timer...");
-          break;
-        case E_OUT_OF_RESOURCES:
-          // do some magic here...
-          break;
-        case E_INVALID_ARGUMENT:
-          // should not happen
-          break;
-        default:
-          break;
-      }
-    }
+    return timestamp;
   }
+  return -1;
 }
 
-void alarm_cancel_wakeup(Alarm *alarm)
-{
-  if (alarm->alarm_id <= 0) {
-    return;
-  }
-  wakeup_cancel(alarm->alarm_id);
-  alarm->alarm_id = -1;
-}
 
 void reschedule_wakeup(Alarm *alarms)
 {
   wakeup_cancel_all();
+  
+  // search for next alarm
+  time_t timestamp = time(NULL)+(60*60*24*7); // now + 1 week
+  APP_LOG(APP_LOG_LEVEL_DEBUG,"Now has timestamp %d",(int)timestamp);
+  int alarm_id=-1;
   for (int i=0;i<NUM_ALARMS;i++)
   {
-    alarm_schedule_wakeup(&alarms[i]);
+    time_t alarm_time = alarm_get_time_of_wakeup(&alarms[i]);
+    if(alarm_time<0)
+      continue;
+    if(alarm_time<timestamp)
+    {
+      timestamp = alarm_time;
+      alarm_id = i;
+    }
+    APP_LOG(APP_LOG_LEVEL_DEBUG,"Alarm %d has timestamp %d",i,(int)alarm_time);
+  }
+  // schedule the winner
+  if(alarm_id>=0)
+  {
+    alarms[alarm_id].alarm_id = wakeup_schedule(timestamp,0,true);
+    APP_LOG(APP_LOG_LEVEL_DEBUG,"Scheduling Alarm %d",alarm_id);
+    struct tm *t = localtime(&timestamp);
+    APP_LOG(APP_LOG_LEVEL_DEBUG,"Scheduled at %d.%d %d:%d",t->tm_mday, t->tm_mon+1,t->tm_hour,t->tm_min);
   }
 }
 
