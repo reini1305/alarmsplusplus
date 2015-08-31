@@ -102,6 +102,7 @@ void alarm_toggle_enable(Alarm *alarm)
   else
   {
     alarm->enabled=false;
+    alarm->alarm_id=-1;
   }
 }
 
