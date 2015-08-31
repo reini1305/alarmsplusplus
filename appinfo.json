@@ -3,8 +3,8 @@
   "shortName": "Alarms++",
   "longName": "Alarms++",
   "companyName": "Christian Reinbacher",
-  "versionCode": 65,
-  "versionLabel": "5.5",
+  "versionCode": 66,
+  "versionLabel": "5.6",
   "watchapp": {
     "watchface": false
   },
