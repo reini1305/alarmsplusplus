@@ -12,7 +12,7 @@ The app can be found in the store: https://apps.getpebble.com/applications/54551
 <img src="https://assets.getpebble.com/api/file/mLDugb9JQjucO6KZHeNa/convert?cache=true&w=144&h=168&fit="></img>
 
 #Features
-- 24 alarms (32 on Pebble Time)
+- 16 alarms (32 on Pebble Time)
 - each alarm can be customized to different weekdays
 - flexible snooze interval
 - optional long-press-to-dismiss-alarm
