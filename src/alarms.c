@@ -9,88 +9,9 @@
 #include "localize.h"
 #include "debug.h"
 
-static char english[7] = {"SMTWTFS"};
-static char german[7] = {"SMDMDFS"};
-static char french[7] = {"dlmmjvs"};
-static char spanish[7] = {"dlmmjvs"};
-//static char russian[14] = {"ВПВСЧПС"}; // 2-byte characters?
-static char *weekday_names=english;
-
 time_t clock_to_timestamp_precise(WeekDay day, int hour, int minute)
 {
   return (clock_to_timestamp(day, hour, minute)/60)*60;
-}
-
-void alarm_draw_row(Alarm* alarm, GContext* ctx, bool selected, bool reset)
-{
-#ifdef PBL_COLOR
-  /*if(alarm->enabled){
-    graphics_context_set_text_color(ctx, GColorIslamicGreen);
-  }
-  else{
-    graphics_context_set_text_color(ctx, GColorRed);
-  }
-  if(selected)
-  {
-    graphics_context_set_fill_color(ctx,GColorBlue);
-    graphics_fill_rect(ctx,GRect(0,0,144,alarm_has_description(alarm)?52:32),0,GCornerNone);
-  }*/
-  
-#else
-  graphics_context_set_text_color(ctx, GColorBlack);
-#endif
-  GFont font = fonts_get_system_font(alarm->enabled?FONT_KEY_GOTHIC_28_BOLD:FONT_KEY_GOTHIC_28);
-  
-  char alarm_time[6];
-  int hour_out = alarm->hour;
-  bool is_am = false;
-  if (!clock_is_24h_style())
-  {
-    convert_24_to_12(alarm->hour, &hour_out, &is_am);
-    graphics_draw_text(ctx, is_am?"A\nM":"P\nM",
-                       fonts_get_system_font(alarm->enabled?FONT_KEY_GOTHIC_14_BOLD:FONT_KEY_GOTHIC_14),
-                       GRect(57-(alarm->enabled?3:0), -1, 144 - 33, 30), GTextOverflowModeWordWrap,
-                       GTextAlignmentLeft, NULL);
-  }
-  
-  snprintf(alarm_time,sizeof(alarm_time),"%02d:%02d",hour_out,alarm->minute);
-  graphics_draw_text(ctx, alarm_time,font,
-                     GRect(3, -3, 144 - 33, 28), GTextOverflowModeFill,
-                     GTextAlignmentLeft, NULL);
-  
-  // draw activity state
-  char state[]={"RST"};
-  if(!reset)
-    snprintf(state, sizeof(state), "%s",alarm->enabled? _("ON"):_("OFF"));
-  graphics_draw_text(ctx, state,font,
-                     GRect(3, alarm_has_description(alarm)?7:-3, 144 - 5, 28), GTextOverflowModeFill,
-                     GTextAlignmentRight, NULL);
-
-   // draw active weekdays
-  char weekday_state[10];
-  snprintf(weekday_state,sizeof(weekday_state),"%c%c%c%c%c\n%c%c",
-           alarm->weekdays_active[1]?weekday_names[1]:'_',
-           alarm->weekdays_active[2]?weekday_names[2]:'_',
-           alarm->weekdays_active[3]?weekday_names[3]:'_',
-           alarm->weekdays_active[4]?weekday_names[4]:'_',
-           alarm->weekdays_active[5]?weekday_names[5]:'_',
-           alarm->weekdays_active[6]?weekday_names[6]:'_',
-           alarm->weekdays_active[0]?weekday_names[0]:'_');
-  
-  graphics_draw_text(ctx, weekday_state,
-                     fonts_get_system_font(FONT_KEY_GOTHIC_14),
-                     GRect(70, -1, 144 - 33, 30), GTextOverflowModeWordWrap,
-                     GTextAlignmentLeft, NULL);
-  
-  // draw description
-  if(alarm_has_description(alarm))
-  {
-    graphics_draw_text(ctx, alarm->description,
-                       fonts_get_system_font(FONT_KEY_GOTHIC_24_BOLD),
-                       GRect(10, 22, 144 - 3, 30), GTextOverflowModeWordWrap,
-                       GTextAlignmentLeft, NULL);
-  }
-  
 }
 
 void alarm_toggle_enable(Alarm *alarm)
@@ -204,18 +125,6 @@ void convert_24_to_12(int hour_in, int* hour_out, bool* am)
     *hour_out=12;
   }
   *am=hour_in<12;
-}
-
-void alarm_set_language(void)
-{
-  char *sys_locale = setlocale(LC_ALL, "");
-  if (strcmp("de_DE", sys_locale) == 0) {
-    weekday_names = german;
-  } else if (strcmp("fr_FR", sys_locale) == 0) {
-    weekday_names = french;
-  } else if (strcmp("es_ES", sys_locale) == 0) {
-    weekday_names = spanish;
-  }
 }
 
 bool alarm_has_description(Alarm *alarm)
