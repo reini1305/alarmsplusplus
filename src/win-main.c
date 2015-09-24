@@ -27,7 +27,7 @@
 #define DESCRIPTION_HEIGHT 64
 #define ALARM_OFFSET_LEFT 18
 #define ALARM_OFFSET_RIGHT 36
-#define ALARM_OFFSET_TOP 4
+#define ALARM_OFFSET_TOP 8
 #define OTHER_HEIGHT 42
 #endif
 
@@ -272,11 +272,17 @@ static void menu_draw_header(GContext* ctx, const Layer* cell_layer, uint16_t se
     
     GRect layer_size = layer_get_bounds(cell_layer);
     graphics_fill_rect(ctx,GRect(0,1,layer_size.size.w,14),0,GCornerNone);
-    
+#ifdef PBL_RECT
     graphics_draw_text(ctx, _("Options"),
                        fonts_get_system_font(FONT_KEY_GOTHIC_14_BOLD),
-                       GRect(3, -2, layer_size.size.w - 33, 14), GTextOverflowModeWordWrap,
+                       GRect(3, -2, layer_size.size.w - 3, 14), GTextOverflowModeWordWrap,
                        GTextAlignmentLeft, NULL);
+#else
+    graphics_draw_text(ctx, _("Options"),
+                       fonts_get_system_font(FONT_KEY_GOTHIC_14_BOLD),
+                       GRect(3, -2, layer_size.size.w - 3, 14), GTextOverflowModeWordWrap,
+                       GTextAlignmentCenter, NULL);
+#endif
   }
 }
 
