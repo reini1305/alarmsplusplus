@@ -138,7 +138,7 @@ static void window_load(Window* window) {
   Layer *window_layer = window_get_root_layer(s_window);
   GRect bounds = layer_get_frame(window_layer);
   
-#ifdef PBL_SDK_3
+#if defined(PBL_SDK_3) && defined(PBL_RECT)
   s_status_layer = status_bar_layer_create();
   // Change the status bar width to make space for the action bar
   //  GRect frame = GRect(0, 0, width, STATUS_BAR_LAYER_HEIGHT);
@@ -237,17 +237,18 @@ static void menu_draw_header(GContext* ctx, const Layer* cell_layer, uint16_t se
   if(section_index==MENU_SECTION_OTHER)
   {
     graphics_context_set_text_color(ctx, GColorWhite);
-    #ifdef PBL_COLOR
+    #if defined(PBL_COLOR) || defined(PBL_ROUND)
         graphics_context_set_fill_color(ctx, GColorBlue);
     #else
         graphics_context_set_fill_color(ctx, GColorBlack);
     #endif
     
-    graphics_fill_rect(ctx,GRect(0,1,144,14),0,GCornerNone);
+    GRect layer_size = layer_get_bounds(cell_layer);
+    graphics_fill_rect(ctx,GRect(0,1,layer_size.size.w,14),0,GCornerNone);
     
     graphics_draw_text(ctx, _("Options"),
                        fonts_get_system_font(FONT_KEY_GOTHIC_14_BOLD),
-                       GRect(3, -2, 144 - 33, 14), GTextOverflowModeWordWrap,
+                       GRect(3, -2, layer_size.size.w - 33, 14), GTextOverflowModeWordWrap,
                        GTextAlignmentLeft, NULL);
   }
 }
