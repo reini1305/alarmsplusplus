@@ -82,6 +82,9 @@ static void window_load(Window* window) {
   menu_layer_pad_bottom_enable(s_menu,false);
   menu_layer_set_highlight_colors(s_menu,GColorBlue,GColorWhite);
 #endif
+#ifdef PBL_ROUND
+  menu_layer_set_center_focused(s_menu,true);
+#endif
   // Add it to the window for display
   layer_add_child(window_layer, menu_layer_get_layer(s_menu));
   
@@ -104,14 +107,26 @@ static uint16_t menu_num_rows(struct MenuLayer* menu, uint16_t section_index, vo
 }
 
 static int16_t menu_cell_height(struct MenuLayer *menu, MenuIndex *cell_index, void *callback_context) {
+#ifdef PBL_ROUND
+  if(menu_layer_is_index_selected(menu,cell_index))
+    return MENU_CELL_ROUND_FOCUSED_TALL_CELL_HEIGHT;
+  else
+    return MENU_CELL_ROUND_UNFOCUSED_SHORT_CELL_HEIGHT;
+#else
   return 38;
+#endif
 }
 
 static int16_t menu_header_height(struct MenuLayer *menu, uint16_t section_index, void *callback_context) {
+#ifdef PBL_ROUND
+  return 0;
+#else
   return 16;
+#endif
 }
 
 static void menu_draw_header(GContext* ctx, const Layer* cell_layer, uint16_t section_index, void* callback_context) {
+#ifndef PBL_ROUND
     graphics_context_set_text_color(ctx, GColorWhite);
     #ifdef PBL_COLOR
       graphics_context_set_fill_color(ctx, GColorBlue);
@@ -124,6 +139,7 @@ static void menu_draw_header(GContext* ctx, const Layer* cell_layer, uint16_t se
                        fonts_get_system_font(FONT_KEY_GOTHIC_14_BOLD),
                        GRect(3, -2, 144 - 33, 14), GTextOverflowModeWordWrap,
                        GTextAlignmentLeft, NULL);
+#endif
 }
 
 

@@ -282,6 +282,7 @@ static void drawSides()
   
 }
 
+#ifdef PBL_RECT
 static void initSidesAndText()
 {
   Layer *window_layer = window_get_root_layer(window);
@@ -308,6 +309,34 @@ static void initSidesAndText()
       layer_add_child(window_layer, text_layer_get_layer(bbuttons[i][j]));
   
 }
+#else
+static void initSidesAndText()
+{
+  Layer *window_layer = window_get_root_layer(window);
+  
+  wordsYouWrite = text_layer_create((GRect) { .origin = { 18, 30 }, .size = { 109, 150 } });
+  
+  text_layer_set_background_color(wordsYouWrite, GColorClear);
+  text_layer_set_font(wordsYouWrite, fonts_get_system_font(FONT_KEY_GOTHIC_28_BOLD));
+  layer_add_child(window_layer, text_layer_get_layer(wordsYouWrite));
+  
+  for (int i = 0; i<3; i++)
+  {
+    buttons1[i] = text_layer_create((GRect) { .origin = { 119, 12*i+14 }, .size = { 100, 100 } });
+    buttons2[i] = text_layer_create((GRect) { .origin = { 145, 12*i+64 }, .size = { 100, 100 } });
+    buttons3[i] = text_layer_create((GRect) { .origin = { 119, 12*i+114 }, .size = { 100, 100 } });
+  }
+  
+  bbuttons[0] = buttons1;
+  bbuttons[1] = buttons2;
+  bbuttons[2] = buttons3;
+  
+  for (int i=0; i<3; i++)
+    for (int j=0; j<3; j++)
+      layer_add_child(window_layer, text_layer_get_layer(bbuttons[i][j]));
+  
+}
+#endif
 
 static void drawNotepadText()
 {
@@ -329,9 +358,12 @@ static void window_load(Window* window)
 {
   Layer *window_layer = window_get_root_layer(window);
   GRect bounds = layer_get_bounds(window_layer);
-  
+#ifdef PBL_RECT
   text_layer = text_layer_create((GRect) { .origin = { 5, 72 }, .size = { 110, bounds.size.h-72 } });
-  
+#else
+  text_layer = text_layer_create((GRect) { .origin = { 2, 72 }, .size = { 110, bounds.size.h-72 } });
+  text_layer_set_text_alignment(text_layer,GTextAlignmentRight);
+#endif  
   //  text_layer_set_text(&textLayer, text_buffer);
   //    text_layer_set_background_color(&textLayer, GColorClear);
   

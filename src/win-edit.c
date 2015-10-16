@@ -142,6 +142,7 @@ static void update_ui(Layer *layer, GContext *ctx) {
   
   for(int i = 0; i < 3; i++) {
 #ifdef PBL_COLOR
+    text_layer_set_background_color(s_input_layers[i], (i == s_selection) ? GColorBlue : GColorDarkGray);
     if(i==s_selection)
     {
       GPoint selection_center = {
