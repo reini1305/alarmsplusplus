@@ -76,6 +76,9 @@ static void dictation_session_callback(DictationSession *session, DictationSessi
   if (status == DictationSessionStatusSuccess) {
     strncpy(temp_alarm.description, transcription, sizeof(temp_alarm.description));
   }
+  else { // fallback to old solution
+    tertiary_text_show(temp_alarm.description);
+  }
 }
 #endif
 
@@ -92,9 +95,9 @@ void win_edit_init(void)
     .load = time_window_load,
     .unload = time_window_unload,
   });
-#ifdef PBL_PLATFORM_APLITE
+
   tertiary_text_init();
-#else
+#ifndef PBL_PLATFORM_APLITE
   s_dictation_session = dictation_session_create(sizeof(temp_alarm.description),
                                                  dictation_session_callback, NULL);
 #endif
