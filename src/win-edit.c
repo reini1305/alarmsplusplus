@@ -68,12 +68,16 @@ static void menu_select(struct MenuLayer* menu, MenuIndex* cell_index, void* cal
 static Alarm temp_alarm;
 static Alarm *current_alarm;
 
-//static char *english[7] = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"};
-//static char *german[7] = {"Sonntag", "Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag"};
-//static char *french[7] = {"dimanche", "lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi"};
-//static char *spanish[7] = {"domingo", "lunes", "martes", "miércoles", "jueves", "viernes", "sábado"};
-//static char *russian[7] = {"Воскресенье","Понедельник","Вторник","Среда","Четверг","Пятница","Суббота"};
-//static char **weekday_names=english;
+#ifndef PBL_PLATFORM_APLITE
+static DictationSession *s_dictation_session;
+static void dictation_session_callback(DictationSession *session, DictationSessionStatus status,
+                                       char *transcription, void *context) {
+
+  if (status == DictationSessionStatusSuccess) {
+    strncpy(temp_alarm.description, transcription, sizeof(temp_alarm.description));
+  }
+}
+#endif
 
 void win_edit_init(void)
 {
@@ -88,8 +92,12 @@ void win_edit_init(void)
     .load = time_window_load,
     .unload = time_window_unload,
   });
-  
+#ifdef PBL_PLATFORM_APLITE
   tertiary_text_init();
+#else
+  s_dictation_session = dictation_session_create(sizeof(temp_alarm.description),
+                                                 dictation_session_callback, NULL);
+#endif
 #ifdef PBL_COLOR
   check_icon = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_ACTION_ICON_CHECK_INV);
   check_icon_inv = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_ACTION_ICON_CHECK);
@@ -512,7 +520,13 @@ static void menu_select(struct MenuLayer* menu, MenuIndex* cell_index, void* cal
         }
       }
       else
+      {
+#ifdef PBL_PLATFORM_APLITE
         tertiary_text_show(temp_alarm.description);
+#else
+        dictation_session_start(s_dictation_session);
+#endif
+      }
       break;
     case MENU_SECTION_WEEKDAYS:
       if(cell_index->row==0)
