@@ -21,6 +21,7 @@
 #define AUTO_SNOOZE_KEY 10
 #define BACKGROUND_TRACKING_KEY 11
 #define ALARMS_KEY 12
+#define TOP_BUTTON_DISMISS_KEY 20
 
 void load_persistent_storage_alarms(Alarm *alarms);
 bool load_persistent_storage_bool(int key, bool default_val);

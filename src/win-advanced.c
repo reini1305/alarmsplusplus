@@ -3,13 +3,14 @@
 #include "storage.h"
 #include "localize.h"
 
-#define MENU_ROW_COUNT 4
+#define MENU_ROW_COUNT 5
 
 #define MENU_ROW_LONGPRESS     0
 #define MENU_ROW_VIBRATION     2
 //#define MENU_ROW_FLIP        1
 #define MENU_ROW_DURATION      3
 #define MENU_ROW_AUTO_SNOOZE   1
+#define MENU_ROW_DISMISS       4
 //#define MENU_ROW_TRACKING      4
 
 static void window_load(Window* window);
@@ -32,7 +33,8 @@ static int s_vibration_pattern;
 //static bool s_flip_to_snooze;
 static int s_vibration_duration;
 static bool s_auto_snooze;
-static bool s_background_tracking;
+//static bool s_background_tracking;
+static bool s_dismiss_top;
 
 static int16_t s_scroll_index;
 static int16_t s_scroll_row_index;
@@ -50,7 +52,8 @@ void win_advanced_init(void) {
   //s_flip_to_snooze = load_persistent_storage_bool(FLIP_TO_SNOOZE_KEY, false);
   s_vibration_duration = load_persistent_storage_int(VIBRATION_DURATION_KEY,2);
   s_auto_snooze = load_persistent_storage_bool(AUTO_SNOOZE_KEY,true);
-  s_background_tracking = load_persistent_storage_bool(BACKGROUND_TRACKING_KEY,false);
+  s_dismiss_top = load_persistent_storage_bool(TOP_BUTTON_DISMISS_KEY,true);
+  //s_background_tracking = load_persistent_storage_bool(BACKGROUND_TRACKING_KEY,false);
   refresh_timeout();
   s_scroll_timer = app_timer_register(500,scroll_timer_callback,NULL);
 }
@@ -162,6 +165,10 @@ static void menu_draw_row(GContext* ctx, const Layer* cell_layer, MenuIndex* cel
       text = _("Dismiss Alarm");
       subtext = s_longpress_dismiss?_("Long press"):_("Short press");
       break;
+    case MENU_ROW_DISMISS:
+      text = _("Button to Dismiss Alarm");
+      subtext = s_dismiss_top?_("Top"):_("Bottom");
+      break;
     /*case MENU_ROW_FLIP:
     text =  _("Shake to Snooze");
     subtext = s_flip_to_snooze?_("Enabled"):_("Disabled");
@@ -245,6 +252,10 @@ static void menu_select(struct MenuLayer* menu, MenuIndex* cell_index, void* cal
     case MENU_ROW_LONGPRESS:
       s_longpress_dismiss=!s_longpress_dismiss;
       persist_write_bool(LONGPRESS_DISMISS_KEY,s_longpress_dismiss);
+      break;
+    case MENU_ROW_DISMISS:
+      s_dismiss_top=!s_dismiss_top;
+      persist_write_bool(TOP_BUTTON_DISMISS_KEY,s_dismiss_top);
       break;
     /*case MENU_ROW_FLIP:
       s_flip_to_snooze=!s_flip_to_snooze;
