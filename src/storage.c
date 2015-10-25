@@ -28,23 +28,16 @@ void load_persistent_storage_alarms(Alarm *alarms)
   }
   else
   {
-    if(persist_exists(ALARMS_KEY))
-    {
-      for(int i=0;i<NUM_ALARMS/8;i++) // we can only store 8 alarms in one memory slot
+    for(int i=0;i<NUM_ALARMS/8;i++) { // we can only store 8 alarms in one memory slot
+      if (persist_exists(ALARMS_KEY+i)) {
         persist_read_data(ALARMS_KEY+i,&alarms[8*i],8*sizeof(Alarm));
-    }
-    else
-    {
-      for (int i=0; i<NUM_ALARMS; i++) {
-        alarms[i].hour=0;
-        alarms[i].minute=0;
-        alarms[i].enabled=false;
-        alarms[i].alarm_id=-1;
-        for (int weekday=0; weekday<7;weekday++)
-          alarms[i].weekdays_active[weekday]=true;
+      }
+      else {
+        for (int j=0; j<8; j++) {
+          alarm_reset(&alarms[8*i+j]);
+        }
       }
     }
-    APP_LOG(APP_LOG_LEVEL_DEBUG,"Size of alarm = %d", sizeof(Alarm));
   }
 }
 

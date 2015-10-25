@@ -1,7 +1,7 @@
 #include <pebble.h>
 #include "alarms.h"
 #include "win-edit.h"
-#include "win-snooze.h"
+//#include "win-snooze.h"
 #include "win-about.h"
 #include "win-advanced.h"
 #include "storage.h"
@@ -123,7 +123,7 @@ void win_main_init(Alarm* alarms) {
     .appear = window_appear
   });
   win_edit_init();
-  win_snooze_init();
+  //win_snooze_init();
   win_about_init();
   win_advanced_init();
   s_snooze_delay = load_persistent_storage_int(SNOOZE_KEY,10);
@@ -532,6 +532,14 @@ static void menu_select_long(struct MenuLayer* menu, MenuIndex* cell_index, void
       s_can_be_reset=true;
       break;
     case MENU_SECTION_OTHER:
+      if(cell_index->row == MENU_ROW_OTHER_SNOOZE)
+      {
+        s_snooze_delay--;
+        if(s_snooze_delay<0)
+          s_snooze_delay=30;
+        persist_write_int(SNOOZE_KEY,s_snooze_delay);
+        layer_mark_dirty(menu_layer_get_layer(menu));
+      }
       break;
   }
 }
@@ -562,6 +570,14 @@ static void menu_select_long(struct MenuLayer* menu, MenuIndex* cell_index, void
       s_action_menu = action_menu_open(&config);
       break;
     case MENU_SECTION_OTHER:
+      if(cell_index->row == MENU_ROW_OTHER_SNOOZE)
+      {
+        s_snooze_delay--;
+        if(s_snooze_delay<0)
+          s_snooze_delay=30;
+        persist_write_int(SNOOZE_KEY,s_snooze_delay);
+        layer_mark_dirty(menu_layer_get_layer(menu));
+      }
       break;
   }
 }
@@ -584,7 +600,11 @@ static void menu_select_alarms(uint16_t row_index) {
 static void menu_select_other(uint16_t row_index) {
   switch (row_index) {
     case MENU_ROW_OTHER_SNOOZE:
-      win_snooze_show(&s_snooze_delay);
+      //win_snooze_show(&s_snooze_delay);
+      s_snooze_delay++;
+      if(s_snooze_delay>30)
+        s_snooze_delay=0;
+      persist_write_int(SNOOZE_KEY,s_snooze_delay);
       break;
     case MENU_ROW_OTHER_ABOUT:
       win_about_show();
