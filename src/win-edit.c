@@ -33,7 +33,7 @@ static bool s_withampm;
 #define OFFSET_ITEM_TOP 0
 #else
 #define OFFSET_LEFT 18
-#define OFFSET_TOP 12
+#define OFFSET_TOP 11
 #define ITEM_HEIGHT 40
 #define OFFSET_ITEM_TOP 6
 #endif
@@ -203,6 +203,19 @@ static void update_ui(Layer *layer, GContext *ctx) {
 #endif
   graphics_draw_text(ctx,":",fonts_get_system_font(FONT_KEY_GOTHIC_28_BOLD),GRect(s_withampm?144/2-27:144/2 + OFFSET_LEFT,58 + OFFSET_TOP,40,20),
                      GTextOverflowModeWordWrap,GTextAlignmentLeft,NULL);
+  
+#ifdef PBL_ROUND
+  // draw graphical representations as rings around the border
+  GRect bounds = layer_get_bounds(layer);
+  int hour_angle = (s_digits[0] * 360) / 12;
+  graphics_context_set_fill_color(ctx, s_selection==0?GColorBlue:GColorDarkGray);
+  graphics_fill_radial(ctx, bounds, GOvalScaleModeFitCircle, 10, 0, DEG_TO_TRIGANGLE(hour_angle));
+  int minute_angle = (s_digits[1] * 360) / 60;
+  bounds = grect_inset(bounds,GEdgeInsets(9));
+  graphics_context_set_fill_color(ctx, s_selection==1?GColorBlue:GColorDarkGray);
+  graphics_fill_radial(ctx, bounds, GOvalScaleModeFitCircle, 9, 0, DEG_TO_TRIGANGLE(minute_angle));
+  
+#endif
 }
 
 static void select_click_handler(ClickRecognizerRef recognizer, void *context) {
