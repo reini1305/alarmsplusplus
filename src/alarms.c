@@ -39,7 +39,12 @@ time_t alarm_get_time_of_wakeup(Alarm *alarm)
     bool some_active=false;
     
     // Check if we may schedule the alarm today
+#ifdef PBL_SDK_2
     int current_weekday = t->tm_wday;
+#else
+    int current_weekday = t->tm_wday+1; // I have no idea why though!
+#endif
+    APP_LOG(APP_LOG_LEVEL_DEBUG,"Current weekday: %d",current_weekday);
     for(int i=0;i<7;i++)
     {
       if(alarm->weekdays_active[(i+current_weekday)%7])
