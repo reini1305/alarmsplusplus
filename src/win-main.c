@@ -12,7 +12,7 @@
 #define MENU_SECTION_ALARMS   0
 #define MENU_SECTION_OTHER   1
 
-#define MENU_ROW_COUNT_OTHER 3
+#define MENU_ROW_COUNT_OTHER 4
 #define MENU_ROW_COUNT_ALARMS NUM_ALARMS
 
 #ifdef PBL_RECT
@@ -31,9 +31,10 @@
 #define OTHER_HEIGHT 42
 #endif
 
-#define MENU_ROW_OTHER_ABOUT         2
-#define MENU_ROW_OTHER_SNOOZE        0
-#define MENU_ROW_OTHER_ADVANCED      1
+#define MENU_ROW_NEXT_ALARM          0
+#define MENU_ROW_OTHER_ABOUT         3
+#define MENU_ROW_OTHER_SNOOZE        1
+#define MENU_ROW_OTHER_ADVANCED      2
 
 static void window_load(Window* window);
 static void window_unload(Window* window);
@@ -67,6 +68,7 @@ static GBitmap* s_statusbar_bitmap;
 static Alarm* s_alarms;
 static int s_snooze_delay;
 static char s_snooze_text[12];
+static char s_next_alarm_text[15];
 static int8_t s_id_enabled[NUM_ALARMS];
 static char s_num_enabled;
 
@@ -114,6 +116,28 @@ static void init_action_menu() {
 }
 #endif
 
+void refresh_next_alarm_text(void)
+{
+  int alarm_id = get_next_alarm(s_alarms);
+  // schedule the winner
+  if(alarm_id>=0)
+  {
+    time_t timestamp = alarm_get_time_of_wakeup(&s_alarms[alarm_id]);
+    struct tm *t = localtime(&timestamp);
+    if(clock_is_24h_style())
+      snprintf(s_next_alarm_text,sizeof(s_next_alarm_text),"%02d.%02d %02d:%02d",t->tm_mday, t->tm_mon+1,t->tm_hour,t->tm_min);
+    else
+    {
+      int temp_hour;
+      bool is_am;
+      convert_24_to_12(t->tm_hour, &temp_hour, &is_am);
+      snprintf(s_next_alarm_text,sizeof(s_next_alarm_text),"%02d.%02d %02d:%02d %s",t->tm_mday, t->tm_mon+1,temp_hour,t->tm_min,is_am?"AM":"PM");
+    }
+  }
+  else
+    snprintf(s_next_alarm_text,sizeof(s_next_alarm_text),"no alarm");
+}
+
 void win_main_init(Alarm* alarms) {
   s_alarms = alarms;
   s_window = window_create();
@@ -129,6 +153,7 @@ void win_main_init(Alarm* alarms) {
   s_snooze_delay = load_persistent_storage_int(SNOOZE_KEY,10);
   update_id_enabled();
   refresh_timeout();
+  refresh_next_alarm_text();
   snprintf(version_text, sizeof(version_text), "Alarms++ v%d.%d",__pbl_app_info.process_version.major,__pbl_app_info.process_version.minor);
   s_scroll_timer = app_timer_register(500,scroll_timer_callback,NULL);
   s_reset_timer = app_timer_register(2000,reset_timer_callback,NULL);
@@ -215,6 +240,7 @@ static void window_unload(Window* window) {
 
 static void window_appear(Window* window) {
   update_id_enabled();
+  refresh_next_alarm_text();
   menu_layer_reload_data(s_menu);
   layer_mark_dirty(menu_layer_get_layer(s_menu));
 }
@@ -421,6 +447,10 @@ static void menu_draw_row_other(GContext* ctx, const Layer* cell_layer, uint16_t
   char *text = NULL;
   char *subtext = NULL;
   switch (row_index) {
+    case MENU_ROW_NEXT_ALARM:
+      text = _("Next Alarm");
+      subtext = s_next_alarm_text;
+      break;
     case MENU_ROW_OTHER_ABOUT:
       // This is a basic menu item with a title and subtitle
     text = _("Help");
@@ -526,6 +556,7 @@ static void menu_select_long(struct MenuLayer* menu, MenuIndex* cell_index, void
       }
       update_id_enabled();
       menu_layer_reload_data(menu);
+      refresh_next_alarm_text();
       layer_mark_dirty(menu_layer_get_layer(menu));
       if(!app_timer_reschedule(s_reset_timer,2000))
         s_reset_timer=app_timer_register(2000,reset_timer_callback,NULL);
