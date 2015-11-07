@@ -39,19 +39,22 @@ time_t alarm_get_time_of_wakeup(Alarm *alarm)
     bool some_active=false;
     
     // Check if we may schedule the alarm today
+#ifdef PBL_SDK_2
     int current_weekday = t->tm_wday;
-    
-    //APP_LOG(APP_LOG_LEVEL_DEBUG,"Current weekday: %d",current_weekday);
+#else
+    int current_weekday = (t->tm_wday==6?0:t->tm_wday); // What the actual f...?
+#endif
+    APP_LOG(APP_LOG_LEVEL_DEBUG,"Current weekday: %d",current_weekday);
     for(int i=0;i<7;i++)
     {
       if(alarm->weekdays_active[(i+current_weekday)%7])
       {
         if(i==0)
-          timestamp = clock_to_timestamp_precise(TODAY,alarm->hour,alarm->minute);
+        timestamp = clock_to_timestamp_precise(TODAY,alarm->hour,alarm->minute);
         else
-          timestamp = clock_to_timestamp_precise(((i+current_weekday)%7)+1,alarm->hour,alarm->minute);
+        timestamp = clock_to_timestamp_precise(((i+current_weekday)%7)+1,alarm->hour,alarm->minute);
         if((now-timestamp)>(60*60*24*7)) // we can not be more than a week away?
-          continue;
+        continue;
         else
         {
           some_active=true;
@@ -70,10 +73,11 @@ time_t alarm_get_time_of_wakeup(Alarm *alarm)
       {
         timestamp = clock_to_timestamp_precise(TODAY,alarm->hour,alarm->minute);
         if((timestamp-now)>(60*60*24))
-          timestamp = clock_to_timestamp_precise(current_weekday+1,alarm->hour,alarm->minute);
+        timestamp = clock_to_timestamp_precise(current_weekday+1,alarm->hour,alarm->minute);
       }
     }
     return timestamp;
+
   }
   return -1;
 }
@@ -81,7 +85,7 @@ time_t alarm_get_time_of_wakeup(Alarm *alarm)
 int get_next_alarm(Alarm *alarms)
 {
   // search for next alarm
-  time_t timestamp = time(NULL)+(60*60*24*7); // now + 1 week
+  time_t timestamp = time(NULL)+(60*60*24*8); // now + 1 week
   APP_LOG(APP_LOG_LEVEL_DEBUG,"Now has timestamp %d",(int)timestamp);
   int alarm_id=-1;
   for (int i=0;i<NUM_ALARMS;i++)
