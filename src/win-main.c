@@ -135,7 +135,7 @@ void refresh_next_alarm_text(void)
     }
   }
   else
-    snprintf(s_next_alarm_text,sizeof(s_next_alarm_text),"no alarm");
+    snprintf(s_next_alarm_text,sizeof(s_next_alarm_text),"---");
 }
 
 void win_main_init(Alarm* alarms) {
