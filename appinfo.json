@@ -3,8 +3,8 @@
   "shortName": "Alarms++",
   "longName": "Alarms++",
   "companyName": "Christian Reinbacher",
-  "versionCode": 61,
-  "versionLabel": "5.1",
+  "versionCode": 76,
+  "versionLabel": "6.8",
   "watchapp": {
     "watchface": false
   },
@@ -109,7 +109,8 @@
   },
   "targetPlatforms": [
     "aplite",
-    "basalt"
+    "basalt",
+    "chalk"
   ],
   "sdkVersion": "3"
 }

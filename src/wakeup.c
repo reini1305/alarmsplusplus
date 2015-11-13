@@ -86,19 +86,12 @@ static void click_config_provider(void *context) {
   window_single_click_subscribe(BUTTON_ID_SELECT, do_nothing_click_handler);
   window_single_click_subscribe(BUTTON_ID_BACK, do_nothing_click_handler);
   bool longpress_dismiss = load_persistent_storage_bool(LONGPRESS_DISMISS_KEY,false);
-#if PBL_SDK_3
+  bool topbutton_dismiss = load_persistent_storage_bool(TOP_BUTTON_DISMISS_KEY, true);
   if(longpress_dismiss)
-    window_long_click_subscribe(BUTTON_ID_DOWN,1000,dismiss_click_handler,NULL);
+    window_long_click_subscribe(topbutton_dismiss?BUTTON_ID_UP:BUTTON_ID_DOWN,1000,dismiss_click_handler,NULL);
   else
-    window_single_click_subscribe(BUTTON_ID_DOWN, dismiss_click_handler);
-  window_single_click_subscribe(BUTTON_ID_UP, snooze_click_handler);
-#else
-  if(longpress_dismiss)
-  window_long_click_subscribe(BUTTON_ID_UP,1000,dismiss_click_handler,NULL);
-  else
-  window_single_click_subscribe(BUTTON_ID_UP, dismiss_click_handler);
-  window_single_click_subscribe(BUTTON_ID_DOWN, snooze_click_handler);
-#endif
+  window_single_click_subscribe(topbutton_dismiss?BUTTON_ID_UP:BUTTON_ID_DOWN, dismiss_click_handler);
+  window_single_click_subscribe(topbutton_dismiss?BUTTON_ID_DOWN:BUTTON_ID_UP, snooze_click_handler);
 }
 
 void do_vibrate(void) {
@@ -190,12 +183,13 @@ static void main_window_load(Window *window) {
   
   action_bar = action_bar_layer_create();
   action_bar_layer_set_click_config_provider(action_bar, click_config_provider);
+  bool topbutton_dismiss = load_persistent_storage_bool(TOP_BUTTON_DISMISS_KEY, true);
 #ifdef PBL_SDK_3
-  action_bar_layer_set_icon_animated(action_bar,BUTTON_ID_DOWN,gbitmap_create_with_resource(RESOURCE_ID_IMAGE_ACTION_ICON_CROSS_INV),true);
-  action_bar_layer_set_icon_animated(action_bar,BUTTON_ID_UP,gbitmap_create_with_resource(RESOURCE_ID_IMAGE_ACTION_ICON_ZZ_INV),true);
+  action_bar_layer_set_icon_animated(action_bar,topbutton_dismiss?BUTTON_ID_UP:BUTTON_ID_DOWN,gbitmap_create_with_resource(RESOURCE_ID_IMAGE_ACTION_ICON_CROSS_INV),true);
+  action_bar_layer_set_icon_animated(action_bar,topbutton_dismiss?BUTTON_ID_DOWN:BUTTON_ID_UP,gbitmap_create_with_resource(RESOURCE_ID_IMAGE_ACTION_ICON_ZZ_INV),true);
 #else
-  action_bar_layer_set_icon(action_bar,BUTTON_ID_UP,gbitmap_create_with_resource(RESOURCE_ID_IMAGE_ACTION_ICON_CROSS));
-  action_bar_layer_set_icon(action_bar,BUTTON_ID_DOWN,gbitmap_create_with_resource(RESOURCE_ID_IMAGE_ACTION_ICON_ZZ));
+  action_bar_layer_set_icon(action_bar,topbutton_dismiss?BUTTON_ID_UP:BUTTON_ID_DOWN,gbitmap_create_with_resource(RESOURCE_ID_IMAGE_ACTION_ICON_CROSS));
+  action_bar_layer_set_icon(action_bar,topbutton_dismiss?BUTTON_ID_DOWN:BUTTON_ID_UP,gbitmap_create_with_resource(RESOURCE_ID_IMAGE_ACTION_ICON_ZZ));
 #endif
   action_bar_layer_add_to_window(action_bar,window);
   
@@ -334,12 +328,6 @@ void perform_wakeup_tasks(Alarm* alarms, bool *snooze)
     light_enable_interaction();
     window_stack_push(s_main_window, true);
     //wakeup_handler(id, (int32_t)alarms);
-  }
-  else if(launch_reason() == APP_LAUNCH_WORKER)  // worker woke us because something is with the current time
-  {
-    reschedule_wakeup(alarms);
-    APP_LOG(APP_LOG_LEVEL_DEBUG,"Worker woke me up!");
-    // app should end here without a window
   }
   else{
     *snooze=false;

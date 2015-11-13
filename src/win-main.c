@@ -1,7 +1,7 @@
 #include <pebble.h>
 #include "alarms.h"
 #include "win-edit.h"
-#include "win-snooze.h"
+//#include "win-snooze.h"
 #include "win-about.h"
 #include "win-advanced.h"
 #include "storage.h"
@@ -12,12 +12,29 @@
 #define MENU_SECTION_ALARMS   0
 #define MENU_SECTION_OTHER   1
 
-#define MENU_ROW_COUNT_OTHER 3
+#define MENU_ROW_COUNT_OTHER 4
 #define MENU_ROW_COUNT_ALARMS NUM_ALARMS
 
-#define MENU_ROW_OTHER_ABOUT         2
-#define MENU_ROW_OTHER_SNOOZE        0
-#define MENU_ROW_OTHER_ADVANCED      1
+#ifdef PBL_RECT
+#define ALARM_HEIGHT 32
+#define DESCRIPTION_HEIGHT 58
+#define ALARM_OFFSET_LEFT 0
+#define ALARM_OFFSET_RIGHT 0
+#define ALARM_OFFSET_TOP 0
+#define OTHER_HEIGHT 38
+#else
+#define ALARM_HEIGHT 64
+#define DESCRIPTION_HEIGHT 64
+#define ALARM_OFFSET_LEFT 18
+#define ALARM_OFFSET_RIGHT 36
+#define ALARM_OFFSET_TOP 8
+#define OTHER_HEIGHT 42
+#endif
+
+#define MENU_ROW_NEXT_ALARM          0
+#define MENU_ROW_OTHER_ABOUT         3
+#define MENU_ROW_OTHER_SNOOZE        1
+#define MENU_ROW_OTHER_ADVANCED      2
 
 static void window_load(Window* window);
 static void window_unload(Window* window);
@@ -30,7 +47,7 @@ static void menu_draw_header(GContext* ctx, const Layer* cell_layer, uint16_t se
 static void menu_draw_row(GContext* ctx, const Layer* cell_layer, MenuIndex* cell_index, void* callback_context);
 static void menu_draw_row_alarms(GContext* ctx, const Layer* cell_layer, uint16_t row_index);
 static void menu_draw_row_other(GContext* ctx, const Layer* cell_layer, uint16_t row_index);
-static void menu_draw_row_add(GContext* ctx, bool selected);
+static void menu_draw_row_add(GContext* ctx, bool selected, int width);
 static void menu_select(struct MenuLayer* menu, MenuIndex* cell_index, void* callback_context);
 static void menu_select_long(struct MenuLayer* menu, MenuIndex* cell_index, void* callback_context);
 static void menu_select_alarms(uint16_t row_index);
@@ -51,6 +68,7 @@ static GBitmap* s_statusbar_bitmap;
 static Alarm* s_alarms;
 static int s_snooze_delay;
 static char s_snooze_text[12];
+static char s_next_alarm_text[15];
 static int8_t s_id_enabled[NUM_ALARMS];
 static char s_num_enabled;
 
@@ -65,6 +83,61 @@ static int16_t s_scroll_index;
 static int16_t s_scroll_row_index;
 static AppTimer *s_scroll_timer;
 
+static char english[7] = {"SMTWTFS"};
+static char german[7] = {"SMDMDFS"};
+static char french[7] = {"dlmmjvs"};
+static char spanish[7] = {"dlmmjvs"};
+static char *weekday_names=english;
+
+#ifdef PBL_SDK_3
+// ActionMenu Stuff
+static ActionMenu *s_action_menu;
+static ActionMenuLevel *s_root_level;
+int8_t s_selected_alarm;
+
+static void action_reset_performed_callback(ActionMenu *action_menu, const ActionMenuItem *action, void *context) {
+  alarm_reset(&s_alarms[s_selected_alarm]);
+}
+
+static void action_toggle_performed_callback(ActionMenu *action_menu, const ActionMenuItem *action, void *context) {
+  alarm_toggle_enable(&s_alarms[s_selected_alarm]);
+}
+
+static void init_action_menu() {
+  // Create the root level and secondary custom patterns level
+  s_root_level = action_menu_level_create(2);
+  
+  // Set up the actions for this level, using action context to pass types
+  action_menu_level_add_action(s_root_level, "Enable/Disable", action_toggle_performed_callback,
+                               NULL);
+  action_menu_level_add_action(s_root_level, "Delete", action_reset_performed_callback,
+                               NULL);
+  
+}
+#endif
+
+void refresh_next_alarm_text(void)
+{
+  int alarm_id = get_next_alarm(s_alarms);
+  // schedule the winner
+  if(alarm_id>=0)
+  {
+    time_t timestamp = alarm_get_time_of_wakeup(&s_alarms[alarm_id]);
+    struct tm *t = localtime(&timestamp);
+    if(clock_is_24h_style())
+      snprintf(s_next_alarm_text,sizeof(s_next_alarm_text),"%02d.%02d %02d:%02d",t->tm_mday, t->tm_mon+1,t->tm_hour,t->tm_min);
+    else
+    {
+      int temp_hour;
+      bool is_am;
+      convert_24_to_12(t->tm_hour, &temp_hour, &is_am);
+      snprintf(s_next_alarm_text,sizeof(s_next_alarm_text),"%02d.%02d %02d:%02d %s",t->tm_mday, t->tm_mon+1,temp_hour,t->tm_min,is_am?"AM":"PM");
+    }
+  }
+  else
+    snprintf(s_next_alarm_text,sizeof(s_next_alarm_text),"---");
+}
+
 void win_main_init(Alarm* alarms) {
   s_alarms = alarms;
   s_window = window_create();
@@ -74,16 +147,27 @@ void win_main_init(Alarm* alarms) {
     .appear = window_appear
   });
   win_edit_init();
-  win_snooze_init();
+  //win_snooze_init();
   win_about_init();
   win_advanced_init();
-  alarm_set_language();
   s_snooze_delay = load_persistent_storage_int(SNOOZE_KEY,10);
   update_id_enabled();
   refresh_timeout();
+  refresh_next_alarm_text();
   snprintf(version_text, sizeof(version_text), "Alarms++ v%d.%d",__pbl_app_info.process_version.major,__pbl_app_info.process_version.minor);
   s_scroll_timer = app_timer_register(500,scroll_timer_callback,NULL);
   s_reset_timer = app_timer_register(2000,reset_timer_callback,NULL);
+#ifdef PBL_SDK_3
+  init_action_menu();
+#endif
+  char *sys_locale = setlocale(LC_ALL, "");
+  if (strcmp("de_DE", sys_locale) == 0) {
+    weekday_names = german;
+  } else if (strcmp("fr_FR", sys_locale) == 0) {
+    weekday_names = french;
+  } else if (strcmp("es_ES", sys_locale) == 0) {
+    weekday_names = spanish;
+  }
 }
 
 void win_main_show(void) {
@@ -108,7 +192,7 @@ static void window_load(Window* window) {
   Layer *window_layer = window_get_root_layer(s_window);
   GRect bounds = layer_get_frame(window_layer);
   
-#ifdef PBL_SDK_3
+#if defined(PBL_SDK_3) && defined(PBL_RECT)
   s_status_layer = status_bar_layer_create();
   // Change the status bar width to make space for the action bar
   //  GRect frame = GRect(0, 0, width, STATUS_BAR_LAYER_HEIGHT);
@@ -156,6 +240,7 @@ static void window_unload(Window* window) {
 
 static void window_appear(Window* window) {
   update_id_enabled();
+  refresh_next_alarm_text();
   menu_layer_reload_data(s_menu);
   layer_mark_dirty(menu_layer_get_layer(s_menu));
 }
@@ -175,25 +260,27 @@ static uint16_t menu_num_rows(struct MenuLayer* menu, uint16_t section_index, vo
   }
 }
 
+
+
 static int16_t menu_cell_height(struct MenuLayer *menu, MenuIndex *cell_index, void *callback_context) {
   switch (cell_index->section) {
     case MENU_SECTION_OTHER:
-      return 38;
+      return OTHER_HEIGHT;
       break;
     case MENU_SECTION_ALARMS:
       if (get_next_free_slot(s_alarms)>=0) {
         if(cell_index->row==0)
-          return 32;
+          return ALARM_HEIGHT;
         else
           if(alarm_has_description(&s_alarms[s_id_enabled[cell_index->row-1]]))
-            return 52;
+            return DESCRIPTION_HEIGHT;
       }
       else
         if(alarm_has_description(&s_alarms[s_id_enabled[cell_index->row]]))
-          return 52;
+          return DESCRIPTION_HEIGHT;
       break;
   }
-  return 32;
+  return ALARM_HEIGHT;
 }
 
 static int16_t menu_header_height(struct MenuLayer *menu, uint16_t section_index, void *callback_context) {
@@ -207,18 +294,21 @@ static void menu_draw_header(GContext* ctx, const Layer* cell_layer, uint16_t se
   if(section_index==MENU_SECTION_OTHER)
   {
     graphics_context_set_text_color(ctx, GColorWhite);
-    #ifdef PBL_COLOR
-        graphics_context_set_fill_color(ctx, GColorBlue);
-    #else
-        graphics_context_set_fill_color(ctx, GColorBlack);
-    #endif
+    graphics_context_set_fill_color(ctx, PBL_IF_COLOR_ELSE(GColorBlue, GColorBlack));
     
-    graphics_fill_rect(ctx,GRect(0,1,144,14),0,GCornerNone);
-    
+    GRect layer_size = layer_get_bounds(cell_layer);
+    graphics_fill_rect(ctx,GRect(0,1,layer_size.size.w,14),0,GCornerNone);
+#ifdef PBL_RECT
     graphics_draw_text(ctx, _("Options"),
                        fonts_get_system_font(FONT_KEY_GOTHIC_14_BOLD),
-                       GRect(3, -2, 144 - 33, 14), GTextOverflowModeWordWrap,
+                       GRect(3, -2, layer_size.size.w - 3, 14), GTextOverflowModeWordWrap,
                        GTextAlignmentLeft, NULL);
+#else
+    graphics_draw_text(ctx, _("Options"),
+                       fonts_get_system_font(FONT_KEY_GOTHIC_14_BOLD),
+                       GRect(3, -2, layer_size.size.w - 3, 14), GTextOverflowModeWordWrap,
+                       GTextAlignmentCenter, NULL);
+#endif
   }
 }
 
@@ -227,8 +317,10 @@ static void menu_draw_row(GContext* ctx, const Layer* cell_layer, MenuIndex* cel
     case MENU_SECTION_ALARMS:
       if(get_next_free_slot(s_alarms)>=0)
       {
-        if(cell_index->row==0)
-          menu_draw_row_add(ctx,menu_cell_layer_is_highlighted(cell_layer));
+        if(cell_index->row==0) {
+          GRect layer_size = layer_get_bounds(cell_layer);
+          menu_draw_row_add(ctx,menu_cell_layer_is_highlighted(cell_layer),layer_size.size.w);
+        }
         else
           menu_draw_row_alarms(ctx, cell_layer, cell_index->row-1);
       }
@@ -241,7 +333,7 @@ static void menu_draw_row(GContext* ctx, const Layer* cell_layer, MenuIndex* cel
   }
 }
 
-static void menu_draw_row_add(GContext* ctx, bool selected) {
+static void menu_draw_row_add(GContext* ctx, bool selected, int width) {
   // draw a plus sign, consisting of two lines
   int8_t size = 20;
 #ifdef PBL_COLOR
@@ -250,26 +342,86 @@ static void menu_draw_row_add(GContext* ctx, bool selected) {
   else
     graphics_context_set_stroke_color(ctx,GColorBlack);
   graphics_context_set_stroke_width(ctx,2);
-  graphics_draw_line(ctx, GPoint(144/2,(32-size)/2), GPoint(144/2,32-(32-size)/2));
-  graphics_draw_line(ctx, GPoint((144-size)/2,16), GPoint((144+size)/2,16));
+  graphics_draw_line(ctx, GPoint(width/2,(ALARM_HEIGHT-size)/2), GPoint(width/2,ALARM_HEIGHT-(ALARM_HEIGHT-size)/2));
+  graphics_draw_line(ctx, GPoint((width-size)/2,ALARM_HEIGHT/2), GPoint((width+size)/2,ALARM_HEIGHT/2));
 #else
   graphics_context_set_stroke_color(ctx,GColorBlack);
-  graphics_draw_line(ctx, GPoint(144/2,(32-size)/2), GPoint(144/2,32-(32-size)/2));
-  graphics_draw_line(ctx, GPoint((144-size)/2,16), GPoint((144+size)/2,16));
-  graphics_draw_line(ctx, GPoint(144/2-1,(32-size)/2), GPoint(144/2-1,32-(32-size)/2));
-  graphics_draw_line(ctx, GPoint((144-size)/2,16-1), GPoint((144+size)/2,16-1));
+  graphics_draw_line(ctx, GPoint(width/2,(ALARM_HEIGHT-size)/2), GPoint(width/2,ALARM_HEIGHT-(ALARM_HEIGHT-size)/2));
+  graphics_draw_line(ctx, GPoint((width-size)/2,ALARM_HEIGHT/2), GPoint((width+size)/2,ALARM_HEIGHT/2));
+  graphics_draw_line(ctx, GPoint(width/2-1,(ALARM_HEIGHT-size)/2), GPoint(width/2-1,ALARM_HEIGHT-(ALARM_HEIGHT-size)/2));
+  graphics_draw_line(ctx, GPoint((width-size)/2,ALARM_HEIGHT/2-1), GPoint((width+size)/2,ALARM_HEIGHT/2-1));
 #endif
 }
 
 static void menu_draw_row_alarms(GContext* ctx, const Layer* cell_layer, uint16_t row_index) {
-  int8_t current_id = s_id_enabled[row_index];
+  Alarm* alarm = &s_alarms[s_id_enabled[row_index]];
+  bool reset = s_id_reset==s_id_enabled[row_index];
+  
 #ifdef PBL_COLOR
-  alarm_draw_row(&s_alarms[current_id],ctx,
-                 menu_cell_layer_is_highlighted(cell_layer),
-                 s_id_reset==current_id);
+  if(menu_cell_layer_is_highlighted(cell_layer))
+    graphics_context_set_text_color(ctx,GColorWhite);
+  else
+    graphics_context_set_text_color(ctx,GColorBlack);
 #else
-  alarm_draw_row(&s_alarms[current_id],ctx,true,s_id_reset==current_id);
+  graphics_context_set_text_color(ctx, GColorBlack);
 #endif
+  GFont font = fonts_get_system_font(alarm->enabled?FONT_KEY_GOTHIC_28_BOLD:FONT_KEY_GOTHIC_28);
+  
+  GRect layer_size = layer_get_bounds(cell_layer);
+  char alarm_time[6];
+  int hour_out = alarm->hour;
+  bool is_am = false;
+#ifdef PBL_RECT
+  int offset = ALARM_OFFSET_TOP;
+#else
+  int offset = ALARM_OFFSET_TOP+(alarm->enabled?0:8);
+#endif
+  if (!clock_is_24h_style())
+  {
+    convert_24_to_12(alarm->hour, &hour_out, &is_am);
+    graphics_draw_text(ctx, is_am?"A\nM":"P\nM",
+                       fonts_get_system_font(alarm->enabled?FONT_KEY_GOTHIC_14_BOLD:FONT_KEY_GOTHIC_14),
+                       GRect(57-(alarm->enabled?3:0)+ALARM_OFFSET_LEFT, -1+offset, layer_size.size.w - 33 - ALARM_OFFSET_RIGHT, 30), GTextOverflowModeWordWrap,
+                       GTextAlignmentLeft, NULL);
+  }
+  
+  snprintf(alarm_time,sizeof(alarm_time),"%02d:%02d",hour_out,alarm->minute);
+  graphics_draw_text(ctx, alarm_time,font,
+                     GRect(3+ALARM_OFFSET_LEFT, -3+offset, layer_size.size.w - 33- ALARM_OFFSET_RIGHT, 28), GTextOverflowModeFill,
+                     GTextAlignmentLeft, NULL);
+  
+  // draw activity state
+  char state[]={"RST"};
+  if(!reset)
+  snprintf(state, sizeof(state), "%s",alarm->enabled? _("ON"):_("OFF"));
+  graphics_draw_text(ctx, state,font,
+                     GRect(3+ALARM_OFFSET_LEFT, alarm_has_description(alarm)?7:-3+offset, layer_size.size.w - 5 - ALARM_OFFSET_RIGHT, 28), GTextOverflowModeFill,
+                     GTextAlignmentRight, NULL);
+  
+  // draw active weekdays
+  char weekday_state[10];
+  snprintf(weekday_state,sizeof(weekday_state),"%c%c%c%c%c\n%c%c",
+           alarm->weekdays_active[1]?weekday_names[1]:'_',
+           alarm->weekdays_active[2]?weekday_names[2]:'_',
+           alarm->weekdays_active[3]?weekday_names[3]:'_',
+           alarm->weekdays_active[4]?weekday_names[4]:'_',
+           alarm->weekdays_active[5]?weekday_names[5]:'_',
+           alarm->weekdays_active[6]?weekday_names[6]:'_',
+           alarm->weekdays_active[0]?weekday_names[0]:'_');
+  
+  graphics_draw_text(ctx, weekday_state,
+                     fonts_get_system_font(FONT_KEY_GOTHIC_14),
+                     GRect(70+ALARM_OFFSET_LEFT, -1+offset, layer_size.size.w - 33 - ALARM_OFFSET_RIGHT, 30), GTextOverflowModeWordWrap,
+                     GTextAlignmentLeft, NULL);
+  
+  // draw description
+  if(alarm_has_description(alarm))
+  {
+    graphics_draw_text(ctx, alarm->description,
+                       fonts_get_system_font(FONT_KEY_GOTHIC_24_BOLD),
+                       GRect(10+ALARM_OFFSET_LEFT, 22+offset, layer_size.size.w - 3 - ALARM_OFFSET_RIGHT, 30), GTextOverflowModeWordWrap,
+                       GTextAlignmentLeft, NULL);
+  }
 }
 
 static void menu_cell_animated_draw(GContext* ctx, const Layer* cell_layer, char* text, char* subtext, bool animate)
@@ -295,6 +447,10 @@ static void menu_draw_row_other(GContext* ctx, const Layer* cell_layer, uint16_t
   char *text = NULL;
   char *subtext = NULL;
   switch (row_index) {
+    case MENU_ROW_NEXT_ALARM:
+      text = _("Next Alarm");
+      subtext = s_next_alarm_text;
+      break;
     case MENU_ROW_OTHER_ABOUT:
       // This is a basic menu item with a title and subtitle
     text = _("Help");
@@ -326,6 +482,7 @@ static void menu_selection_changed(struct MenuLayer *menu_layer, MenuIndex new_i
 }
 
 static void menu_select(struct MenuLayer* menu, MenuIndex* cell_index, void* callback_context) {
+#ifdef PBL_SDK_2
   int8_t current_id=-2;
   if(get_next_free_slot(s_alarms)>=0){
     if(cell_index->row>0)
@@ -333,8 +490,10 @@ static void menu_select(struct MenuLayer* menu, MenuIndex* cell_index, void* cal
   }
   else
     current_id=s_id_enabled[cell_index->row];
+#endif
   switch (cell_index->section) {
     case MENU_SECTION_ALARMS:
+#ifdef PBL_SDK_2
       if(s_id_reset==current_id)  // the state is already reset
       {
         alarm_reset(&s_alarms[current_id]);
@@ -344,6 +503,7 @@ static void menu_select(struct MenuLayer* menu, MenuIndex* cell_index, void* cal
         layer_mark_dirty(menu_layer_get_layer(s_menu));
       }
       else
+#endif
         menu_select_alarms(cell_index->row);
       break;
     case MENU_SECTION_OTHER:
@@ -359,17 +519,19 @@ static void reset_timer_callback(void *data)
   s_can_be_reset=false;
 }
 
+#ifdef PBL_SDK_2
 static void menu_select_long(struct MenuLayer* menu, MenuIndex* cell_index, void* callback_context) {
   int8_t current_id;
-  if(get_next_free_slot(s_alarms)>=0)
-    if(cell_index->row==0)
-      return;
-    else
-      current_id=s_id_enabled[cell_index->row-1];
-  else
-    current_id=s_id_enabled[cell_index->row];
   switch (cell_index->section) {
     case MENU_SECTION_ALARMS:
+
+      if(get_next_free_slot(s_alarms)>=0)
+        if(cell_index->row==0)
+          return;
+        else
+          current_id=s_id_enabled[cell_index->row-1];
+      else
+        current_id=s_id_enabled[cell_index->row];
       if(!s_can_be_reset)
         alarm_toggle_enable(&s_alarms[current_id]);
       else
@@ -394,15 +556,63 @@ static void menu_select_long(struct MenuLayer* menu, MenuIndex* cell_index, void
       }
       update_id_enabled();
       menu_layer_reload_data(menu);
+      refresh_next_alarm_text();
       layer_mark_dirty(menu_layer_get_layer(menu));
       if(!app_timer_reschedule(s_reset_timer,2000))
         s_reset_timer=app_timer_register(2000,reset_timer_callback,NULL);
       s_can_be_reset=true;
       break;
     case MENU_SECTION_OTHER:
+      if(cell_index->row == MENU_ROW_OTHER_SNOOZE)
+      {
+        s_snooze_delay--;
+        if(s_snooze_delay<0)
+          s_snooze_delay=30;
+        persist_write_int(SNOOZE_KEY,s_snooze_delay);
+        layer_mark_dirty(menu_layer_get_layer(menu));
+      }
       break;
   }
 }
+#else
+static void menu_select_long(struct MenuLayer* menu, MenuIndex* cell_index, void* callback_context) {
+  // Configure the ActionMenu Window about to be shown
+  ActionMenuConfig config = (ActionMenuConfig) {
+    .root_level = s_root_level,
+    .colors = {
+      .background = GColorBlue,
+      .foreground = GColorWhite,
+    },
+    .align = ActionMenuAlignCenter
+  };
+
+  switch (cell_index->section) {
+    case MENU_SECTION_ALARMS:
+      if(get_next_free_slot(s_alarms)>=0)
+        if(cell_index->row==0)
+          return;
+        else
+          s_selected_alarm=s_id_enabled[cell_index->row-1];
+      else
+        s_selected_alarm=s_id_enabled[cell_index->row];
+      // Show the settings dialog
+      
+           // Show the ActionMenu
+      s_action_menu = action_menu_open(&config);
+      break;
+    case MENU_SECTION_OTHER:
+      if(cell_index->row == MENU_ROW_OTHER_SNOOZE)
+      {
+        s_snooze_delay--;
+        if(s_snooze_delay<0)
+          s_snooze_delay=30;
+        persist_write_int(SNOOZE_KEY,s_snooze_delay);
+        layer_mark_dirty(menu_layer_get_layer(menu));
+      }
+      break;
+  }
+}
+#endif
 
 static void menu_select_alarms(uint16_t row_index) {
   // Show the settings dialog
@@ -412,16 +622,20 @@ static void menu_select_alarms(uint16_t row_index) {
     if (row_index==0)
       win_edit_show(&s_alarms[next_slot]);
     else
-      win_edit_show(&s_alarms[row_index-1]);
+      win_edit_show(&s_alarms[s_id_enabled[row_index-1]]);
   }
   else
-    win_edit_show(&s_alarms[row_index]);
+    win_edit_show(&s_alarms[s_id_enabled[row_index]]);
 }
 
 static void menu_select_other(uint16_t row_index) {
   switch (row_index) {
     case MENU_ROW_OTHER_SNOOZE:
-      win_snooze_show(&s_snooze_delay);
+      //win_snooze_show(&s_snooze_delay);
+      s_snooze_delay++;
+      if(s_snooze_delay>30)
+        s_snooze_delay=0;
+      persist_write_int(SNOOZE_KEY,s_snooze_delay);
       break;
     case MENU_ROW_OTHER_ABOUT:
       win_about_show();

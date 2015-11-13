@@ -26,6 +26,17 @@ static char s_digits[3];
 static char s_max[3];
 static char s_min[3];
 static bool s_withampm;
+#ifdef PBL_RECT
+#define OFFSET_LEFT 0
+#define OFFSET_TOP 0
+#define ITEM_HEIGHT 28
+#define OFFSET_ITEM_TOP 0
+#else
+#define OFFSET_LEFT 18
+#define OFFSET_TOP 11
+#define ITEM_HEIGHT 40
+#define OFFSET_ITEM_TOP 6
+#endif
 #define PIN_WINDOW_SPACING 24
 static const GPathInfo PATH_INFO = {
   .num_points = 3,
@@ -57,12 +68,19 @@ static void menu_select(struct MenuLayer* menu, MenuIndex* cell_index, void* cal
 static Alarm temp_alarm;
 static Alarm *current_alarm;
 
-//static char *english[7] = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"};
-//static char *german[7] = {"Sonntag", "Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag"};
-//static char *french[7] = {"dimanche", "lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi"};
-//static char *spanish[7] = {"domingo", "lunes", "martes", "miércoles", "jueves", "viernes", "sábado"};
-//static char *russian[7] = {"Воскресенье","Понедельник","Вторник","Среда","Четверг","Пятница","Суббота"};
-//static char **weekday_names=english;
+#ifndef PBL_PLATFORM_APLITE
+static DictationSession *s_dictation_session;
+static void dictation_session_callback(DictationSession *session, DictationSessionStatus status,
+                                       char *transcription, void *context) {
+
+  if (status == DictationSessionStatusSuccess) {
+    strncpy(temp_alarm.description, transcription, sizeof(temp_alarm.description));
+  }
+  else { // fallback to old solution
+    tertiary_text_show(temp_alarm.description);
+  }
+}
+#endif
 
 void win_edit_init(void)
 {
@@ -77,8 +95,12 @@ void win_edit_init(void)
     .load = time_window_load,
     .unload = time_window_unload,
   });
-  
+
   tertiary_text_init();
+#ifndef PBL_PLATFORM_APLITE
+  s_dictation_session = dictation_session_create(sizeof(temp_alarm.description),
+                                                 dictation_session_callback, NULL);
+#endif
 #ifdef PBL_COLOR
   check_icon = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_ACTION_ICON_CHECK_INV);
   check_icon_inv = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_ACTION_ICON_CHECK);
@@ -131,19 +153,19 @@ static void update_ui(Layer *layer, GContext *ctx) {
   
   for(int i = 0; i < 3; i++) {
 #ifdef PBL_COLOR
-    text_layer_set_background_color(s_input_layers[i], (i == s_selection) ? GColorDukeBlue : GColorDarkGray);
+    text_layer_set_background_color(s_input_layers[i], (i == s_selection) ? GColorBlue : GColorDarkGray);
     if(i==s_selection)
     {
       GPoint selection_center = {
-        .x = (int16_t) (s_withampm?23:50) + i * (PIN_WINDOW_SPACING + PIN_WINDOW_SPACING),
-        .y = (int16_t) 50,
+        .x = (int16_t) (s_withampm?23:50) + i * (PIN_WINDOW_SPACING + PIN_WINDOW_SPACING) + OFFSET_LEFT,
+        .y = (int16_t) 50 + OFFSET_TOP,
       };
       gpath_rotate_to(s_my_path_ptr, 0);
       gpath_move_to(s_my_path_ptr, selection_center);
-      graphics_context_set_fill_color(ctx,GColorDukeBlue);
+      graphics_context_set_fill_color(ctx,GColorBlue);
       gpath_draw_filled(ctx, s_my_path_ptr);
       gpath_rotate_to(s_my_path_ptr, TRIG_MAX_ANGLE/2);
-      selection_center.y = 110;
+      selection_center.y = 110 + OFFSET_TOP;
       gpath_move_to(s_my_path_ptr, selection_center);
       gpath_draw_filled(ctx, s_my_path_ptr);
     }
@@ -153,15 +175,15 @@ static void update_ui(Layer *layer, GContext *ctx) {
     if(i==s_selection)
     {
       GPoint selection_center = {
-        .x = (int16_t) (s_withampm?23:50) + i * (PIN_WINDOW_SPACING + PIN_WINDOW_SPACING),
-        .y = (int16_t) 50,
+        .x = (int16_t) (s_withampm?23:50) + i * (PIN_WINDOW_SPACING + PIN_WINDOW_SPACING) + OFFSET_LEFT,
+        .y = (int16_t) 50 + OFFSET_TOP,
       };
       gpath_rotate_to(s_my_path_ptr, 0);
       gpath_move_to(s_my_path_ptr, selection_center);
       graphics_context_set_fill_color(ctx,GColorBlack);
       gpath_draw_filled(ctx, s_my_path_ptr);
       gpath_rotate_to(s_my_path_ptr, TRIG_MAX_ANGLE/2);
-      selection_center.y = 110;
+      selection_center.y = 110 + OFFSET_TOP;
       gpath_move_to(s_my_path_ptr, selection_center);
       gpath_draw_filled(ctx, s_my_path_ptr);
     }
@@ -175,12 +197,25 @@ static void update_ui(Layer *layer, GContext *ctx) {
   layer_set_hidden(text_layer_get_layer(s_input_layers[2]),!s_withampm);
   // draw the :
 #ifdef PBL_COLOR
-  graphics_context_set_text_color(ctx,GColorDukeBlue);
+  graphics_context_set_text_color(ctx,GColorBlue);
 #else
   graphics_context_set_text_color(ctx,GColorBlack);
 #endif
-  graphics_draw_text(ctx,":",fonts_get_system_font(FONT_KEY_GOTHIC_28_BOLD),GRect(s_withampm?144/2-27:144/2,58,40,20),
+  graphics_draw_text(ctx,":",fonts_get_system_font(FONT_KEY_GOTHIC_28_BOLD),GRect(s_withampm?144/2-27:144/2 + OFFSET_LEFT,58 + OFFSET_TOP,40,20),
                      GTextOverflowModeWordWrap,GTextAlignmentLeft,NULL);
+  
+#ifdef PBL_ROUND
+  // draw graphical representations as rings around the border
+  GRect bounds = layer_get_bounds(layer);
+  int hour_angle = (s_digits[0] * 360) / 12;
+  graphics_context_set_fill_color(ctx, s_selection==0?GColorBlue:GColorDarkGray);
+  graphics_fill_radial(ctx, bounds, GOvalScaleModeFitCircle, 10, 0, DEG_TO_TRIGANGLE(hour_angle));
+  int minute_angle = (s_digits[1] * 360) / 60;
+  bounds = grect_inset(bounds,GEdgeInsets(9));
+  graphics_context_set_fill_color(ctx, s_selection==1?GColorBlue:GColorDarkGray);
+  graphics_fill_radial(ctx, bounds, GOvalScaleModeFitCircle, 9, 0, DEG_TO_TRIGANGLE(minute_angle));
+  
+#endif
 }
 
 static void select_click_handler(ClickRecognizerRef recognizer, void *context) {
@@ -250,7 +285,7 @@ static void time_window_load(Window *window) {
   layer_add_child(window_layer, s_canvas_layer);
   
   for(int i = 0; i < 3; i++) {
-    s_input_layers[i] = text_layer_create(GRect((s_withampm?3:30) + i * (PIN_WINDOW_SPACING + PIN_WINDOW_SPACING), 60, 40, 40));
+    s_input_layers[i] = text_layer_create(GRect((s_withampm?3:30) + i * (PIN_WINDOW_SPACING + PIN_WINDOW_SPACING) + OFFSET_LEFT, 60 + OFFSET_TOP, 40, 40));
 #ifdef PBL_COLOR
     text_layer_set_text_color(s_input_layers[i], GColorWhite);
     text_layer_set_background_color(s_input_layers[i], GColorDarkGray);
@@ -298,6 +333,7 @@ void window_load(Window* window)
   menu_layer_set_click_config_onto_window(s_menu, s_window);
   
 #ifdef PBL_COLOR
+  menu_layer_set_highlight_colors(s_menu,GColorBlue,GColorWhite);
   menu_layer_pad_bottom_enable(s_menu,false);
 #endif
   // Add it to the window for display
@@ -328,26 +364,41 @@ static uint16_t menu_num_rows(struct MenuLayer* menu, uint16_t section_index, vo
 }
 
 static int16_t menu_cell_height(struct MenuLayer *menu, MenuIndex *cell_index, void *callback_context) {
-  return 28;
+  return ITEM_HEIGHT;
 }
 
 static int16_t menu_header_height(struct MenuLayer *menu, uint16_t section_index, void *callback_context) {
+#ifdef PBL_RECT
   return 16;
+#else
+  if(section_index == MENU_SECTION_WEEKDAYS)
+  return 16;
+  else return 0;
+#endif
 }
 
 static void menu_draw_header(GContext* ctx, const Layer* cell_layer, uint16_t section_index, void* callback_context) {
   graphics_context_set_text_color(ctx, GColorWhite);
   #ifdef PBL_COLOR
-    graphics_context_set_fill_color(ctx, GColorDukeBlue);
+    graphics_context_set_fill_color(ctx, GColorBlue);
   #else
     graphics_context_set_fill_color(ctx, GColorBlack);
   #endif
-  graphics_fill_rect(ctx,GRect(0,1,144,14),0,GCornerNone);
+  GRect layer_size = layer_get_bounds(cell_layer);
+  graphics_fill_rect(ctx,GRect(0,1,layer_size.size.w,14),0,GCornerNone);
   
+#ifdef PBL_RECT
   graphics_draw_text(ctx, section_index==MENU_SECTION_OK?_("Update Alarm"):_("Weekdays"),
                      fonts_get_system_font(FONT_KEY_GOTHIC_14_BOLD),
-                     GRect(3, -2, 144 - 33, 14), GTextOverflowModeWordWrap,
+                     GRect(3, -2, layer_size.size.w - 3, 14), GTextOverflowModeWordWrap,
                      GTextAlignmentLeft, NULL);
+#else
+  if (section_index==MENU_SECTION_WEEKDAYS)
+  graphics_draw_text(ctx, _("Weekdays"),
+                     fonts_get_system_font(FONT_KEY_GOTHIC_14_BOLD),
+                     GRect(3, -2, layer_size.size.w - 3, 14), GTextOverflowModeWordWrap,
+                     GTextAlignmentCenter, NULL);
+#endif
 }
 
 static void menu_draw_row(GContext* ctx, const Layer* cell_layer, MenuIndex* cell_index, void* callback_context) {
@@ -370,6 +421,7 @@ static void menu_draw_row(GContext* ctx, const Layer* cell_layer, MenuIndex* cel
   char* text = NULL;
   GFont font = NULL;
   bool draw_checkmark=false;
+  GRect layer_size = layer_get_bounds(cell_layer);
   
   if(cell_index->section == MENU_SECTION_OK)
   {
@@ -427,19 +479,26 @@ static void menu_draw_row(GContext* ctx, const Layer* cell_layer, MenuIndex* cel
       draw_checkmark = temp_alarm.weekdays_active[cell_index->row-1];
     }
   }
+#ifdef PBL_RECT
   graphics_draw_text(ctx, text,
                      font,
-                     GRect(3, -3, 144 - 33, 28), GTextOverflowModeWordWrap,
+                     GRect(3, -3 + OFFSET_ITEM_TOP, layer_size.size.w - 3, 28), GTextOverflowModeWordWrap,
                      GTextAlignmentLeft, NULL);
+#else
+  graphics_draw_text(ctx, text,
+                     font,
+                     GRect(3, -3 + OFFSET_ITEM_TOP, layer_size.size.w - 3, 28), GTextOverflowModeWordWrap,
+                     GTextAlignmentCenter, NULL);
+#endif
   if(draw_checkmark)
   {
 #if PBL_COLOR
   if(menu_cell_layer_is_highlighted(cell_layer))
-    graphics_draw_bitmap_in_rect(ctx, check_icon, GRect(144 - 3 - 16, 6, 16, 16));
+    graphics_draw_bitmap_in_rect(ctx, check_icon, GRect(layer_size.size.w - 3 - 16 - OFFSET_LEFT, 6+ OFFSET_ITEM_TOP, 16, 16));
   else
-    graphics_draw_bitmap_in_rect(ctx, check_icon_inv, GRect(144 - 3 - 16, 6, 16, 16));
+    graphics_draw_bitmap_in_rect(ctx, check_icon_inv, GRect(layer_size.size.w - 3 - 16 - OFFSET_LEFT, 6+ OFFSET_ITEM_TOP, 16, 16));
 #else
-    graphics_draw_bitmap_in_rect(ctx, check_icon, GRect(144 - 3 - 16, 6, 16, 16));
+    graphics_draw_bitmap_in_rect(ctx, check_icon, GRect(layer_size.size.w - 3 - 16 - OFFSET_LEFT, 6+ OFFSET_ITEM_TOP, 16, 16));
 #endif
   }
 }
@@ -477,7 +536,13 @@ static void menu_select(struct MenuLayer* menu, MenuIndex* cell_index, void* cal
         }
       }
       else
+      {
+#ifdef PBL_PLATFORM_APLITE
         tertiary_text_show(temp_alarm.description);
+#else
+        dictation_session_start(s_dictation_session);
+#endif
+      }
       break;
     case MENU_SECTION_WEEKDAYS:
       if(cell_index->row==0)
