@@ -35,35 +35,31 @@ time_t alarm_get_time_of_wakeup(Alarm *alarm)
     // Calculate time to wake up
     time_t now = time(NULL);
     struct tm *t = localtime(&now);
-    time_t timestamp = clock_to_timestamp_precise(TODAY,alarm->hour,alarm->minute);
+    time_t timestamp = now + (60*60*24*7);
+    time_t temp_timestamp;
     bool some_active=false;
     
     // Check if we may schedule the alarm today
-#ifdef PBL_SDK_2
     int current_weekday = t->tm_wday;
-#else
-    int current_weekday = (t->tm_wday==6?0:t->tm_wday); // What the actual f...?
-#endif
-    APP_LOG(APP_LOG_LEVEL_DEBUG,"Current weekday: %d",current_weekday);
     for(int i=0;i<7;i++)
     {
       if(alarm->weekdays_active[(i+current_weekday)%7])
       {
-        if(i==0)
-        timestamp = clock_to_timestamp_precise(TODAY,alarm->hour,alarm->minute);
-        else
-        timestamp = clock_to_timestamp_precise(((i+current_weekday)%7)+1,alarm->hour,alarm->minute);
-        if((now-timestamp)>(60*60*24*7)) // we can not be more than a week away?
-        continue;
-        else
+        APP_LOG(APP_LOG_LEVEL_DEBUG,"Day %d is active",(i+current_weekday)%7);
+        temp_timestamp = clock_to_timestamp_precise(((i+current_weekday)%7)+1,alarm->hour,alarm->minute);
+        if(temp_timestamp>(now + (60*60*24*7))) // more than one week away? This is today!
+          temp_timestamp-=(60*60*24*7);
+        APP_LOG(APP_LOG_LEVEL_DEBUG,"Diff to now: %d",(int)(temp_timestamp-now));
+        if(temp_timestamp<timestamp)
         {
           some_active=true;
-          break;
+          timestamp = temp_timestamp;
         }
       }
     }
     if(!some_active) //maybe we have missed a today event. this takes then place next week
     {
+      APP_LOG(APP_LOG_LEVEL_DEBUG,"none active");
       if(alarm->weekdays_active[current_weekday])
       {
         some_active=true;

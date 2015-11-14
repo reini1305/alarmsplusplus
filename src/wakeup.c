@@ -223,8 +223,11 @@ static void main_window_load(Window *window) {
 #ifdef PBL_SDK_3
     s_command_seq = gdraw_command_sequence_create_with_resource(RESOURCE_ID_CLOCK_SEQUENCE);
     // Create the canvas Layer
+#ifdef PBL_ROUND
+    s_canvas_layer = layer_create(GRect(60-ACTION_BAR_WIDTH/2, 0, bounds.size.w, bounds.size.h));
+#else
     s_canvas_layer = layer_create(GRect(30-ACTION_BAR_WIDTH/2, 0, bounds.size.w, bounds.size.h));
-
+#endif
     // Set the LayerUpdateProc
     layer_set_update_proc(s_canvas_layer, update_proc);
 
