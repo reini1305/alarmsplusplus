@@ -19,6 +19,15 @@ def configure(ctx):
 def build(ctx):
     ctx.load('pebble_sdk')
 
+	# Compile the dictionaries into resources
+#ctx(rule='python ../dict2bin.py ${SRC}', source='../locale_english.json', target='../locale_english.bin')
+#ctx(rule='python ../dict2bin.py ${SRC}', source='../locale_german.json', target='../locale_german.bin')
+#ctx(rule='python ../dict2bin.py ${SRC}', source='../locale_french.json', target='../locale_french.bin')
+#ctx(rule='python ../dict2bin.py ${SRC}', source='../locale_spanish.json', target='../locale_spanish.bin')
+#additional_resources = ['../resources/locale_spanish.bin','../resources/locale_german.bin','../resources/locale_french.bin','../resources/locale_spanish.bin']
+#ctx(rule='mv ../*.bin ../resources',
+#        source = ['../locale_spanish.bin','../locale_german.bin','../locale_french.bin','../locale_spanish.bin'],
+#       target = additional_resources)
     build_worker = os.path.exists('worker_src')
     binaries = []
 
@@ -26,7 +35,10 @@ def build(ctx):
         ctx.set_env(ctx.all_envs[p])
         ctx.set_group(ctx.env.PLATFORM_NAME)
         app_elf='{}/pebble-app.elf'.format(ctx.env.BUILD_DIR)
-        ctx.pbl_program(source=ctx.path.ant_glob('src/**/*.c'),
+        source_files = ctx.path.ant_glob('src/**/*.c')
+        #source_files.append(additional_resources)
+        #print source_files
+        ctx.pbl_program(source=source_files,
         target=app_elf)
 
         if build_worker:

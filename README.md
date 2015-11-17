@@ -8,8 +8,11 @@ The app can be found in the store: https://apps.getpebble.com/applications/54551
 <a href='https://pledgie.com/campaigns/28156'><img alt='Click here to lend your support to: Christian Reinbachers Pebble Apps and make a donation at pledgie.com !' src='https://pledgie.com/campaigns/28156.png?skin_name=chrome' border='0' ></a>
 
 #Screenshots
-<img src="https://assets.getpebble.com/api/file/1I7jFToIQn2xdc7YFCiP/convert?cache=true&w=144&h=168&fit="></img>
+<img src="https://github.com/reini1305/alarmsplusplus/raw/master/store/aplite/pebble_screenshot_2015-08-15_12-10-23.png"></img>
 <img src="https://assets.getpebble.com/api/file/mLDugb9JQjucO6KZHeNa/convert?cache=true&w=144&h=168&fit="></img>
+<img src="https://github.com/reini1305/alarmsplusplus/raw/master/store/chalk/pebble_screenshot_2015-10-16_07-10-08.png"></img>
+<img src="https://github.com/reini1305/alarmsplusplus/raw/master/store/basalt/pebble_screenshot_2015-08-15_12-47-39.png"></img>
+
 
 #Features
 - 16 alarms (32 on Pebble Time)
