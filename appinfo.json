@@ -3,13 +3,14 @@
   "shortName": "Alarms++",
   "longName": "Alarms++",
   "companyName": "Christian Reinbacher",
-  "versionCode": 78,
-  "versionLabel": "6.10",
+  "versionCode": 79,
+  "versionLabel": "6.11",
   "watchapp": {
     "watchface": false
   },
   "appKeys": {
-    "dummy": 0
+    "next_alarm": 0,
+    "description": 1
   },
   "resources": {
     "media": [

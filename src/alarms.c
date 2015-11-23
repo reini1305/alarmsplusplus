@@ -9,6 +9,8 @@
 #include "localize.h"
 #include "debug.h"
 
+static int first_launch=true;
+
 time_t clock_to_timestamp_precise(WeekDay day, int hour, int minute)
 {
   return (clock_to_timestamp(day, hour, minute)/60)*60;
@@ -98,6 +100,48 @@ int get_next_alarm(Alarm *alarms)
   }
   return alarm_id;
 }
+
+void alarm_phone_send_pin(Alarm* alarm) {
+#ifdef PBL_SDK_3
+  if (first_launch) {
+    first_launch=false;
+  }
+  else {
+    time_t now = time(NULL);
+    // begin iterator
+    DictionaryIterator *iter;
+    app_message_outbox_begin(&iter);
+    // write data
+    dict_write_uint32(iter, 0, alarm_get_time_of_wakeup(alarm)-now);
+    dict_write_cstring(iter,1, alarm_has_description(alarm)? alarm->description:"Alarms++");
+    dict_write_end(iter);
+    // send
+    int res = app_message_outbox_send();
+    APP_LOG(APP_LOG_LEVEL_DEBUG, "Pin Sent: %d", res);
+  }
+#endif
+}
+
+void alarm_phone_delete_pin(void) {
+#ifdef PBL_SDK_3
+  if (first_launch) {
+    first_launch=false;
+  }
+  else {
+    // begin iterator
+    DictionaryIterator *iter;
+    app_message_outbox_begin(&iter);
+    // write data
+    dict_write_uint32(iter, 0, 0);
+    dict_write_cstring(iter,1, "");
+    dict_write_end(iter);
+    // send
+    int res = app_message_outbox_send();
+    APP_LOG(APP_LOG_LEVEL_DEBUG, "Pin Sent: %d", res);
+  }
+#endif
+}
+
 
 void reschedule_wakeup(Alarm *alarms)
 {

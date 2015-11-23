@@ -8,6 +8,9 @@ static bool snooze;
 
 void init(void)
 {
+#ifdef PBL_SDK_3
+  app_message_open(APP_MESSAGE_INBOX_SIZE_MINIMUM, 2*APP_MESSAGE_OUTBOX_SIZE_MINIMUM);
+#endif
   load_persistent_storage_alarms(alarms);
   //if(load_persistent_storage_bool(BACKGROUND_TRACKING_KEY, false))
   //  app_worker_launch();

@@ -8,6 +8,7 @@
 #include "localize.h"
 #include "timeout.h"
 #include "pebble_process_info.h"
+#include "debug.h"
 
 #define MENU_SECTION_ALARMS   0
 #define MENU_SECTION_OTHER   1
@@ -133,9 +134,13 @@ void refresh_next_alarm_text(void)
       convert_24_to_12(t->tm_hour, &temp_hour, &is_am);
       snprintf(s_next_alarm_text,sizeof(s_next_alarm_text),"%02d.%02d %02d:%02d %s",t->tm_mday, t->tm_mon+1,temp_hour,t->tm_min,is_am?"AM":"PM");
     }
+    alarm_phone_send_pin(&s_alarms[alarm_id]);
   }
   else
+  {
     snprintf(s_next_alarm_text,sizeof(s_next_alarm_text),"---");
+    //alarm_phone_delete_pin();
+  }
 }
 
 void win_main_init(Alarm* alarms) {
