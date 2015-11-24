@@ -9,9 +9,7 @@ static bool snooze;
 
 void init(void)
 {
-#ifdef PBL_SDK_3
   setup_communication();
-  #endif
   load_persistent_storage_alarms(alarms);
   //if(load_persistent_storage_bool(BACKGROUND_TRACKING_KEY, false))
   //  app_worker_launch();

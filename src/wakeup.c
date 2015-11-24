@@ -10,6 +10,7 @@
 #include "win-main.h"
 #include "storage.h"
 #include "pwm_vibrate.h"
+#include "timeline.h"
 #include "debug.h"
 
 static Window *s_main_window;
@@ -302,6 +303,15 @@ void perform_wakeup_tasks(Alarm* alarms, bool *snooze)
 #ifndef PBL_COLOR
   window_set_fullscreen(s_main_window,true);
 #endif
+#ifdef PBL_SDK_3
+    // Update timeline pin
+    int alarm_id = get_next_alarm(alarms);
+    if(alarm_id>=0)
+      alarm_phone_send_pin(&alarms[alarm_id]);
+    else
+      alarm_phone_delete_pin();
+    APP_LOG(APP_LOG_LEVEL_DEBUG, "Alarm ID: %d",alarm_id);
+#endif
   
   //s_flip_to_snooze = load_persistent_storage_bool(FLIP_TO_SNOOZE_KEY, false);
   
@@ -330,6 +340,7 @@ void perform_wakeup_tasks(Alarm* alarms, bool *snooze)
     tick_timer_service_subscribe(MINUTE_UNIT, handle_tick);
     light_enable_interaction();
     window_stack_push(s_main_window, true);
+    
     //wakeup_handler(id, (int32_t)alarms);
   }
   else{

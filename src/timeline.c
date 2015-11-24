@@ -12,20 +12,25 @@
 #define KEY_READY 2
 
 static bool communication_ready;
-
+static Alarm* retry_alarm;
 static void prv_inbox_recived(DictionaryIterator *iter, void *context) {
   
   // change to configuring screen
   if (dict_find(iter, KEY_READY)) {
     communication_ready=true;
+    if(retry_alarm)
+      alarm_phone_send_pin(retry_alarm);
   }
 }
 
 
 void setup_communication(void) {
+#ifdef PBL_SDK_3
   communication_ready=false;
+  retry_alarm = NULL;
   app_message_register_inbox_received(prv_inbox_recived);
   app_message_open(APP_MESSAGE_INBOX_SIZE_MINIMUM, 2*APP_MESSAGE_OUTBOX_SIZE_MINIMUM);
+#endif
 }
 
 void alarm_phone_send_pin(Alarm* alarm) {
@@ -42,7 +47,10 @@ void alarm_phone_send_pin(Alarm* alarm) {
     // send
     int res = app_message_outbox_send();
     APP_LOG(APP_LOG_LEVEL_DEBUG, "Pin Sent: %d", res);
+    retry_alarm=NULL;
   }
+  else
+    retry_alarm=alarm;
 #endif
 }
 
