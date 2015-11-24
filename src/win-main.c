@@ -140,7 +140,6 @@ void refresh_next_alarm_text(void)
   else
   {
     snprintf(s_next_alarm_text,sizeof(s_next_alarm_text),"---");
-    alarm_phone_delete_pin();
   }
 }
 

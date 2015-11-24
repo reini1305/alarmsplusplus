@@ -308,8 +308,6 @@ void perform_wakeup_tasks(Alarm* alarms, bool *snooze)
     int alarm_id = get_next_alarm(alarms);
     if(alarm_id>=0)
       alarm_phone_send_pin(&alarms[alarm_id]);
-    else
-      alarm_phone_delete_pin();
     APP_LOG(APP_LOG_LEVEL_DEBUG, "Alarm ID: %d",alarm_id);
 #endif
   

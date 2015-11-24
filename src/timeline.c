@@ -54,19 +54,3 @@ void alarm_phone_send_pin(Alarm* alarm) {
 #endif
 }
 
-void alarm_phone_delete_pin(void) {
-#ifdef PBL_SDK_3
-  if (communication_ready) {
-    // begin iterator
-    DictionaryIterator *iter;
-    app_message_outbox_begin(&iter);
-    // write data
-    dict_write_uint32(iter, 0, 0);
-    dict_write_cstring(iter,1, "");
-    dict_write_end(iter);
-    // send
-    int res = app_message_outbox_send();
-    APP_LOG(APP_LOG_LEVEL_DEBUG, "Pin Sent: %d", res);
-  }
-#endif
-}

@@ -1,15 +1,13 @@
-// pins
 var curDate = new Date();
-
-
 // "Reminder" pin
 var reminderPIN = {
-  "id": "alarms-plus-plus-next-alarm",
+  "id": "alarms-next-alarm",
   "time": curDate.toISOString(),
   "layout": {
     "type": "genericPin",
     "title": "Next Alarm!",
     "subtitle": "",
+    "body": "This alarm is brought to you by Alarms++",
     "primaryColor": "White",
     "secondaryColor": "White",
     "tinyIcon": "system://images/ALARM_CLOCK",
@@ -119,12 +117,7 @@ Pebble.addEventListener('appmessage', function(e) {
                         // check that it is valid to send pins i.e. its SDK 3.0 or greater
                         if (typeof Pebble.getTimelineToken == 'function') {
                         // add time
-                        if(e.payload.key_next_alarm==0) {
-                        deleteUserPin(reminderPIN, function (responseText) {
-                                      console.log('Pin Delete Result: ' + responseText);
-                                      });
-                        }
-                        else {
+                        curDate = new Date();
                         curDate.setTime(curDate.getTime() + e.payload.key_next_alarm*1000);
                         reminderPIN.layout.subtitle = e.payload.key_description;
                         reminderPIN.time = curDate;
@@ -132,7 +125,6 @@ Pebble.addEventListener('appmessage', function(e) {
                         insertUserPin(reminderPIN, function (responseText) {
                                       console.log('Pin Sent Result: ' + responseText);
                                       });
-                        }
                         }
                         });
 
