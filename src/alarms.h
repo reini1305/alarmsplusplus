@@ -37,6 +37,5 @@ bool alarm_has_description(Alarm *alarm);
 int8_t get_next_free_slot(Alarm *alarms);
 bool is_24h();
 int get_next_alarm(Alarm *alarms);
-void alarm_phone_send_pin(Alarm* alarm);
-void alarm_phone_delete_pin(void);
+
 #endif

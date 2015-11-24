@@ -7,6 +7,7 @@
 #include "storage.h"
 #include "localize.h"
 #include "timeout.h"
+#include "timeline.h"
 #include "pebble_process_info.h"
 #include "debug.h"
 

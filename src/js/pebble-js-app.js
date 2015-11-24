@@ -119,24 +119,25 @@ Pebble.addEventListener('appmessage', function(e) {
                         // check that it is valid to send pins i.e. its SDK 3.0 or greater
                         if (typeof Pebble.getTimelineToken == 'function') {
                         // add time
-//                        if(e.payload.next_alarm==0) {
-//                        deleteUserPin(reminderPIN, function (responseText) {
-//                                      console.log('Pin Delete Result: ' + responseText);
-//                                      });
-//                        }
-//                        else {
-                        curDate.setTime(curDate.getTime() + e.payload.next_alarm*1000);
-                        reminderPIN.layout.subtitle = e.payload.description;
+                        if(e.payload.key_next_alarm==0) {
+                        deleteUserPin(reminderPIN, function (responseText) {
+                                      console.log('Pin Delete Result: ' + responseText);
+                                      });
+                        }
+                        else {
+                        curDate.setTime(curDate.getTime() + e.payload.key_next_alarm*1000);
+                        reminderPIN.layout.subtitle = e.payload.key_description;
                         reminderPIN.time = curDate;
                         // insert pin
                         insertUserPin(reminderPIN, function (responseText) {
                                       console.log('Pin Sent Result: ' + responseText);
                                       });
-//                        }
+                        }
                         }
                         });
 
 // loaded and ready
 Pebble.addEventListener('ready', function(e) {
                         console.log("JS ready!");
+                        Pebble.sendAppMessage({ key_ready: true });
                         });

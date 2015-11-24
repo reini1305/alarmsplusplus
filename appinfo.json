@@ -9,8 +9,9 @@
     "watchface": false
   },
   "appKeys": {
-    "next_alarm": 0,
-    "description": 1
+    "key_next_alarm": 0,
+    "key_description": 1,
+    "key_ready": 2
   },
   "resources": {
     "media": [
