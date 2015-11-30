@@ -11,5 +11,6 @@
 
 #include <alarms.h>
 void setup_communication(void);
+void destroy_communication(void);
 void alarm_phone_send_pin(Alarm* alarm);
 #endif /* timeline_h */

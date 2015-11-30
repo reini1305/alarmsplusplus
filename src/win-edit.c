@@ -540,7 +540,10 @@ static void menu_select(struct MenuLayer* menu, MenuIndex* cell_index, void* cal
 #ifdef PBL_PLATFORM_APLITE
         tertiary_text_show(temp_alarm.description);
 #else
-        dictation_session_start(s_dictation_session);
+        if(s_dictation_session)
+	  dictation_session_start(s_dictation_session);
+	else
+	  tertiary_text_show(temp_alarm.description);
 #endif
       }
       break;

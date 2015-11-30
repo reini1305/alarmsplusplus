@@ -10,7 +10,9 @@
 #include "win-main.h"
 #include "storage.h"
 #include "pwm_vibrate.h"
+#ifdef PBL_SDK_3
 #include "timeline.h"
+#endif
 #include "debug.h"
 
 static Window *s_main_window;

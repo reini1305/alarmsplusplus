@@ -7,7 +7,9 @@
 #include "storage.h"
 #include "localize.h"
 #include "timeout.h"
+#ifdef PBL_SDK_3
 #include "timeline.h"
+#endif
 #include "pebble_process_info.h"
 #include "debug.h"
 
@@ -135,7 +137,9 @@ void refresh_next_alarm_text(void)
       convert_24_to_12(t->tm_hour, &temp_hour, &is_am);
       snprintf(s_next_alarm_text,sizeof(s_next_alarm_text),"%02d.%02d %02d:%02d %s",t->tm_mday, t->tm_mon+1,temp_hour,t->tm_min,is_am?"AM":"PM");
     }
+#ifdef PBL_SDK_3
     alarm_phone_send_pin(&s_alarms[alarm_id]);
+#endif
   }
   else
   {

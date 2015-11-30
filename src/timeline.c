@@ -11,6 +11,8 @@
 #define KEY_DESCRIPTION 1
 #define KEY_READY 2
 
+
+#ifdef PBL_SDK_3
 static bool communication_ready;
 static Alarm* retry_alarm;
 static void prv_inbox_recived(DictionaryIterator *iter, void *context) {
@@ -25,16 +27,19 @@ static void prv_inbox_recived(DictionaryIterator *iter, void *context) {
 
 
 void setup_communication(void) {
-#ifdef PBL_SDK_3
   communication_ready=false;
   retry_alarm = NULL;
   app_message_register_inbox_received(prv_inbox_recived);
   app_message_open(APP_MESSAGE_INBOX_SIZE_MINIMUM, 2*APP_MESSAGE_OUTBOX_SIZE_MINIMUM);
-#endif
+}
+
+void destroy_communication(void) {
+  communication_ready=false;
+  retry_alarm = NULL;
+  app_message_deregister_callbacks();
 }
 
 void alarm_phone_send_pin(Alarm* alarm) {
-#ifdef PBL_SDK_3
   if (communication_ready) {
     time_t now = time(NULL);
     // begin iterator
@@ -51,6 +56,5 @@ void alarm_phone_send_pin(Alarm* alarm) {
   }
   else
     retry_alarm=alarm;
-#endif
 }
-
+#endif
