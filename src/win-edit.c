@@ -101,12 +101,9 @@ void win_edit_init(void)
   s_dictation_session = dictation_session_create(sizeof(temp_alarm.description),
                                                  dictation_session_callback, NULL);
 #endif
-#ifdef PBL_COLOR
   check_icon = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_ACTION_ICON_CHECK_INV);
   check_icon_inv = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_ACTION_ICON_CHECK);
-#else
-  check_icon = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_ACTION_ICON_CHECK);
-#endif
+
   s_my_path_ptr= gpath_create(&PATH_INFO);
 }
 
@@ -196,11 +193,8 @@ static void update_ui(Layer *layer, GContext *ctx) {
   }
   layer_set_hidden(text_layer_get_layer(s_input_layers[2]),!s_withampm);
   // draw the :
-#ifdef PBL_COLOR
-  graphics_context_set_text_color(ctx,GColorBlue);
-#else
-  graphics_context_set_text_color(ctx,GColorBlack);
-#endif
+
+  graphics_context_set_text_color(ctx,PBL_IF_COLOR_ELSE(GColorBlue,GColorBlack));
   graphics_draw_text(ctx,":",fonts_get_system_font(FONT_KEY_GOTHIC_28_BOLD),GRect(s_withampm?144/2-27:144/2 + OFFSET_LEFT,58 + OFFSET_TOP,40,20),
                      GTextOverflowModeWordWrap,GTextAlignmentLeft,NULL);
   
@@ -402,22 +396,10 @@ static void menu_draw_header(GContext* ctx, const Layer* cell_layer, uint16_t se
 }
 
 static void menu_draw_row(GContext* ctx, const Layer* cell_layer, MenuIndex* cell_index, void* callback_context) {
-#ifdef PBL_COLOR
-//  if(menu_cell_layer_is_highlighted(cell_layer))
-//  {
-//    graphics_context_set_compositing_mode(ctx, GCompOpAssign);
-////    graphics_context_set_fill_color(ctx, GColorBlack);
-////    graphics_context_set_text_color(ctx, GColorWhite);
-////    graphics_fill_rect(ctx,GRect(0,0,144,28),0,GCornerNone);
-//    
-//  }
-//  else{
-//    graphics_context_set_compositing_mode(ctx, GCompOpAssignInverted);
-//  }
-#else
-  graphics_context_set_text_color(ctx, GColorBlack);
-  graphics_context_set_fill_color(ctx, GColorBlack);
-#endif
+
+/*  graphics_context_set_text_color(ctx, GColorBlack);*/
+/*  graphics_context_set_fill_color(ctx, GColorBlack);*/
+
   char* text = NULL;
   GFont font = NULL;
   bool draw_checkmark=false;
@@ -492,14 +474,10 @@ static void menu_draw_row(GContext* ctx, const Layer* cell_layer, MenuIndex* cel
 #endif
   if(draw_checkmark)
   {
-#if PBL_COLOR
   if(menu_cell_layer_is_highlighted(cell_layer))
     graphics_draw_bitmap_in_rect(ctx, check_icon, GRect(layer_size.size.w - 3 - 16 - OFFSET_LEFT, 6+ OFFSET_ITEM_TOP, 16, 16));
   else
     graphics_draw_bitmap_in_rect(ctx, check_icon_inv, GRect(layer_size.size.w - 3 - 16 - OFFSET_LEFT, 6+ OFFSET_ITEM_TOP, 16, 16));
-#else
-    graphics_draw_bitmap_in_rect(ctx, check_icon, GRect(layer_size.size.w - 3 - 16 - OFFSET_LEFT, 6+ OFFSET_ITEM_TOP, 16, 16));
-#endif
   }
 }
 

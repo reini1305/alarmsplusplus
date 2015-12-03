@@ -3,15 +3,22 @@
 #include "storage.h"
 #include "localize.h"
 
+#ifdef PBL_PLATFORM_APLITE
+#define MENU_ROW_COUNT 4
+
+#define MENU_ROW_LONGPRESS     0
+#define MENU_ROW_DURATION      2
+#define MENU_ROW_AUTO_SNOOZE   1
+#define MENU_ROW_DISMISS       3
+#else
 #define MENU_ROW_COUNT 5
 
 #define MENU_ROW_LONGPRESS     0
 #define MENU_ROW_VIBRATION     2
-//#define MENU_ROW_FLIP        1
 #define MENU_ROW_DURATION      3
 #define MENU_ROW_AUTO_SNOOZE   1
 #define MENU_ROW_DISMISS       4
-//#define MENU_ROW_TRACKING      4
+#endif
 
 static void window_load(Window* window);
 static void window_unload(Window* window);
@@ -29,7 +36,9 @@ static void scroll_timer_callback(void* data);
 static Window*    s_window;
 static MenuLayer* s_menu;
 static bool s_longpress_dismiss;
+#ifndef PBL_PLATFORM_APLITE
 static int s_vibration_pattern;
+#endif
 //static bool s_flip_to_snooze;
 static int s_vibration_duration;
 static bool s_auto_snooze;
@@ -48,7 +57,9 @@ void win_advanced_init(void) {
     .appear = window_appear
   });
   s_longpress_dismiss = load_persistent_storage_bool(LONGPRESS_DISMISS_KEY,false);
+#ifndef PBL_PLATFORM_APLITE
   s_vibration_pattern = load_persistent_storage_int(VIBRATION_PATTERN_KEY,0);
+#endif
   //s_flip_to_snooze = load_persistent_storage_bool(FLIP_TO_SNOOZE_KEY, false);
   s_vibration_duration = load_persistent_storage_int(VIBRATION_DURATION_KEY,2);
   s_auto_snooze = load_persistent_storage_bool(AUTO_SNOOZE_KEY,true);
@@ -169,10 +180,7 @@ static void menu_draw_row(GContext* ctx, const Layer* cell_layer, MenuIndex* cel
       text = _("Button to Dismiss Alarm");
       subtext = s_dismiss_top?_("Top"):_("Bottom");
       break;
-    /*case MENU_ROW_FLIP:
-    text =  _("Shake to Snooze");
-    subtext = s_flip_to_snooze?_("Enabled"):_("Disabled");
-      break;*/
+#ifndef PBL_PLATFORM_APLITE
     case MENU_ROW_VIBRATION:
     text = _("Vibration Strength");
     switch (s_vibration_pattern) {
@@ -192,14 +200,11 @@ static void menu_draw_row(GContext* ctx, const Layer* cell_layer, MenuIndex* cel
         break;
     }
     break;
+#endif
     case MENU_ROW_AUTO_SNOOZE:
     text = _("Snooze after Vibration End");
     subtext = s_auto_snooze?_("ON"):_("OFF");
       break;
-    /*case MENU_ROW_TRACKING:
-      text = _("Automatic DST update");
-      subtext = s_background_tracking?_("ON"):_("OFF");
-      break;*/
     case MENU_ROW_DURATION:
       text = _("Vibration Duration");
     switch (s_vibration_duration) {
@@ -257,28 +262,18 @@ static void menu_select(struct MenuLayer* menu, MenuIndex* cell_index, void* cal
       s_dismiss_top=!s_dismiss_top;
       persist_write_bool(TOP_BUTTON_DISMISS_KEY,s_dismiss_top);
       break;
-    /*case MENU_ROW_FLIP:
-      s_flip_to_snooze=!s_flip_to_snooze;
-      persist_write_bool(FLIP_TO_SNOOZE_KEY,s_flip_to_snooze);
-      break;*/
     case MENU_ROW_AUTO_SNOOZE:
       s_auto_snooze=!s_auto_snooze;
       persist_write_bool(AUTO_SNOOZE_KEY,s_auto_snooze);
       break;
-    /*case MENU_ROW_TRACKING:
-      s_background_tracking=!s_background_tracking;
-      persist_write_bool(BACKGROUND_TRACKING_KEY,s_background_tracking);
-      if(s_background_tracking)
-        app_worker_launch();
-      else
-        app_worker_kill();
-      break;*/
+#ifndef PBL_PLATFORM_APLITE
     case MENU_ROW_VIBRATION:
       s_vibration_pattern++;
       if(s_vibration_pattern>3)
         s_vibration_pattern=0;
       persist_write_int(VIBRATION_PATTERN_KEY,s_vibration_pattern);
       break;
+#endif
     case MENU_ROW_DURATION:
       s_vibration_duration++;
       if(s_vibration_duration>5)

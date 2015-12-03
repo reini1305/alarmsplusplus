@@ -7,9 +7,7 @@
 #include "storage.h"
 #include "localize.h"
 #include "timeout.h"
-#ifdef PBL_SDK_3
 #include "timeline.h"
-#endif
 #include "pebble_process_info.h"
 #include "debug.h"
 
@@ -63,12 +61,9 @@ static void reset_timer_callback(void* data);
 
 static Window*    s_window;
 static MenuLayer* s_menu;
-#ifdef PBL_SDK_3
 static StatusBarLayer *s_status_layer;
 static Layer *s_battery_layer;
-#else
-static GBitmap* s_statusbar_bitmap;
-#endif
+
 static Alarm* s_alarms;
 static int s_snooze_delay;
 static char s_snooze_text[12];
@@ -93,7 +88,6 @@ static char french[7] = {"dlmmjvs"};
 static char spanish[7] = {"dlmmjvs"};
 static char *weekday_names=english;
 
-#ifdef PBL_SDK_3
 // ActionMenu Stuff
 static ActionMenu *s_action_menu;
 static ActionMenuLevel *s_root_level;
@@ -118,7 +112,7 @@ static void init_action_menu() {
                                NULL);
   
 }
-#endif
+
 
 void refresh_next_alarm_text(void)
 {
@@ -137,9 +131,7 @@ void refresh_next_alarm_text(void)
       convert_24_to_12(t->tm_hour, &temp_hour, &is_am);
       snprintf(s_next_alarm_text,sizeof(s_next_alarm_text),"%02d.%02d %02d:%02d %s",t->tm_mday, t->tm_mon+1,temp_hour,t->tm_min,is_am?"AM":"PM");
     }
-#ifdef PBL_SDK_3
     alarm_phone_send_pin(&s_alarms[alarm_id]);
-#endif
   }
   else
   {
@@ -166,9 +158,7 @@ void win_main_init(Alarm* alarms) {
   snprintf(version_text, sizeof(version_text), "Alarms++ v%d.%d",__pbl_app_info.process_version.major,__pbl_app_info.process_version.minor);
   s_scroll_timer = app_timer_register(500,scroll_timer_callback,NULL);
   s_reset_timer = app_timer_register(2000,reset_timer_callback,NULL);
-#ifdef PBL_SDK_3
   init_action_menu();
-#endif
   char *sys_locale = setlocale(LC_ALL, "");
   if (strcmp("de_DE", sys_locale) == 0) {
     weekday_names = german;
@@ -183,7 +173,6 @@ void win_main_show(void) {
   window_stack_push(s_window, false);
 }
 
-#ifdef PBL_SDK_3
 static void battery_proc(Layer *layer, GContext *ctx) {
   // Emulator battery meter on Aplite
   graphics_context_set_stroke_color(ctx, GColorWhite);
@@ -195,13 +184,13 @@ static void battery_proc(Layer *layer, GContext *ctx) {
   graphics_context_set_fill_color(ctx, GColorWhite);
   graphics_fill_rect(ctx, GRect(128, 6, width, 4), 0, GCornerNone);
 }
-#endif
+
 
 static void window_load(Window* window) {
   Layer *window_layer = window_get_root_layer(s_window);
   GRect bounds = layer_get_frame(window_layer);
   
-#if defined(PBL_SDK_3) && defined(PBL_RECT)
+#if defined(PBL_RECT)
   s_status_layer = status_bar_layer_create();
   // Change the status bar width to make space for the action bar
   //  GRect frame = GRect(0, 0, width, STATUS_BAR_LAYER_HEIGHT);
@@ -237,10 +226,6 @@ static void window_load(Window* window) {
 #endif
   // Add it to the window for display
   layer_add_child(window_layer, menu_layer_get_layer(s_menu));
-#ifdef PBL_SDK_2
-  s_statusbar_bitmap = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_STATUS);
-  window_set_status_bar_icon(window,s_statusbar_bitmap);
-#endif
 }
 
 static void window_unload(Window* window) {
@@ -345,7 +330,6 @@ static void menu_draw_row(GContext* ctx, const Layer* cell_layer, MenuIndex* cel
 static void menu_draw_row_add(GContext* ctx, bool selected, int width) {
   // draw a plus sign, consisting of two lines
   int8_t size = 20;
-#ifdef PBL_COLOR
   if(selected)
     graphics_context_set_stroke_color(ctx,GColorWhite);
   else
@@ -353,27 +337,18 @@ static void menu_draw_row_add(GContext* ctx, bool selected, int width) {
   graphics_context_set_stroke_width(ctx,2);
   graphics_draw_line(ctx, GPoint(width/2,(ALARM_HEIGHT-size)/2), GPoint(width/2,ALARM_HEIGHT-(ALARM_HEIGHT-size)/2));
   graphics_draw_line(ctx, GPoint((width-size)/2,ALARM_HEIGHT/2), GPoint((width+size)/2,ALARM_HEIGHT/2));
-#else
-  graphics_context_set_stroke_color(ctx,GColorBlack);
-  graphics_draw_line(ctx, GPoint(width/2,(ALARM_HEIGHT-size)/2), GPoint(width/2,ALARM_HEIGHT-(ALARM_HEIGHT-size)/2));
-  graphics_draw_line(ctx, GPoint((width-size)/2,ALARM_HEIGHT/2), GPoint((width+size)/2,ALARM_HEIGHT/2));
-  graphics_draw_line(ctx, GPoint(width/2-1,(ALARM_HEIGHT-size)/2), GPoint(width/2-1,ALARM_HEIGHT-(ALARM_HEIGHT-size)/2));
-  graphics_draw_line(ctx, GPoint((width-size)/2,ALARM_HEIGHT/2-1), GPoint((width+size)/2,ALARM_HEIGHT/2-1));
-#endif
+
 }
 
 static void menu_draw_row_alarms(GContext* ctx, const Layer* cell_layer, uint16_t row_index) {
   Alarm* alarm = &s_alarms[s_id_enabled[row_index]];
   bool reset = s_id_reset==s_id_enabled[row_index];
   
-#ifdef PBL_COLOR
   if(menu_cell_layer_is_highlighted(cell_layer))
     graphics_context_set_text_color(ctx,GColorWhite);
   else
     graphics_context_set_text_color(ctx,GColorBlack);
-#else
-  graphics_context_set_text_color(ctx, GColorBlack);
-#endif
+
   GFont font = fonts_get_system_font(alarm->enabled?FONT_KEY_GOTHIC_28_BOLD:FONT_KEY_GOTHIC_28);
   
   GRect layer_size = layer_get_bounds(cell_layer);
@@ -491,28 +466,8 @@ static void menu_selection_changed(struct MenuLayer *menu_layer, MenuIndex new_i
 }
 
 static void menu_select(struct MenuLayer* menu, MenuIndex* cell_index, void* callback_context) {
-#ifdef PBL_SDK_2
-  int8_t current_id=-2;
-  if(get_next_free_slot(s_alarms)>=0){
-    if(cell_index->row>0)
-      current_id=s_id_enabled[cell_index->row-1];
-  }
-  else
-    current_id=s_id_enabled[cell_index->row];
-#endif
   switch (cell_index->section) {
     case MENU_SECTION_ALARMS:
-#ifdef PBL_SDK_2
-      if(s_id_reset==current_id)  // the state is already reset
-      {
-        alarm_reset(&s_alarms[current_id]);
-        s_id_reset = -1;
-        update_id_enabled();
-        menu_layer_reload_data(s_menu);
-        layer_mark_dirty(menu_layer_get_layer(s_menu));
-      }
-      else
-#endif
         menu_select_alarms(cell_index->row);
       break;
     case MENU_SECTION_OTHER:
@@ -528,62 +483,6 @@ static void reset_timer_callback(void *data)
   s_can_be_reset=false;
 }
 
-#ifdef PBL_SDK_2
-static void menu_select_long(struct MenuLayer* menu, MenuIndex* cell_index, void* callback_context) {
-  int8_t current_id;
-  switch (cell_index->section) {
-    case MENU_SECTION_ALARMS:
-
-      if(get_next_free_slot(s_alarms)>=0)
-        if(cell_index->row==0)
-          return;
-        else
-          current_id=s_id_enabled[cell_index->row-1];
-      else
-        current_id=s_id_enabled[cell_index->row];
-      if(!s_can_be_reset)
-        alarm_toggle_enable(&s_alarms[current_id]);
-      else
-      {
-        if(s_id_reset==current_id)  // the state is already reset
-        {
-          alarm_toggle_enable(&s_alarms[current_id]);
-          s_id_reset = -1;
-        }
-        else
-        {
-          if(s_alarms[current_id].enabled)
-          {
-            alarm_toggle_enable(&s_alarms[current_id]);
-          }
-          else
-          {
-            s_id_reset=current_id;
-          }
-        }
-        //alarm_toggle_enable(&s_alarms[current_id]);
-      }
-      update_id_enabled();
-      menu_layer_reload_data(menu);
-      refresh_next_alarm_text();
-      layer_mark_dirty(menu_layer_get_layer(menu));
-      if(!app_timer_reschedule(s_reset_timer,2000))
-        s_reset_timer=app_timer_register(2000,reset_timer_callback,NULL);
-      s_can_be_reset=true;
-      break;
-    case MENU_SECTION_OTHER:
-      if(cell_index->row == MENU_ROW_OTHER_SNOOZE)
-      {
-        s_snooze_delay--;
-        if(s_snooze_delay<0)
-          s_snooze_delay=30;
-        persist_write_int(SNOOZE_KEY,s_snooze_delay);
-        layer_mark_dirty(menu_layer_get_layer(menu));
-      }
-      break;
-  }
-}
-#else
 static void menu_select_long(struct MenuLayer* menu, MenuIndex* cell_index, void* callback_context) {
   // Configure the ActionMenu Window about to be shown
   ActionMenuConfig config = (ActionMenuConfig) {
@@ -621,7 +520,7 @@ static void menu_select_long(struct MenuLayer* menu, MenuIndex* cell_index, void
       break;
   }
 }
-#endif
+
 
 static void menu_select_alarms(uint16_t row_index) {
   // Show the settings dialog
@@ -645,9 +544,6 @@ static void menu_select_other(uint16_t row_index) {
       if(s_snooze_delay>30)
         s_snooze_delay=0;
       persist_write_int(SNOOZE_KEY,s_snooze_delay);
-      break;
-    case MENU_ROW_OTHER_ABOUT:
-      //win_about_show();
       break;
     case MENU_ROW_OTHER_ADVANCED:
       win_advanced_show();

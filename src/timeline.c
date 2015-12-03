@@ -30,7 +30,7 @@ void setup_communication(void) {
   communication_ready=false;
   retry_alarm = NULL;
   app_message_register_inbox_received(prv_inbox_recived);
-  app_message_open(APP_MESSAGE_INBOX_SIZE_MINIMUM, 2*APP_MESSAGE_OUTBOX_SIZE_MINIMUM);
+  app_message_open(10, 20);
 }
 
 void destroy_communication(void) {
