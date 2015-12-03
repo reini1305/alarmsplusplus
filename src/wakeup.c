@@ -302,15 +302,15 @@ void perform_wakeup_tasks(Alarm* alarms, bool *snooze)
     .load = main_window_load,
     .unload = main_window_unload,
   });
-#ifndef PBL_COLOR
-  window_set_fullscreen(s_main_window,true);
-#endif
+
 #ifdef PBL_SDK_3
     // Update timeline pin
     int alarm_id = get_next_alarm(alarms);
     if(alarm_id>=0)
       alarm_phone_send_pin(&alarms[alarm_id]);
     APP_LOG(APP_LOG_LEVEL_DEBUG, "Alarm ID: %d",alarm_id);
+#else
+  window_set_fullscreen(s_main_window,true);
 #endif
   
   //s_flip_to_snooze = load_persistent_storage_bool(FLIP_TO_SNOOZE_KEY, false);
