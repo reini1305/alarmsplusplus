@@ -2,7 +2,7 @@
 #include "alarms.h"
 #include "win-edit.h"
 //#include "win-snooze.h"
-#include "win-about.h"
+//#include "win-about.h"
 #include "win-advanced.h"
 #include "storage.h"
 #include "localize.h"
@@ -157,7 +157,7 @@ void win_main_init(Alarm* alarms) {
   });
   win_edit_init();
   //win_snooze_init();
-  win_about_init();
+  //win_about_init();
   win_advanced_init();
   s_snooze_delay = load_persistent_storage_int(SNOOZE_KEY,10);
   update_id_enabled();
@@ -646,9 +646,9 @@ static void menu_select_other(uint16_t row_index) {
         s_snooze_delay=0;
       persist_write_int(SNOOZE_KEY,s_snooze_delay);
       break;
-    case MENU_ROW_OTHER_ABOUT:
-      win_about_show();
-      break;
+/*    case MENU_ROW_OTHER_ABOUT:*/
+/*      win_about_show();*/
+/*      break;*/
     case MENU_ROW_OTHER_ADVANCED:
       win_advanced_show();
       break;

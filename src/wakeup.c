@@ -9,32 +9,22 @@
 #include "wakeup.h"
 #include "win-main.h"
 #include "storage.h"
+#ifndef PBL_PLATFORM_APLITE
 #include "pwm_vibrate.h"
-#ifdef PBL_SDK_3
-#include "timeline.h"
 #endif
+#include "timeline.h"
 #include "debug.h"
 
 static Window *s_main_window;
 static TextLayer *s_output_layer;
 static TextLayer *s_description_layer;
-#ifdef PBL_SDK_2
-  static InverterLayer *s_inverter_layer;
-  static GBitmap *s_logo;
-  static BitmapLayer *s_bitmap_layer;
-#endif
-#ifdef PBL_SDK_3
-  #define DELTA 13
-  static GDrawCommandSequence *s_command_seq;
-  static int s_index = 0;
-  static Layer *s_canvas_layer;
-#endif
 static ActionBarLayer *action_bar;
 
 
 static char output_text[10];
 static bool *s_snooze;
 static Alarm *s_alarm;
+#ifndef PBL_PLATFORM_APLITE
 static uint32_t s_segments[]={600,1};
 static VibePatternPWM s_pwmPat = {
   .durations = s_segments,
@@ -42,6 +32,13 @@ static VibePatternPWM s_pwmPat = {
 };
 static int s_vibe_counter = 0;
 static int s_vibration_pattern = 0;
+static GDrawCommandSequence *s_command_seq;
+static int s_index = 0;
+static Layer *s_canvas_layer;
+#else
+static GBitmap *s_logo;
+static BitmapLayer *s_bitmap_layer;
+#endif
 static int s_vibration_duration = 0;
 static int s_auto_snooze=false;
 //static int s_last_z = 10000;
@@ -98,6 +95,7 @@ static void click_config_provider(void *context) {
 }
 
 void do_vibrate(void) {
+#ifndef PBL_PLATFORM_APLITE
   if(s_vibration_pattern)
   {
     s_pwmPat.durations[1] = (s_vibe_counter/s_vibration_pattern)+1;
@@ -105,6 +103,7 @@ void do_vibrate(void) {
     vibes_enqueue_custom_pwm_pattern(&s_pwmPat);
   }
   else
+#endif
     vibes_long_pulse();
   vibe_timer = app_timer_register(1000,vibe_timer_callback,NULL);
 }
@@ -119,21 +118,6 @@ void cancel_vibe_timer_callback(void* data) {
   if(s_auto_snooze)
     do_snooze();
 }
-
-/*static void data_handler(AccelData *data, uint32_t num_samples) {
-  if(s_last_z>4000) // we are called for the first time
-    s_last_z = data[0].z;
-  if((s_last_z>0)!=(data[0].z>0)) // sign flip
-    do_snooze();
-  s_last_z = data[0].z;
-}*/
-
-/*static void accel_tap_handler(AccelAxisType axis, int32_t direction) {
-  // Process tap on ACCEL_AXIS_X, ACCEL_AXIS_Y or ACCEL_AXIS_Z
-  // Direction is 1 or -1
-  if(axis == ACCEL_AXIS_X || axis == ACCEL_AXIS_Z) // flick your wrist
-    do_snooze();
-}*/
 
 static void update_text(struct tm *t) {
   if(is_24h())
@@ -154,13 +138,13 @@ static void handle_tick(struct tm *t, TimeUnits units_changed) {
     layer_mark_dirty(text_layer_get_layer(s_description_layer));
 }
 
-#ifdef PBL_SDK_3
+#ifndef PBL_PLATFORM_APLITE
 static void next_frame_handler(void *context) {
   // Draw the next frame
   layer_mark_dirty(s_canvas_layer);
 
   // Continue the sequence
-  app_timer_register(DELTA, next_frame_handler, NULL);
+  app_timer_register(33, next_frame_handler, NULL);
 }
 
 static void update_proc(Layer *layer, GContext *ctx) {
@@ -187,26 +171,18 @@ static void main_window_load(Window *window) {
   action_bar = action_bar_layer_create();
   action_bar_layer_set_click_config_provider(action_bar, click_config_provider);
   bool topbutton_dismiss = load_persistent_storage_bool(TOP_BUTTON_DISMISS_KEY, true);
-#ifdef PBL_SDK_3
+
   action_bar_layer_set_icon_animated(action_bar,topbutton_dismiss?BUTTON_ID_UP:BUTTON_ID_DOWN,gbitmap_create_with_resource(RESOURCE_ID_IMAGE_ACTION_ICON_CROSS_INV),true);
   action_bar_layer_set_icon_animated(action_bar,topbutton_dismiss?BUTTON_ID_DOWN:BUTTON_ID_UP,gbitmap_create_with_resource(RESOURCE_ID_IMAGE_ACTION_ICON_ZZ_INV),true);
-#else
-  action_bar_layer_set_icon(action_bar,topbutton_dismiss?BUTTON_ID_UP:BUTTON_ID_DOWN,gbitmap_create_with_resource(RESOURCE_ID_IMAGE_ACTION_ICON_CROSS));
-  action_bar_layer_set_icon(action_bar,topbutton_dismiss?BUTTON_ID_DOWN:BUTTON_ID_UP,gbitmap_create_with_resource(RESOURCE_ID_IMAGE_ACTION_ICON_ZZ));
-#endif
+
   action_bar_layer_add_to_window(action_bar,window);
   
   // Create output TextLayer
   
-#ifdef PBL_SDK_2
-  s_output_layer = text_layer_create(GRect(0, bounds.size.h/2-(is_24h()?0:21), bounds.size.w-ACTION_BAR_WIDTH, bounds.size.h));
-  text_layer_set_text_alignment(s_output_layer, GTextAlignmentCenter);
-  text_layer_set_font(s_output_layer,fonts_get_system_font(FONT_KEY_BITHAM_42_BOLD));
-#else
   s_output_layer = text_layer_create(GRect(0, bounds.size.h/2-(is_24h()?0:4), bounds.size.w-ACTION_BAR_WIDTH, bounds.size.h));
   text_layer_set_text_alignment(s_output_layer, GTextAlignmentCenter);
   text_layer_set_font(s_output_layer,fonts_get_system_font(FONT_KEY_BITHAM_42_LIGHT));
-#endif
+
   //snprintf(output_text, sizeof(output_text), "00:00");
   text_layer_set_text(s_output_layer, output_text);
   layer_add_child(window_get_root_layer(window), text_layer_get_layer(s_output_layer));
@@ -223,20 +199,16 @@ static void main_window_load(Window *window) {
   }
   else
   {
-#ifdef PBL_SDK_3
+#ifndef PBL_PLATFORM_APLITE
     s_command_seq = gdraw_command_sequence_create_with_resource(RESOURCE_ID_CLOCK_SEQUENCE);
     // Create the canvas Layer
-#ifdef PBL_ROUND
-    s_canvas_layer = layer_create(GRect(60-ACTION_BAR_WIDTH/2, 0, bounds.size.w, bounds.size.h));
-#else
-    s_canvas_layer = layer_create(GRect(30-ACTION_BAR_WIDTH/2, 0, bounds.size.w, bounds.size.h));
-#endif
+    s_canvas_layer = layer_create(GRect(PBL_IF_ROUND_ELSE(60,30)-ACTION_BAR_WIDTH/2, 0, bounds.size.w, bounds.size.h));
     // Set the LayerUpdateProc
     layer_set_update_proc(s_canvas_layer, update_proc);
 
     // Add to parent Window
     layer_add_child(window_get_root_layer(window), s_canvas_layer);
-    app_timer_register(DELTA, next_frame_handler, NULL);
+    app_timer_register(33, next_frame_handler, NULL);
 #else
     // Create Bitmap
     s_bitmap_layer = bitmap_layer_create(GRect(0,10,bounds.size.w-ACTION_BAR_WIDTH, bounds.size.h));
@@ -246,12 +218,10 @@ static void main_window_load(Window *window) {
     layer_add_child(window_get_root_layer(window),bitmap_layer_get_layer(s_bitmap_layer));
 #endif
   }
-#ifdef PBL_SDK_2
-  s_inverter_layer = inverter_layer_create(GRect(0,0,bounds.size.w,bounds.size.h));
-  layer_add_child(window_get_root_layer(window), inverter_layer_get_layer(s_inverter_layer));
-#endif
+#ifndef PBL_PLATFORM_APLITE
   s_vibration_pattern = load_persistent_storage_int(VIBRATION_PATTERN_KEY,0);
   s_vibration_duration = load_persistent_storage_int(VIBRATION_DURATION_KEY, 2);
+#endif
   s_auto_snooze = load_persistent_storage_bool(AUTO_SNOOZE_KEY, true);
   do_vibrate();
   // switch off vibration after x minutes
@@ -302,16 +272,12 @@ void perform_wakeup_tasks(Alarm* alarms, bool *snooze)
     .load = main_window_load,
     .unload = main_window_unload,
   });
-#ifndef PBL_COLOR
-  window_set_fullscreen(s_main_window,true);
-#endif
-#ifdef PBL_SDK_3
+
     // Update timeline pin
     int alarm_id = get_next_alarm(alarms);
     if(alarm_id>=0)
       alarm_phone_send_pin(&alarms[alarm_id]);
     APP_LOG(APP_LOG_LEVEL_DEBUG, "Alarm ID: %d",alarm_id);
-#endif
   
   //s_flip_to_snooze = load_persistent_storage_bool(FLIP_TO_SNOOZE_KEY, false);
   
