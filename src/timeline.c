@@ -11,8 +11,6 @@
 #define KEY_DESCRIPTION 1
 #define KEY_READY 2
 
-
-#ifdef PBL_SDK_3
 static bool communication_ready;
 static Alarm* retry_alarm;
 static void prv_inbox_recived(DictionaryIterator *iter, void *context) {
@@ -57,4 +55,3 @@ void alarm_phone_send_pin(Alarm* alarm) {
   else
     retry_alarm=alarm;
 }
-#endif
