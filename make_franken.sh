@@ -16,7 +16,7 @@ unzip -d 38 38.pbw
 rm -rf 38/basalt 38/chalk
 mv -f 37/basalt 37/chalk 38
 cd 38
-zip franken.zip *
+zip -r franken.zip *
 
 # put pbw in build folder
 mv franken.zip ../../build/franken.pbw
