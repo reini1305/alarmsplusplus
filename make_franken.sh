@@ -7,7 +7,7 @@ sed /"aplite"/d appinfo.json.old > appinfo.json
 pebble clean --sdk 3.7 && pebble build --sdk 3.7 && cp build/*.pbw temp/37.pbw
 # Build 3.8 aplite pbw
 mv appinfo.json.old appinfo.json
-pebble clean --sdk 3.8-beta10 && pebble build --sdk 3.8-beta10 && cp build/*.pbw temp/38.pbw
+pebble clean --sdk 3.8-beta12 && pebble build --sdk 3.8-beta12 && cp build/*.pbw temp/38.pbw
 
 # replace 3.8 basalt and chalk with 3.7 versions
 cd temp
