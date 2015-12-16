@@ -149,8 +149,8 @@ void win_edit_show(Alarm *alarm){
 static void update_ui(Layer *layer, GContext *ctx) {
   
   for(int i = 0; i < 3; i++) {
-#ifdef PBL_COLOR
-    text_layer_set_background_color(s_input_layers[i], (i == s_selection) ? GColorBlue : GColorDarkGray);
+    text_layer_set_background_color(s_input_layers[i], (i == s_selection) ? PBL_IF_COLOR_ELSE(GColorBlue,GColorBlack) : PBL_IF_COLOR_ELSE(GColorDarkGray,GColorLightGray));
+    text_layer_set_text_color(s_input_layers[i],GColorWhite);
     if(i==s_selection)
     {
       GPoint selection_center = {
@@ -159,32 +159,13 @@ static void update_ui(Layer *layer, GContext *ctx) {
       };
       gpath_rotate_to(s_my_path_ptr, 0);
       gpath_move_to(s_my_path_ptr, selection_center);
-      graphics_context_set_fill_color(ctx,GColorBlue);
+      graphics_context_set_fill_color(ctx,PBL_IF_COLOR_ELSE(GColorBlue,GColorBlack));
       gpath_draw_filled(ctx, s_my_path_ptr);
       gpath_rotate_to(s_my_path_ptr, TRIG_MAX_ANGLE/2);
       selection_center.y = 110 + OFFSET_TOP;
       gpath_move_to(s_my_path_ptr, selection_center);
       gpath_draw_filled(ctx, s_my_path_ptr);
     }
-#else
-    text_layer_set_background_color(s_input_layers[i], (i == s_selection) ? GColorBlack : GColorWhite);
-    text_layer_set_text_color(s_input_layers[i], (i == s_selection) ? GColorWhite : GColorBlack);
-    if(i==s_selection)
-    {
-      GPoint selection_center = {
-        .x = (int16_t) (s_withampm?23:50) + i * (PIN_WINDOW_SPACING + PIN_WINDOW_SPACING) + OFFSET_LEFT,
-        .y = (int16_t) 50 + OFFSET_TOP,
-      };
-      gpath_rotate_to(s_my_path_ptr, 0);
-      gpath_move_to(s_my_path_ptr, selection_center);
-      graphics_context_set_fill_color(ctx,GColorBlack);
-      gpath_draw_filled(ctx, s_my_path_ptr);
-      gpath_rotate_to(s_my_path_ptr, TRIG_MAX_ANGLE/2);
-      selection_center.y = 110 + OFFSET_TOP;
-      gpath_move_to(s_my_path_ptr, selection_center);
-      gpath_draw_filled(ctx, s_my_path_ptr);
-    }
-#endif
     if(i<2)
       snprintf(s_value_buffers[i], sizeof("00"), "%02d", s_digits[i]);
     else
