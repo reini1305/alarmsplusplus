@@ -24,18 +24,23 @@ static ActionBarLayer *action_bar;
 static char output_text[10];
 static bool *s_snooze;
 static Alarm *s_alarm;
-#ifndef PBL_PLATFORM_APLITE
 static uint32_t s_segments[]={600,1};
+static int s_vibe_counter = 0;
+static int s_vibration_pattern = 0;
+#ifndef PBL_PLATFORM_APLITE
 static VibePatternPWM s_pwmPat = {
   .durations = s_segments,
   .num_segments = 2
 };
-static int s_vibe_counter = 0;
-static int s_vibration_pattern = 0;
+
 static GDrawCommandSequence *s_command_seq;
 static int s_index = 0;
 static Layer *s_canvas_layer;
 #else
+VibePattern s_pat= {
+  .durations = s_segments,
+  .num_segments = 2,
+};
 static GBitmap *s_logo;
 static BitmapLayer *s_bitmap_layer;
 #endif
@@ -94,6 +99,10 @@ static void click_config_provider(void *context) {
   window_single_click_subscribe(topbutton_dismiss?BUTTON_ID_DOWN:BUTTON_ID_UP, snooze_click_handler);
 }
 
+uint32_t min(uint32_t val1,uint32_t val2) {
+  return val1<val2?val1:val2;
+}
+
 void do_vibrate(void) {
 #ifndef PBL_PLATFORM_APLITE
   if(s_vibration_pattern)
@@ -102,9 +111,17 @@ void do_vibrate(void) {
     s_vibe_counter++;
     vibes_enqueue_custom_pwm_pattern(&s_pwmPat);
   }
-  else
+#else
+  if(s_vibration_pattern)
+  {
+    s_segments[0] = min((s_vibe_counter/s_vibration_pattern)*50,500);
+    s_vibe_counter++;
+    vibes_enqueue_custom_pattern(s_pat);
+  }
 #endif
+  else
     vibes_long_pulse();
+
   vibe_timer = app_timer_register(1000,vibe_timer_callback,NULL);
 }
 
@@ -216,12 +233,14 @@ static void main_window_load(Window *window) {
     bitmap_layer_set_bitmap(s_bitmap_layer,s_logo);
     bitmap_layer_set_alignment(s_bitmap_layer,GAlignTop);
     layer_add_child(window_get_root_layer(window),bitmap_layer_get_layer(s_bitmap_layer));
+    s_pat.durations = s_segments;
+    s_pat.num_segments = 2;
+
 #endif
   }
-#ifndef PBL_PLATFORM_APLITE
   s_vibration_pattern = load_persistent_storage_int(VIBRATION_PATTERN_KEY,0);
   s_vibration_duration = load_persistent_storage_int(VIBRATION_DURATION_KEY, 2);
-#endif
+
   s_auto_snooze = load_persistent_storage_bool(AUTO_SNOOZE_KEY, true);
   do_vibrate();
   // switch off vibration after x minutes
