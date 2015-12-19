@@ -8,11 +8,11 @@ var reminderPIN = {
     "title": "Next Alarm!",
     "subtitle": "",
     "body": "This alarm is brought to you by Alarms++",
-    "primaryColor": "White",
-    "secondaryColor": "White",
+    "primaryColor": "black",
+    "secondaryColor": "black",
     "tinyIcon": "system://images/ALARM_CLOCK",
     "largeIcon": "system://images/ALARM_CLOCK",
-    "backgroundColor": "#0000FF"
+    "backgroundColor": "pictonblue"
   },
   "actions": [
               {
