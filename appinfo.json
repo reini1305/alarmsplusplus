@@ -3,8 +3,8 @@
   "shortName": "Alarms++",
   "longName": "Alarms++",
   "companyName": "Christian Reinbacher",
-  "versionCode": 84,
-  "versionLabel": "6.18",
+  "versionCode": 85,
+  "versionLabel": "6.19",
   "watchapp": {
     "watchface": false
   },
@@ -17,67 +17,68 @@
     "media": [
       {
         "menuIcon": true,
-        "type": "png",
+        "type": "bitmap",
         "name": "IMAGE_MENU_ICON",
+        "memoryFormat": "1Bit",
         "file": "images/logo.png"
       },
       {
-        "type": "png",
+        "type": "bitmap",
         "name": "IMAGE_LOGO",
         "file": "images/logo_small.png"
       },
       {
-        "type": "png",
+        "type": "bitmap",
         "name": "IMAGE_STATUS",
         "file": "images/logo_status.png"
       },
       {
-        "type": "png",
+        "type": "bitmap",
         "name": "IMAGE_ACTION_ICON_CHECK",
         "file": "images/action_icon_check.png"
       },
       {
-        "type": "png",
+        "type": "bitmap",
         "name": "IMAGE_ACTION_ICON_UP",
         "file": "images/action_icon_up.png"
       },
       {
-        "type": "png",
+        "type": "bitmap",
         "name": "IMAGE_ACTION_ICON_DOWN",
         "file": "images/action_icon_down.png"
       },
       {
-        "type": "png",
+        "type": "bitmap",
         "name": "IMAGE_ACTION_ICON_CROSS",
         "file": "images/action_icon_cross.png"
       },
       {
-        "type": "png",
+        "type": "bitmap",
         "name": "IMAGE_ACTION_ICON_ZZ",
         "file": "images/action_icon_zz.png"
       },
       {
-      "type": "png",
+      "type": "bitmap",
       "name": "IMAGE_ACTION_ICON_CHECK_INV",
       "file": "images/action_icon_check_inv.png"
       },
       {
-      "type": "png",
+      "type": "bitmap",
       "name": "IMAGE_ACTION_ICON_UP_INV",
       "file": "images/action_icon_up_inv.png"
       },
       {
-      "type": "png",
+      "type": "bitmap",
       "name": "IMAGE_ACTION_ICON_DOWN_INV",
       "file": "images/action_icon_down_inv.png"
       },
       {
-      "type": "png",
+      "type": "bitmap",
       "name": "IMAGE_ACTION_ICON_CROSS_INV",
       "file": "images/action_icon_cross_inv.png"
       },
       {
-      "type": "png",
+      "type": "bitmap",
       "name": "IMAGE_ACTION_ICON_ZZ_INV",
       "file": "images/action_icon_zz_inv.png"
       },
