@@ -515,6 +515,7 @@ static void menu_select(struct MenuLayer* menu, MenuIndex* cell_index, void* cal
       else {
         temp_alarm.weekdays_active[cell_index->row-1]=!temp_alarm.weekdays_active[cell_index->row-1];
         menu_layer_set_selected_next(menu,false,MenuRowAlignCenter,true);
+        s_select_all=false;
       }
       layer_mark_dirty(menu_layer_get_layer(menu));
       break;

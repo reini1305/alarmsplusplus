@@ -61,13 +61,16 @@ static void reset_timer_callback(void* data);
 
 static Window*    s_window;
 static MenuLayer* s_menu;
+#ifndef PBL_ROUND
 static StatusBarLayer *s_status_layer;
 static Layer *s_battery_layer;
+#endif
 
 static Alarm* s_alarms;
 static int s_snooze_delay;
 static char s_snooze_text[12];
 static char s_next_alarm_text[15];
+static bool s_show_remaining;
 static int8_t s_id_enabled[NUM_ALARMS];
 static char s_num_enabled;
 
@@ -122,14 +125,20 @@ void refresh_next_alarm_text(void)
   {
     time_t timestamp = alarm_get_time_of_wakeup(&s_alarms[alarm_id]);
     struct tm *t = localtime(&timestamp);
-    if(clock_is_24h_style())
-      snprintf(s_next_alarm_text,sizeof(s_next_alarm_text),"%02d.%02d %02d:%02d",t->tm_mday, t->tm_mon+1,t->tm_hour,t->tm_min);
-    else
-    {
-      int temp_hour;
-      bool is_am;
-      convert_24_to_12(t->tm_hour, &temp_hour, &is_am);
-      snprintf(s_next_alarm_text,sizeof(s_next_alarm_text),"%02d.%02d %02d:%02d %s",t->tm_mday, t->tm_mon+1,temp_hour,t->tm_min,is_am?"AM":"PM");
+    if(s_show_remaining ) {
+      time_t now = time(NULL);
+      time_t diff = timestamp-now;
+      snprintf(s_next_alarm_text,sizeof(s_next_alarm_text),"in %02dh,%02dm",(int)diff/3600,(int)(diff/60)%60);
+    } else {
+      if(clock_is_24h_style())
+        snprintf(s_next_alarm_text,sizeof(s_next_alarm_text),"%02d.%02d %02d:%02d",t->tm_mday, t->tm_mon+1,t->tm_hour,t->tm_min);
+      else
+      {
+        int temp_hour;
+        bool is_am;
+        convert_24_to_12(t->tm_hour, &temp_hour, &is_am);
+        snprintf(s_next_alarm_text,sizeof(s_next_alarm_text),"%02d.%02d %02d:%02d %s",t->tm_mday, t->tm_mon+1,temp_hour,t->tm_min,is_am?"AM":"PM");
+      }
     }
     alarm_phone_send_pin(&s_alarms[alarm_id]);
   }
@@ -154,6 +163,7 @@ void win_main_init(Alarm* alarms) {
   s_snooze_delay = load_persistent_storage_int(SNOOZE_KEY,10);
   update_id_enabled();
   refresh_timeout();
+  s_show_remaining=false;
   refresh_next_alarm_text();
   snprintf(version_text, sizeof(version_text), "Alarms++ v%d.%d",__pbl_app_info.process_version.major,__pbl_app_info.process_version.minor);
   s_scroll_timer = app_timer_register(500,scroll_timer_callback,NULL);
@@ -173,6 +183,7 @@ void win_main_show(void) {
   window_stack_push(s_window, false);
 }
 
+#ifndef PBL_ROUND
 static void battery_proc(Layer *layer, GContext *ctx) {
   // Emulator battery meter on Aplite
   graphics_context_set_stroke_color(ctx, GColorWhite);
@@ -184,7 +195,7 @@ static void battery_proc(Layer *layer, GContext *ctx) {
   graphics_context_set_fill_color(ctx, GColorWhite);
   graphics_fill_rect(ctx, GRect(128, 6, width, 4), 0, GCornerNone);
 }
-
+#endif
 
 static void window_load(Window* window) {
   Layer *window_layer = window_get_root_layer(s_window);
@@ -538,6 +549,11 @@ static void menu_select_alarms(uint16_t row_index) {
 
 static void menu_select_other(uint16_t row_index) {
   switch (row_index) {
+    case MENU_ROW_NEXT_ALARM:
+      s_show_remaining=!s_show_remaining;
+      refresh_next_alarm_text();
+      layer_mark_dirty(menu_layer_get_layer(s_menu));
+      break;
     case MENU_ROW_OTHER_SNOOZE:
       //win_snooze_show(&s_snooze_delay);
       s_snooze_delay++;
