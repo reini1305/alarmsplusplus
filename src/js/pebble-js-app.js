@@ -5,9 +5,9 @@ var reminderPIN = {
   "time": curDate.toISOString(),
   "layout": {
     "type": "genericPin",
-    "title": "Next Alarm!",
+    "title": "Next Alarm",
     "subtitle": "",
-    "body": "This alarm is brought to you by Alarms++",
+    "body": "Launch app to modify it.",
     "primaryColor": "black",
     "secondaryColor": "black",
     "tinyIcon": "system://images/ALARM_CLOCK",
@@ -120,6 +120,7 @@ Pebble.addEventListener('appmessage', function(e) {
                         curDate = new Date();
                         curDate.setTime(curDate.getTime() + e.payload.key_next_alarm*1000);
                         reminderPIN.layout.subtitle = e.payload.key_description;
+                        console.log('Description: ' + e.payload.key_description);
                         reminderPIN.time = curDate;
                         // insert pin
                         insertUserPin(reminderPIN, function (responseText) {

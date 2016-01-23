@@ -3,8 +3,8 @@
   "shortName": "Alarms++",
   "longName": "Alarms++",
   "companyName": "Christian Reinbacher",
-  "versionCode": 86,
-  "versionLabel": "6.20",
+  "versionCode": 88,
+  "versionLabel": "6.23",
   "watchapp": {
     "watchface": false
   },
@@ -21,6 +21,11 @@
         "name": "IMAGE_MENU_ICON",
         "memoryFormat": "1Bit",
         "file": "images/logo.png"
+      },
+      {
+        "type": "bitmap",
+        "name": "IMAGE_MENU_INV_ICON",
+        "file": "images/logo_inv.png"
       },
       {
         "type": "bitmap",

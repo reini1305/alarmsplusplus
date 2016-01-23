@@ -28,7 +28,7 @@
 #define ALARM_HEIGHT 64
 #define DESCRIPTION_HEIGHT 64
 #define ALARM_OFFSET_LEFT 18
-#define ALARM_OFFSET_RIGHT 36
+#define ALARM_OFFSET_RIGHT 24
 #define ALARM_OFFSET_TOP 8
 #define OTHER_HEIGHT 42
 #endif
@@ -57,7 +57,6 @@ static void menu_select_other(uint16_t row_index);
 static void menu_selection_changed(struct MenuLayer *menu_layer, MenuIndex new_index, MenuIndex old_index, void *callback_context);
 static void update_id_enabled(void);
 static void scroll_timer_callback(void* data);
-static void reset_timer_callback(void* data);
 
 static Window*    s_window;
 static MenuLayer* s_menu;
@@ -74,16 +73,14 @@ static bool s_show_remaining;
 static int8_t s_id_enabled[NUM_ALARMS];
 static char s_num_enabled;
 
-static int8_t s_id_reset = -1;
-static bool s_can_be_reset = false;
-static AppTimer *s_reset_timer;
-
 extern const PebbleProcessInfo __pbl_app_info;
 static char version_text[15];
 
 static int16_t s_scroll_index;
 static int16_t s_scroll_row_index;
 static AppTimer *s_scroll_timer;
+static GBitmap *s_logo_bitmap;
+static GBitmap *s_logo_inv_bitmap;
 
 static char english[7] = {"SMTWTFS"};
 static char german[7] = {"SMDMDFS"};
@@ -167,7 +164,8 @@ void win_main_init(Alarm* alarms) {
   refresh_next_alarm_text();
   snprintf(version_text, sizeof(version_text), "Alarms++ v%d.%d",__pbl_app_info.process_version.major,__pbl_app_info.process_version.minor);
   s_scroll_timer = app_timer_register(500,scroll_timer_callback,NULL);
-  s_reset_timer = app_timer_register(2000,reset_timer_callback,NULL);
+  s_logo_bitmap = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_MENU_ICON);
+  s_logo_inv_bitmap = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_MENU_INV_ICON);
   init_action_menu();
   char *sys_locale = setlocale(LC_ALL, "");
   if (strcmp("de_DE", sys_locale) == 0) {
@@ -353,7 +351,6 @@ static void menu_draw_row_add(GContext* ctx, bool selected, int width) {
 
 static void menu_draw_row_alarms(GContext* ctx, const Layer* cell_layer, uint16_t row_index) {
   Alarm* alarm = &s_alarms[s_id_enabled[row_index]];
-  bool reset = s_id_reset==s_id_enabled[row_index];
   
   if(menu_cell_layer_is_highlighted(cell_layer))
     graphics_context_set_text_color(ctx,GColorWhite);
@@ -386,12 +383,25 @@ static void menu_draw_row_alarms(GContext* ctx, const Layer* cell_layer, uint16_
                      GTextAlignmentLeft, NULL);
   
   // draw activity state
-  char state[]={"RST"};
-  if(!reset)
-  snprintf(state, sizeof(state), "%s",alarm->enabled? _("ON"):_("OFF"));
-  graphics_draw_text(ctx, state,font,
-                     GRect(3+ALARM_OFFSET_LEFT, alarm_has_description(alarm)?7:-3+offset, layer_size.size.w - 5 - ALARM_OFFSET_RIGHT, 28), GTextOverflowModeFill,
-                     GTextAlignmentRight, NULL);
+//  char state[]={"RST"};
+//  snprintf(state, sizeof(state), "%s",alarm->enabled? _("ON"):_("OFF"));
+//  graphics_draw_text(ctx, state,font,
+//                     GRect(3+ALARM_OFFSET_LEFT, alarm_has_description(alarm)?7:-3+offset, layer_size.size.w - 5 - ALARM_OFFSET_RIGHT, 28), GTextOverflowModeFill,
+//                     GTextAlignmentRight, NULL);
+  bool highlighted = menu_cell_layer_is_highlighted(cell_layer);
+  graphics_draw_bitmap_in_rect(ctx,highlighted?s_logo_inv_bitmap:s_logo_bitmap,
+                               GRect(layer_size.size.w - 29 - ALARM_OFFSET_RIGHT, alarm_has_description(alarm)?7:3+offset, 24 , 28));
+
+  if(!alarm->enabled) {
+    graphics_context_set_stroke_color(ctx,highlighted?PBL_IF_COLOR_ELSE(GColorBlue,GColorBlack):GColorWhite);
+    graphics_context_set_stroke_width(ctx,3);
+    graphics_draw_line(ctx,GPoint(layer_size.size.w - 29 - ALARM_OFFSET_RIGHT, alarm_has_description(alarm)?7:3+offset),
+                       GPoint(layer_size.size.w - 5 - ALARM_OFFSET_RIGHT, 24+(alarm_has_description(alarm)?7:3+offset)));
+    graphics_context_set_stroke_color(ctx,highlighted?GColorWhite:PBL_IF_COLOR_ELSE(GColorBlue,GColorBlack));
+    graphics_context_set_stroke_width(ctx,1);
+    graphics_draw_line(ctx,GPoint(layer_size.size.w - 29 - ALARM_OFFSET_RIGHT, alarm_has_description(alarm)?7:3+offset),
+                       GPoint(layer_size.size.w - 5 - ALARM_OFFSET_RIGHT, 24+(alarm_has_description(alarm)?7:3+offset)));
+  }
   
   // draw active weekdays
   char weekday_state[10];
@@ -487,11 +497,6 @@ static void menu_select(struct MenuLayer* menu, MenuIndex* cell_index, void* cal
       break;
   }
   refresh_timeout();
-}
-
-static void reset_timer_callback(void *data)
-{
-  s_can_be_reset=false;
 }
 
 static void menu_select_long(struct MenuLayer* menu, MenuIndex* cell_index, void* callback_context) {
