@@ -11,23 +11,6 @@
 
 void load_persistent_storage_alarms(Alarm *alarms)
 {
-  if(persist_exists(ALARMS_OLD_KEY)) // we have to migrate to the new number of alarms
-  {
-    persist_read_data(ALARMS_OLD_KEY,alarms,8*sizeof(Alarm));
-    for (int i=8; i<NUM_ALARMS; i++) {
-      alarms[i].hour=0;
-      alarms[i].minute=0;
-      alarms[i].enabled=false;
-      alarms[i].alarm_id=-1;
-      for (int weekday=0; weekday<7;weekday++)
-        alarms[i].weekdays_active[weekday]=true;
-    }
-    // delete it from memory
-    persist_delete(ALARMS_OLD_KEY);
-    APP_LOG(APP_LOG_LEVEL_DEBUG,"Migrated Timers");
-  }
-  else
-  {
     for(int i=0;i<NUM_ALARMS/8;i++) { // we can only store 8 alarms in one memory slot
       if (persist_exists(ALARMS_KEY+i)) {
         persist_read_data(ALARMS_KEY+i,&alarms[8*i],8*sizeof(Alarm));
@@ -38,7 +21,6 @@ void load_persistent_storage_alarms(Alarm *alarms)
         }
       }
     }
-  }
 }
 
 void write_persistent_storage_alarms(Alarm *alarms)
