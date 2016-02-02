@@ -13,7 +13,7 @@
 #include "pwm_vibrate.h"
 #endif
 #include "timeline.h"
-//#include "debug.h"
+#include "debug.h"
 
 static Window *s_main_window;
 static TextLayer *s_output_layer;
@@ -54,6 +54,7 @@ AppTimer* vibe_timer = NULL;
 AppTimer* cancel_vibe_timer = NULL;
 bool cancel_vibrate=false;
 //bool s_flip_to_snooze=false;
+bool already_running=false;
 
 #ifdef PBL_HEALTH
 int s_smart_alarm;
@@ -189,35 +190,38 @@ static void update_proc(Layer *layer, GContext *ctx) {
 
 void start_vibration(void *data)
 {
-  do_vibrate();
-  // switch off vibration after x minutes
-  switch (s_vibration_duration) {
-    case 0:
-      s_vibration_duration = 30;
-      break;
-    case 1:
-      s_vibration_duration = 60;
-      break;
-    case 2:
-      s_vibration_duration = 120;
-      break;
-    case 3:
-      s_vibration_duration = 300;
-      break;
-    case 4:
-      s_vibration_duration = 2;
-      break;
-    case 5:
-      s_vibration_duration = 10;
-      break;
-    default:
-      break;
+  if(!already_running) {
+    already_running=true;
+    do_vibrate();
+    // switch off vibration after x minutes
+    switch (s_vibration_duration) {
+      case 0:
+        s_vibration_duration = 30;
+        break;
+      case 1:
+        s_vibration_duration = 60;
+        break;
+      case 2:
+        s_vibration_duration = 120;
+        break;
+      case 3:
+        s_vibration_duration = 300;
+        break;
+      case 4:
+        s_vibration_duration = 2;
+        break;
+      case 5:
+        s_vibration_duration = 10;
+        break;
+      default:
+        break;
+    }
+    cancel_vibe_timer = app_timer_register(1000*s_vibration_duration,cancel_vibe_timer_callback,NULL);
+  #ifndef PBL_PLATFORM_APLITE
+    if(!alarm_has_description(s_alarm))
+      app_timer_register(33, next_frame_handler, NULL);
+  #endif
   }
-  cancel_vibe_timer = app_timer_register(1000*s_vibration_duration,cancel_vibe_timer_callback,NULL);
-#ifndef PBL_PLATFORM_APLITE
-  if(!alarm_has_description(s_alarm))
-    app_timer_register(33, next_frame_handler, NULL);
-#endif
 }
 
 #ifdef PBL_HEALTH
@@ -312,8 +316,10 @@ static void main_window_load(Window *window) {
     // Attempt to subscribe
     if(!health_service_events_subscribe(health_handler, NULL)) {
       APP_LOG(APP_LOG_LEVEL_ERROR, "Health not available!");
+      start_vibration(NULL);
     }
-    s_start_smart_alarm_timer = app_timer_register(1000*15*60*s_smart_alarm,start_vibration,NULL);
+    else
+      s_start_smart_alarm_timer = app_timer_register(1000*10*60*s_smart_alarm,start_vibration,NULL);
   }
   else
     start_vibration(NULL);

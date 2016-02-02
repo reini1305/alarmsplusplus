@@ -229,13 +229,13 @@ static void menu_draw_row(GContext* ctx, const Layer* cell_layer, MenuIndex* cel
             subtext = "Off";
             break;
           case 1:
-            subtext = "15 min";
+            subtext = "10 min";
             break;
           case 2:
-            subtext = "30 min";
+            subtext = "20 min";
             break;
           case 3:
-            subtext = "45 min";
+            subtext = "30 min";
             break;
           default:
             break;
