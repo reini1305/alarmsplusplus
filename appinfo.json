@@ -8,6 +8,7 @@
   "watchapp": {
     "watchface": false
   },
+  "capabilities": [ "health" ],
   "appKeys": {
     "key_next_alarm": 0,
     "key_description": 1,

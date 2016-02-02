@@ -13,7 +13,7 @@
 #include "pwm_vibrate.h"
 #endif
 #include "timeline.h"
-#include "debug.h"
+//#include "debug.h"
 
 static Window *s_main_window;
 static TextLayer *s_output_layer;
@@ -54,6 +54,11 @@ AppTimer* vibe_timer = NULL;
 AppTimer* cancel_vibe_timer = NULL;
 bool cancel_vibrate=false;
 //bool s_flip_to_snooze=false;
+
+#ifdef PBL_HEALTH
+int s_smart_alarm;
+AppTimer* s_start_smart_alarm_timer = NULL;
+#endif 
 
 static void wakeup_handler(WakeupId id, int32_t reason) {
   // The app has woken!
@@ -182,6 +187,63 @@ static void update_proc(Layer *layer, GContext *ctx) {
 }
 #endif
 
+void start_vibration(void *data)
+{
+  do_vibrate();
+  // switch off vibration after x minutes
+  switch (s_vibration_duration) {
+    case 0:
+      s_vibration_duration = 30;
+      break;
+    case 1:
+      s_vibration_duration = 60;
+      break;
+    case 2:
+      s_vibration_duration = 120;
+      break;
+    case 3:
+      s_vibration_duration = 300;
+      break;
+    case 4:
+      s_vibration_duration = 2;
+      break;
+    case 5:
+      s_vibration_duration = 10;
+      break;
+    default:
+      break;
+  }
+  cancel_vibe_timer = app_timer_register(1000*s_vibration_duration,cancel_vibe_timer_callback,NULL);
+#ifndef PBL_PLATFORM_APLITE
+  if(!alarm_has_description(s_alarm))
+    app_timer_register(33, next_frame_handler, NULL);
+#endif
+}
+
+#ifdef PBL_HEALTH
+static void health_handler(HealthEventType event, void *context) {
+  // Which type of event occured?
+  switch(event) {
+    case HealthEventSignificantUpdate:
+      APP_LOG(APP_LOG_LEVEL_INFO,
+              "New HealthService HealthEventSignificantUpdate event");
+      break;
+    case HealthEventMovementUpdate:
+      APP_LOG(APP_LOG_LEVEL_INFO,
+              "New HealthService HealthEventMovementUpdate event");
+      start_vibration(NULL);
+      break;
+    case HealthEventSleepUpdate:
+      APP_LOG(APP_LOG_LEVEL_INFO,
+              "New HealthService HealthEventSleepUpdate event");
+      start_vibration(NULL);
+      break;
+  }
+  
+}
+
+#endif
+
 static void main_window_load(Window *window) {
   GRect bounds = layer_get_bounds(window_get_root_layer(window));
   
@@ -225,7 +287,7 @@ static void main_window_load(Window *window) {
 
     // Add to parent Window
     layer_add_child(window_get_root_layer(window), s_canvas_layer);
-    app_timer_register(33, next_frame_handler, NULL);
+    
 #else
     // Create Bitmap
     s_bitmap_layer = bitmap_layer_create(GRect(0,10,bounds.size.w-ACTION_BAR_WIDTH, bounds.size.h));
@@ -242,32 +304,23 @@ static void main_window_load(Window *window) {
   s_vibration_duration = load_persistent_storage_int(VIBRATION_DURATION_KEY, 2);
 
   s_auto_snooze = load_persistent_storage_bool(AUTO_SNOOZE_KEY, true);
-  do_vibrate();
-  // switch off vibration after x minutes
-  switch (s_vibration_duration) {
-    case 0:
-      s_vibration_duration = 30;
-      break;
-    case 1:
-    s_vibration_duration = 60;
-    break;
-    case 2:
-    s_vibration_duration = 120;
-    break;
-    case 3:
-    s_vibration_duration = 300;
-    break;
-    case 4:
-    s_vibration_duration = 2;
-    break;
-    case 5:
-    s_vibration_duration = 10;
-    break;
-    default:
-    break;
+  // do smart-alarmy stuff here
+#ifdef PBL_HEALTH
+  s_smart_alarm = load_persistent_storage_int(SMART_ALARM_KEY, 0);
+  if(s_smart_alarm>0)
+  {
+    // Attempt to subscribe
+    if(!health_service_events_subscribe(health_handler, NULL)) {
+      APP_LOG(APP_LOG_LEVEL_ERROR, "Health not available!");
+    }
+    s_start_smart_alarm_timer = app_timer_register(1000*15*60*s_smart_alarm,start_vibration,NULL);
   }
-  cancel_vibe_timer = app_timer_register(1000*s_vibration_duration,cancel_vibe_timer_callback,NULL);
+  else
+    start_vibration(NULL);
   
+#else
+  start_vibration(NULL);
+#endif
   // test snoozing with the accelerometer
   /*if(s_flip_to_snooze)
   {

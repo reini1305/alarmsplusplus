@@ -3,13 +3,14 @@
 #include "storage.h"
 #include "localize.h"
 
-#define MENU_ROW_COUNT 5
+#define MENU_ROW_COUNT PBL_IF_HEALTH_ELSE(6,5)
 
 #define MENU_ROW_LONGPRESS     0
 #define MENU_ROW_VIBRATION     2
 #define MENU_ROW_DURATION      3
 #define MENU_ROW_AUTO_SNOOZE   1
 #define MENU_ROW_DISMISS       4
+#define MENU_ROW_SMART         5
 
 static void window_load(Window* window);
 static void window_unload(Window* window);
@@ -34,6 +35,9 @@ static int s_vibration_duration;
 static bool s_auto_snooze;
 //static bool s_background_tracking;
 static bool s_dismiss_top;
+#ifdef PBL_HEALTH
+static int s_smart_alarm;
+#endif
 
 static int16_t s_scroll_index;
 static int16_t s_scroll_row_index;
@@ -52,6 +56,9 @@ void win_advanced_init(void) {
   s_vibration_duration = load_persistent_storage_int(VIBRATION_DURATION_KEY,2);
   s_auto_snooze = load_persistent_storage_bool(AUTO_SNOOZE_KEY,true);
   s_dismiss_top = load_persistent_storage_bool(TOP_BUTTON_DISMISS_KEY,true);
+#ifdef PBL_HEALTH
+  s_smart_alarm = load_persistent_storage_int(SMART_ALARM_KEY,0);
+#endif
   //s_background_tracking = load_persistent_storage_bool(BACKGROUND_TRACKING_KEY,false);
   refresh_timeout();
   s_scroll_timer = app_timer_register(500,scroll_timer_callback,NULL);
@@ -212,11 +219,30 @@ static void menu_draw_row(GContext* ctx, const Layer* cell_layer, MenuIndex* cel
       case 5:
       subtext = _("10 seconds");
       break;
+    }
+      break;
+#ifdef PBL_HEALTH
+    case MENU_ROW_SMART:
+        text = "Smart Alarm";
+        switch (s_smart_alarm) {
+          case 0:
+            subtext = "Off";
+            break;
+          case 1:
+            subtext = "15 min";
+            break;
+          case 2:
+            subtext = "30 min";
+            break;
+          case 3:
+            subtext = "45 min";
+            break;
+          default:
+            break;
+        }
       default:
       break;
-    }
-    break;
-    
+#endif
   }
   menu_cell_animated_draw(ctx, cell_layer, text, subtext, animate);
 
@@ -264,6 +290,14 @@ static void menu_select(struct MenuLayer* menu, MenuIndex* cell_index, void* cal
         s_vibration_duration=0;
       persist_write_int(VIBRATION_DURATION_KEY,s_vibration_duration);
     break;
+#ifdef PBL_HEALTH
+    case MENU_ROW_SMART:
+      s_smart_alarm++;
+      if(s_smart_alarm>3)
+        s_smart_alarm=0;
+      persist_write_int(SMART_ALARM_KEY,s_smart_alarm);
+      break;
+#endif
   }
   refresh_timeout();
   layer_mark_dirty(menu_layer_get_layer(menu));
