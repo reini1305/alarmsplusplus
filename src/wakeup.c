@@ -318,11 +318,31 @@ static void main_window_load(Window *window) {
       APP_LOG(APP_LOG_LEVEL_ERROR, "Health not available!");
       start_vibration(NULL);
     }
-    else
-      s_start_smart_alarm_timer = app_timer_register(1000*10*60*s_smart_alarm,start_vibration,NULL);
+    else {
+      // Check which activities are available
+      HealthServiceAccessibilityMask activity_mask = health_service_any_activity_accessible(HealthActivityMaskAll,time(NULL)-SECONDS_PER_HOUR,time(NULL));
+      
+      if(activity_mask & HealthServiceAccessibilityMaskAvailable){
+        APP_LOG(APP_LOG_LEVEL_INFO, "We can read activities!");
+        // Get an activities mask
+        HealthActivityMask activities = health_service_peek_current_activities();
+        
+        // Determine if the user is sleeping
+        if(activities & HealthActivityRestfulSleep) { // give him time to wake
+          APP_LOG(APP_LOG_LEVEL_INFO, "User is sleeping!");
+          s_start_smart_alarm_timer = app_timer_register(1000*10*60*s_smart_alarm,start_vibration,NULL);
+        } else { // just vibrate
+          start_vibration(NULL);
+        }
+      }
+      else { // we don't get the current activity, so just vibrate
+        start_vibration(NULL);
+      }
+    }
   }
-  else
+  else {
     start_vibration(NULL);
+  }
   
 #else
   start_vibration(NULL);
