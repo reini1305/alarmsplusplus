@@ -21,12 +21,14 @@
         "type": "bitmap",
         "name": "IMAGE_MENU_ICON",
         "memoryFormat": "1Bit",
+        "storageOptimization": "memory",
         "file": "images/logo.png"
       },
       {
         "type": "bitmap",
         "name": "IMAGE_MENU_INV_ICON",
-        "file": "images/logo_inv.png"
+        "file": "images/logo_inv.png",
+        "storageOptimization": "memory"
       },
       {
         "type": "bitmap",
@@ -41,51 +43,70 @@
       {
         "type": "bitmap",
         "name": "IMAGE_ACTION_ICON_CHECK",
+        "memoryFormat": "1Bit",
+        "storageOptimization": "memory",
         "file": "images/action_icon_check.png"
       },
       {
         "type": "bitmap",
         "name": "IMAGE_ACTION_ICON_UP",
+        "memoryFormat": "1Bit",
+        "storageOptimization": "memory",
         "file": "images/action_icon_up.png"
       },
       {
         "type": "bitmap",
         "name": "IMAGE_ACTION_ICON_DOWN",
-        "file": "images/action_icon_down.png"
+        "file": "images/action_icon_down.png",
+        "memoryFormat": "1Bit",
+        "storageOptimization": "memory"
       },
       {
         "type": "bitmap",
         "name": "IMAGE_ACTION_ICON_CROSS",
+        "memoryFormat": "1Bit",
+        "storageOptimization": "memory",
         "file": "images/action_icon_cross.png"
       },
       {
         "type": "bitmap",
         "name": "IMAGE_ACTION_ICON_ZZ",
+        "memoryFormat": "1Bit",
+        "storageOptimization": "memory",
         "file": "images/action_icon_zz.png"
       },
       {
       "type": "bitmap",
       "name": "IMAGE_ACTION_ICON_CHECK_INV",
+      "storageOptimization": "memory",
       "file": "images/action_icon_check_inv.png"
       },
       {
       "type": "bitmap",
       "name": "IMAGE_ACTION_ICON_UP_INV",
+      "memoryFormat": "1Bit",
+      "storageOptimization": "memory",
       "file": "images/action_icon_up_inv.png"
       },
       {
       "type": "bitmap",
       "name": "IMAGE_ACTION_ICON_DOWN_INV",
+      "memoryFormat": "1Bit",
+      "storageOptimization": "memory",
       "file": "images/action_icon_down_inv.png"
       },
       {
       "type": "bitmap",
       "name": "IMAGE_ACTION_ICON_CROSS_INV",
+      "memoryFormat": "1Bit",
+      "storageOptimization": "memory",
       "file": "images/action_icon_cross_inv.png"
       },
       {
       "type": "bitmap",
       "name": "IMAGE_ACTION_ICON_ZZ_INV",
+      "memoryFormat": "1Bit",
+      "storageOptimization": "memory",
       "file": "images/action_icon_zz_inv.png"
       },
 
