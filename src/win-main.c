@@ -79,9 +79,10 @@ static char version_text[15];
 static int16_t s_scroll_index;
 static int16_t s_scroll_row_index;
 static AppTimer *s_scroll_timer;
+#ifndef PBL_PLATFORM_APLITE
 static GBitmap *s_logo_bitmap;
 static GBitmap *s_logo_inv_bitmap;
-
+#endif
 static char english[7] = {"SMTWTFS"};
 static char german[7] = {"SMDMDFS"};
 static char french[7] = {"dlmmjvs"};
@@ -164,8 +165,10 @@ void win_main_init(Alarm* alarms) {
   refresh_next_alarm_text();
   snprintf(version_text, sizeof(version_text), "Alarms++ v%d.%d",__pbl_app_info.process_version.major,__pbl_app_info.process_version.minor);
   s_scroll_timer = app_timer_register(500,scroll_timer_callback,NULL);
+#ifndef PBL_PLATFORM_APLITE
   s_logo_bitmap = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_MENU_ICON);
   s_logo_inv_bitmap = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_MENU_INV_ICON);
+#endif
   init_action_menu();
   char *sys_locale = setlocale(LC_ALL, "");
   if (strcmp("de_DE", sys_locale) == 0) {
@@ -383,11 +386,13 @@ static void menu_draw_row_alarms(GContext* ctx, const Layer* cell_layer, uint16_
                      GTextAlignmentLeft, NULL);
   
   // draw activity state
-//  char state[]={"RST"};
-//  snprintf(state, sizeof(state), "%s",alarm->enabled? _("ON"):_("OFF"));
-//  graphics_draw_text(ctx, state,font,
-//                     GRect(3+ALARM_OFFSET_LEFT, alarm_has_description(alarm)?7:-3+offset, layer_size.size.w - 5 - ALARM_OFFSET_RIGHT, 28), GTextOverflowModeFill,
-//                     GTextAlignmentRight, NULL);
+#ifdef PBL_PLATFORM_APLITE
+  char state[]={"RST"};
+  snprintf(state, sizeof(state), "%s",alarm->enabled? _("ON"):_("OFF"));
+  graphics_draw_text(ctx, state,font,
+                     GRect(3+ALARM_OFFSET_LEFT, alarm_has_description(alarm)?7:-3+offset, layer_size.size.w - 5 - ALARM_OFFSET_RIGHT, 28), GTextOverflowModeFill,
+                     GTextAlignmentRight, NULL);
+#else
   bool highlighted = menu_cell_layer_is_highlighted(cell_layer);
   graphics_draw_bitmap_in_rect(ctx,highlighted?s_logo_inv_bitmap:s_logo_bitmap,
                                GRect(layer_size.size.w - 29 - ALARM_OFFSET_RIGHT, alarm_has_description(alarm)?7:3+offset, 24 , 28));
@@ -402,6 +407,7 @@ static void menu_draw_row_alarms(GContext* ctx, const Layer* cell_layer, uint16_
     graphics_draw_line(ctx,GPoint(layer_size.size.w - 29 - ALARM_OFFSET_RIGHT, alarm_has_description(alarm)?7:3+offset),
                        GPoint(layer_size.size.w - 5 - ALARM_OFFSET_RIGHT, 24+(alarm_has_description(alarm)?7:3+offset)));
   }
+#endif
   
   // draw active weekdays
   char weekday_state[10];
