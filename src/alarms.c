@@ -14,15 +14,40 @@ time_t clock_to_timestamp_precise(WeekDay day, int hour, int minute)
   return (clock_to_timestamp(day, hour, minute)/60)*60;
 }
 
+bool alarm_is_enabled(Alarm *alarm)
+{
+  return alarm_weekday_is_active(alarm,7);
+}
+
+bool alarm_weekday_is_active(Alarm *alarm,int id)
+{
+  return alarm->weekday_bitfield & 1<<id;
+}
+
+void alarm_set_enabled(Alarm *alarm, bool value)
+{
+  alarm_set_weekday_active(alarm,7,value);
+}
+
+void alarm_set_weekday_active(Alarm *alarm, int id, bool value)
+{
+  if (value) {
+    alarm->weekday_bitfield |= 1<<id;
+  }
+  else {
+    alarm->weekday_bitfield &= 0<<id;
+  }
+}
+
 void alarm_toggle_enable(Alarm *alarm)
 {
-  if(alarm->enabled==false)
+  if(alarm_is_enabled(alarm)==false)
   {
-    alarm->enabled=true;
+    alarm_set_enabled(alarm,true);
   }
   else
   {
-    alarm->enabled=false;
+    alarm_set_enabled(alarm,false);
     alarm->alarm_id=-1;
   }
 }
@@ -30,7 +55,7 @@ void alarm_toggle_enable(Alarm *alarm)
 time_t alarm_get_time_of_wakeup(Alarm *alarm)
 {
   //alarm_cancel_wakeup(alarm);
-  if(alarm->enabled)
+  if(alarm_is_enabled(alarm))
   {
     // Calculate time to wake up
     time_t now = time(NULL);
@@ -43,7 +68,7 @@ time_t alarm_get_time_of_wakeup(Alarm *alarm)
     int current_weekday = t->tm_wday;
     for(int i=0;i<7;i++)
     {
-      if(alarm->weekdays_active[(i+current_weekday)%7])
+      if(alarm_weekday_is_active(alarm,(i+current_weekday)%7))
       {
         APP_LOG(APP_LOG_LEVEL_DEBUG,"Day %d is active",(i+current_weekday)%7);
         temp_timestamp = clock_to_timestamp_precise(((i+current_weekday)%7)+1,alarm->hour,alarm->minute);
@@ -60,7 +85,7 @@ time_t alarm_get_time_of_wakeup(Alarm *alarm)
     if(!some_active) //maybe we have missed a today event. this takes then place next week
     {
       APP_LOG(APP_LOG_LEVEL_DEBUG,"none active");
-      if(alarm->weekdays_active[current_weekday])
+      if(alarm_weekday_is_active(alarm,current_weekday))
       {
         some_active=true;
         timestamp = clock_to_timestamp_precise(TODAY,alarm->hour,alarm->minute);
@@ -122,7 +147,7 @@ bool alarm_is_one_time(Alarm *alarm)
   bool onetime=true;
   
   for (int i=0;i<7;i++)
-    if(alarm->weekdays_active[i])
+    if(alarm_weekday_is_active(alarm,i))
       onetime=false;
   
   return onetime;
@@ -145,11 +170,8 @@ bool alarm_has_description(Alarm *alarm)
 bool alarm_is_set(Alarm *alarm)
 {
   // alarm is set if it doesn't have the default settings
-  bool retval=alarm->enabled || alarm->hour || alarm->minute || alarm_has_description(alarm);
-  for (int i=0; i<7; i++) {
-    retval = retval || !alarm->weekdays_active[i];
-  }
-  return retval;
+  
+  return alarm->hour || alarm->minute || alarm_has_description(alarm) || alarm->weekday_bitfield;
 }
 
 int8_t get_next_free_slot(Alarm *alarms)
@@ -166,11 +188,9 @@ void alarm_reset(Alarm *alarm)
 {
   alarm->hour=0;
   alarm->minute=0;
-  alarm->enabled=false;
   alarm->alarm_id=-1;
   alarm->description[0]=0;
-  for (int weekday=0; weekday<7;weekday++)
-    alarm->weekdays_active[weekday]=true;
+  alarm->weekday_bitfield=0;
 
 }
 

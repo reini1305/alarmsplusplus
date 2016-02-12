@@ -360,7 +360,7 @@ static void menu_draw_row_alarms(GContext* ctx, const Layer* cell_layer, uint16_
   else
     graphics_context_set_text_color(ctx,GColorBlack);
 
-  GFont font = fonts_get_system_font(alarm->enabled?FONT_KEY_GOTHIC_28_BOLD:FONT_KEY_GOTHIC_28);
+  GFont font = fonts_get_system_font(alarm_is_enabled(alarm)?FONT_KEY_GOTHIC_28_BOLD:FONT_KEY_GOTHIC_28);
   
   GRect layer_size = layer_get_bounds(cell_layer);
   char alarm_time[6];
@@ -369,14 +369,14 @@ static void menu_draw_row_alarms(GContext* ctx, const Layer* cell_layer, uint16_
 #ifdef PBL_RECT
   int offset = ALARM_OFFSET_TOP;
 #else
-  int offset = ALARM_OFFSET_TOP+(alarm->enabled?0:8);
+  int offset = ALARM_OFFSET_TOP+(alarm_is_enabled(alarm)?0:8);
 #endif
   if (!clock_is_24h_style())
   {
     convert_24_to_12(alarm->hour, &hour_out, &is_am);
     graphics_draw_text(ctx, is_am?"A\nM":"P\nM",
-                       fonts_get_system_font(alarm->enabled?FONT_KEY_GOTHIC_14_BOLD:FONT_KEY_GOTHIC_14),
-                       GRect(57-(alarm->enabled?3:0)+ALARM_OFFSET_LEFT, -1+offset, layer_size.size.w - 33 - ALARM_OFFSET_RIGHT, 30), GTextOverflowModeWordWrap,
+                       fonts_get_system_font(alarm_is_enabled(alarm)?FONT_KEY_GOTHIC_14_BOLD:FONT_KEY_GOTHIC_14),
+                       GRect(57-(alarm_is_enabled(alarm)?3:0)+ALARM_OFFSET_LEFT, -1+offset, layer_size.size.w - 33 - ALARM_OFFSET_RIGHT, 30), GTextOverflowModeWordWrap,
                        GTextAlignmentLeft, NULL);
   }
   
@@ -388,7 +388,7 @@ static void menu_draw_row_alarms(GContext* ctx, const Layer* cell_layer, uint16_
   // draw activity state
 #ifdef PBL_PLATFORM_APLITE
   char state[]={"RST"};
-  snprintf(state, sizeof(state), "%s",alarm->enabled? _("ON"):_("OFF"));
+  snprintf(state, sizeof(state), "%s",alarm_is_enabled(alarm)? _("ON"):_("OFF"));
   graphics_draw_text(ctx, state,font,
                      GRect(3+ALARM_OFFSET_LEFT, alarm_has_description(alarm)?7:-3+offset, layer_size.size.w - 5 - ALARM_OFFSET_RIGHT, 28), GTextOverflowModeFill,
                      GTextAlignmentRight, NULL);
@@ -397,7 +397,7 @@ static void menu_draw_row_alarms(GContext* ctx, const Layer* cell_layer, uint16_
   graphics_draw_bitmap_in_rect(ctx,highlighted?s_logo_inv_bitmap:s_logo_bitmap,
                                GRect(layer_size.size.w - 29 - ALARM_OFFSET_RIGHT, alarm_has_description(alarm)?7:3+offset, 24 , 28));
 
-  if(!alarm->enabled) {
+  if(!alarm_is_enabled(alarm)) {
     graphics_context_set_stroke_color(ctx,highlighted?PBL_IF_COLOR_ELSE(GColorBlue,GColorBlack):GColorWhite);
     graphics_context_set_stroke_width(ctx,3);
     graphics_draw_line(ctx,GPoint(layer_size.size.w - 29 - ALARM_OFFSET_RIGHT, alarm_has_description(alarm)?7:3+offset),
@@ -412,13 +412,13 @@ static void menu_draw_row_alarms(GContext* ctx, const Layer* cell_layer, uint16_
   // draw active weekdays
   char weekday_state[10];
   snprintf(weekday_state,sizeof(weekday_state),"%c%c%c%c%c\n%c%c",
-           alarm->weekdays_active[1]?weekday_names[1]:'_',
-           alarm->weekdays_active[2]?weekday_names[2]:'_',
-           alarm->weekdays_active[3]?weekday_names[3]:'_',
-           alarm->weekdays_active[4]?weekday_names[4]:'_',
-           alarm->weekdays_active[5]?weekday_names[5]:'_',
-           alarm->weekdays_active[6]?weekday_names[6]:'_',
-           alarm->weekdays_active[0]?weekday_names[0]:'_');
+           alarm_weekday_is_active(alarm,1)?weekday_names[1]:'_',
+           alarm_weekday_is_active(alarm,2)?weekday_names[2]:'_',
+           alarm_weekday_is_active(alarm,3)?weekday_names[3]:'_',
+           alarm_weekday_is_active(alarm,4)?weekday_names[4]:'_',
+           alarm_weekday_is_active(alarm,5)?weekday_names[5]:'_',
+           alarm_weekday_is_active(alarm,6)?weekday_names[6]:'_',
+           alarm_weekday_is_active(alarm,0)?weekday_names[0]:'_');
   
   graphics_draw_text(ctx, weekday_state,
                      fonts_get_system_font(FONT_KEY_GOTHIC_14),

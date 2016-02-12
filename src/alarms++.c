@@ -4,6 +4,7 @@
 #include "localize.h"
 #include "timeline.h"
 
+
 static Alarm alarms[NUM_ALARMS];
 static bool snooze;
 
@@ -27,7 +28,7 @@ void deinit(void)
 int main(void) {
   init();
 
- // APP_LOG(APP_LOG_LEVEL_DEBUG, "Done initializing, pushed window: %p", window);
+  //APP_LOG(APP_LOG_LEVEL_DEBUG, "Done initializing, pushed window: %d", sizeof(Alarm));
   locale_init();
   app_event_loop();
   deinit();

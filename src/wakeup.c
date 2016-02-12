@@ -69,7 +69,7 @@ static void wakeup_handler(WakeupId id, int32_t reason) {
 static void dismiss_click_handler(ClickRecognizerRef recognizer, void *context) {
   *s_snooze=false;
   if(alarm_is_one_time(s_alarm))
-    s_alarm->enabled=false;
+    alarm_set_enabled(s_alarm,false);
   window_stack_pop(true);
 }
 

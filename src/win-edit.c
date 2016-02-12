@@ -439,7 +439,7 @@ static void menu_draw_row(GContext* ctx, const Layer* cell_layer, MenuIndex* cel
       //text = weekday_names[cell_index->row-1];
       font = fonts_get_system_font(FONT_KEY_GOTHIC_24);
       // draw checkmark if enabled
-      draw_checkmark = temp_alarm.weekdays_active[cell_index->row-1];
+      draw_checkmark = alarm_weekday_is_active(&temp_alarm,cell_index->row-1);
     }
   }
 #ifdef PBL_RECT
@@ -468,7 +468,7 @@ static void menu_select(struct MenuLayer* menu, MenuIndex* cell_index, void* cal
       if(cell_index->row==0)
       {
         // update timer, destroy windows
-        temp_alarm.enabled=true;
+        alarm_set_enabled(&temp_alarm, true);
         if(is_24h())
         {
           memcpy(current_alarm,&temp_alarm,sizeof(Alarm));
@@ -510,10 +510,10 @@ static void menu_select(struct MenuLayer* menu, MenuIndex* cell_index, void* cal
       if(cell_index->row==0)
       {
         s_select_all=!s_select_all;
-        for(int i=0;i<7;temp_alarm.weekdays_active[i++]=s_select_all);
+        for(int i=0;i<7;alarm_set_weekday_active(&temp_alarm,i++,s_select_all));
       }
       else {
-        temp_alarm.weekdays_active[cell_index->row-1]=!temp_alarm.weekdays_active[cell_index->row-1];
+        alarm_set_weekday_active(&temp_alarm,cell_index->row-1,!alarm_weekday_is_active(&temp_alarm,cell_index->row-1));
         menu_layer_set_selected_next(menu,false,MenuRowAlignCenter,true);
         s_select_all=false;
       }
