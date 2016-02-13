@@ -192,7 +192,7 @@ static void battery_proc(Layer *layer, GContext *ctx) {
   graphics_draw_line(ctx, GPoint(140, 6), GPoint(140, 9));
   
   BatteryChargeState state = battery_state_service_peek();
-  int width = (int)(float)(((float)state.charge_percent / 100.0F) * 10.0F);
+  int width = state.charge_percent / 10;
   graphics_context_set_fill_color(ctx, GColorWhite);
   graphics_fill_rect(ctx, GRect(128, 6, width, 4), 0, GCornerNone);
 }

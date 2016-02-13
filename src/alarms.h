@@ -11,7 +11,7 @@
 
 #include <pebble.h>
 #ifdef PBL_PLATFORM_APLITE
-#define NUM_ALARMS 8
+#define NUM_ALARMS 24
 #else
 #define NUM_ALARMS 32
 #endif
