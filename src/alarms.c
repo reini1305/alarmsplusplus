@@ -193,11 +193,3 @@ void alarm_reset(Alarm *alarm)
   alarm->weekday_bitfield=0;
 
 }
-
-bool is_24h()
-{
-#ifdef PBL_PLATFORM_BASALT
-  //return false; //remove
-#endif
-  return clock_is_24h_style();
-}

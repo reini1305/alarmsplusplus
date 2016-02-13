@@ -38,7 +38,6 @@ bool alarm_is_one_time(Alarm *alarm);
 bool alarm_is_set(Alarm *alarm);
 bool alarm_has_description(Alarm *alarm);
 int8_t get_next_free_slot(Alarm *alarms);
-bool is_24h();
 int get_next_alarm(Alarm *alarms);
 
 #endif
