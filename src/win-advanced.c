@@ -5,11 +5,11 @@
 
 #define MENU_ROW_COUNT PBL_IF_HEALTH_ELSE(6,5)
 
-#define MENU_ROW_LONGPRESS     0
-#define MENU_ROW_VIBRATION     2
+#define MENU_ROW_KONAMI     0
+#define MENU_ROW_VIBRATION     4
 #define MENU_ROW_DURATION      3
-#define MENU_ROW_AUTO_SNOOZE   1
-#define MENU_ROW_DISMISS       4
+#define MENU_ROW_AUTO_SNOOZE   2
+#define MENU_ROW_DISMISS       1
 #define MENU_ROW_SMART         5
 
 static void window_load(Window* window);
@@ -27,7 +27,7 @@ static void scroll_timer_callback(void* data);
 
 static Window*    s_window;
 static MenuLayer* s_menu;
-static bool s_longpress_dismiss;
+static bool s_konami_dismiss;
 static int s_vibration_pattern;
 
 //static bool s_flip_to_snooze;
@@ -50,7 +50,7 @@ void win_advanced_init(void) {
     .unload = window_unload,
     .appear = window_appear
   });
-  s_longpress_dismiss = load_persistent_storage_bool(LONGPRESS_DISMISS_KEY,false);
+  s_konami_dismiss = load_persistent_storage_bool(KONAMI_DISMISS_KEY,false);
   s_vibration_pattern = load_persistent_storage_int(VIBRATION_PATTERN_KEY,0);
   //s_flip_to_snooze = load_persistent_storage_bool(FLIP_TO_SNOOZE_KEY, false);
   s_vibration_duration = load_persistent_storage_int(VIBRATION_DURATION_KEY,2);
@@ -167,9 +167,9 @@ static void menu_draw_row(GContext* ctx, const Layer* cell_layer, MenuIndex* cel
   char* text = NULL;
   char* subtext = NULL;
   switch (cell_index->row) {
-    case MENU_ROW_LONGPRESS:
+    case MENU_ROW_KONAMI:
       text = _("Dismiss Alarm");
-      subtext = s_longpress_dismiss?_("Long press"):_("Short press");
+      subtext = s_konami_dismiss?_("Long press"):_("Short press");
       break;
     case MENU_ROW_DISMISS:
       text = _("Button to Dismiss Alarm");
@@ -266,9 +266,9 @@ static void menu_selection_changed(struct MenuLayer *menu_layer, MenuIndex new_i
 
 static void menu_select(struct MenuLayer* menu, MenuIndex* cell_index, void* callback_context) {
   switch (cell_index->row) {
-    case MENU_ROW_LONGPRESS:
-      s_longpress_dismiss=!s_longpress_dismiss;
-      persist_write_bool(LONGPRESS_DISMISS_KEY,s_longpress_dismiss);
+    case MENU_ROW_KONAMI:
+      s_konami_dismiss=!s_konami_dismiss;
+      persist_write_bool(KONAMI_DISMISS_KEY,s_konami_dismiss);
       break;
     case MENU_ROW_DISMISS:
       s_dismiss_top=!s_dismiss_top;

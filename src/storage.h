@@ -12,7 +12,7 @@
 #include "alarms.h"
 
 #define SNOOZE_KEY 2
-#define LONGPRESS_DISMISS_KEY 3
+#define KONAMI_DISMISS_KEY 3
 #define HIDE_UNUSED_ALARMS_KEY 5
 #define VIBRATION_PATTERN_KEY 6
 #define FLIP_TO_SNOOZE_KEY 7

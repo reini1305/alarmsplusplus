@@ -13,6 +13,7 @@
 #include "pwm_vibrate.h"
 #endif
 #include "timeline.h"
+#include "win-konami.h"
 #include "debug.h"
 
 static Window *s_main_window;
@@ -46,6 +47,7 @@ static BitmapLayer *s_bitmap_layer;
 #endif
 static int s_vibration_duration = 0;
 static int s_auto_snooze=false;
+static bool s_konami_dismiss=false;
 //static int s_last_z = 10000;
 
 void do_vibrate(void);
@@ -67,10 +69,16 @@ static void wakeup_handler(WakeupId id, int32_t reason) {
 }
 
 static void dismiss_click_handler(ClickRecognizerRef recognizer, void *context) {
-  *s_snooze=false;
-  if(alarm_is_one_time(s_alarm))
-    s_alarm->enabled=false;
-  window_stack_pop(true);
+  if(s_konami_dismiss) {
+    win_konami_init();
+    win_konami_show();
+  }
+  else {
+    *s_snooze=false;
+    if(alarm_is_one_time(s_alarm))
+      s_alarm->enabled=false;
+    window_stack_pop(true);
+  }
 }
 
 static void do_snooze(void)
@@ -96,11 +104,10 @@ static void click_config_provider(void *context) {
   // Register the ClickHandlers
   window_single_click_subscribe(BUTTON_ID_SELECT, do_nothing_click_handler);
   window_single_click_subscribe(BUTTON_ID_BACK, do_nothing_click_handler);
-  bool longpress_dismiss = load_persistent_storage_bool(LONGPRESS_DISMISS_KEY,false);
   bool topbutton_dismiss = load_persistent_storage_bool(TOP_BUTTON_DISMISS_KEY, true);
-  if(longpress_dismiss)
-    window_long_click_subscribe(topbutton_dismiss?BUTTON_ID_UP:BUTTON_ID_DOWN,1000,dismiss_click_handler,NULL);
-  else
+//  if(s_konami_dismiss)
+//    window_long_click_subscribe(topbutton_dismiss?BUTTON_ID_UP:BUTTON_ID_DOWN,1000,dismiss_click_handler,NULL);
+//  else
   window_single_click_subscribe(topbutton_dismiss?BUTTON_ID_UP:BUTTON_ID_DOWN, dismiss_click_handler);
   window_single_click_subscribe(topbutton_dismiss?BUTTON_ID_DOWN:BUTTON_ID_UP, snooze_click_handler);
 }
@@ -306,6 +313,7 @@ static void main_window_load(Window *window) {
   }
   s_vibration_pattern = load_persistent_storage_int(VIBRATION_PATTERN_KEY,0);
   s_vibration_duration = load_persistent_storage_int(VIBRATION_DURATION_KEY, 2);
+  s_konami_dismiss = load_persistent_storage_bool(KONAMI_DISMISS_KEY,false);
 
   s_auto_snooze = load_persistent_storage_bool(AUTO_SNOOZE_KEY, true);
   // do smart-alarmy stuff here
@@ -328,7 +336,7 @@ static void main_window_load(Window *window) {
         HealthActivityMask activities = health_service_peek_current_activities();
         
         // Determine if the user is sleeping
-        if(activities & HealthActivityRestfulSleep) { // give him time to wake
+        if(activities & HealthActivitySleep) { // give him time to wake
           APP_LOG(APP_LOG_LEVEL_INFO, "User is sleeping!");
           s_start_smart_alarm_timer = app_timer_register(1000*10*60*s_smart_alarm,start_vibration,NULL);
         } else { // just vibrate
