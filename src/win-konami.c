@@ -28,8 +28,9 @@ void win_konami_init(void) {
   // Populate keys to press
   srand(time(NULL));
   curr_state = 0;
-  for (int8_t i=0; i<NUM_STATES; i++) {
-    keys[i] = rand()%3;
+  keys[0] = rand()%3;
+  for (int8_t i=1; i<NUM_STATES; i++) {
+    keys[i] = (keys[i-1]+1+rand()%2)%3;
   }
   
   // Prepare arrow

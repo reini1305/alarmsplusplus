@@ -172,10 +172,10 @@ static void menu_draw_row(GContext* ctx, const Layer* cell_layer, MenuIndex* cel
       text = _("Dismiss Alarm");
       switch (s_konami_dismiss) {
         case 0:
-        subtext =  _("Short press");
+        subtext =  "Easy";
           break;
         case 1:
-        subtext = _("Long press");
+        subtext = "Hard";
           break;
         case 2:
         subtext = "Medium";
