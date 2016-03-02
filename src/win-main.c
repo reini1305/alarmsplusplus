@@ -9,7 +9,7 @@
 #include "timeout.h"
 #include "timeline.h"
 #include "pebble_process_info.h"
-#include "debug.h"
+//#include "debug.h"
 
 #define MENU_SECTION_ALARMS   0
 #define MENU_SECTION_OTHER   1

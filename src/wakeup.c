@@ -47,7 +47,7 @@ static BitmapLayer *s_bitmap_layer;
 #endif
 static int s_vibration_duration = 0;
 static int s_auto_snooze=false;
-static bool s_konami_dismiss=false;
+static int s_konami_dismiss=0;
 //static int s_last_z = 10000;
 
 void do_vibrate(void);
@@ -69,7 +69,7 @@ static void wakeup_handler(WakeupId id, int32_t reason) {
 }
 
 static void dismiss_click_handler(ClickRecognizerRef recognizer, void *context) {
-  if(s_konami_dismiss) {
+  if(s_konami_dismiss==1) {
     win_konami_init();
     win_konami_show();
   }
@@ -105,10 +105,10 @@ static void click_config_provider(void *context) {
   window_single_click_subscribe(BUTTON_ID_SELECT, do_nothing_click_handler);
   window_single_click_subscribe(BUTTON_ID_BACK, do_nothing_click_handler);
   bool topbutton_dismiss = load_persistent_storage_bool(TOP_BUTTON_DISMISS_KEY, true);
-//  if(s_konami_dismiss)
-//    window_long_click_subscribe(topbutton_dismiss?BUTTON_ID_UP:BUTTON_ID_DOWN,1000,dismiss_click_handler,NULL);
-//  else
-  window_single_click_subscribe(topbutton_dismiss?BUTTON_ID_UP:BUTTON_ID_DOWN, dismiss_click_handler);
+  if(s_konami_dismiss==2)
+    window_long_click_subscribe(topbutton_dismiss?BUTTON_ID_UP:BUTTON_ID_DOWN,1000,dismiss_click_handler,NULL);
+  else
+    window_single_click_subscribe(topbutton_dismiss?BUTTON_ID_UP:BUTTON_ID_DOWN, dismiss_click_handler);
   window_single_click_subscribe(topbutton_dismiss?BUTTON_ID_DOWN:BUTTON_ID_UP, snooze_click_handler);
 }
 
