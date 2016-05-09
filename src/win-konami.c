@@ -81,7 +81,12 @@ static void select_click_handler(ClickRecognizerRef recognizer, void *context) {
 }
 
 static void back_click_handler(ClickRecognizerRef recognizer, void *context) {
-// Do nothing
+  curr_state--;
+  if (curr_state<0) {
+    window_stack_pop(true);
+  } else {
+    layer_mark_dirty(s_canvas_layer);
+  }
 }
 
 static void up_click_handler(ClickRecognizerRef recognizer, void *context) {
