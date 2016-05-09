@@ -132,6 +132,11 @@
       },
       {
         "type": "raw",
+        "name": "LOCALE_ITALIAN",
+        "file": "locale_talian.bin"
+      },
+      {
+        "type": "raw",
         "name": "CLOCK_SEQUENCE",
         "file": "clock_sequence.pdc"
       }
