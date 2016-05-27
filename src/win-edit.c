@@ -331,7 +331,11 @@ static uint16_t menu_num_rows(struct MenuLayer* menu, uint16_t section_index, vo
       return 8;
       break;
     case MENU_SECTION_OK:
+#ifdef PBL_PLATFORM_APLITE
       return 2;
+#else
+      return 3;
+#endif
     default:
       break;
   }
@@ -398,6 +402,15 @@ static void menu_draw_row(GContext* ctx, const Layer* cell_layer, MenuIndex* cel
       text = _("Description");
       font = fonts_get_system_font(FONT_KEY_GOTHIC_24);
     }
+#ifndef PBL_PLATFORM_APLITE
+    if(cell_index->row==2) // set text
+    {
+      char temp_text[20];
+      snprintf(temp_text, 20, "Smart alarm: %d min.",temp_alarm.smart_alarm_minutes);
+      text = temp_text;
+      font = fonts_get_system_font(FONT_KEY_GOTHIC_24);
+    }
+#endif
   }
   else
   {
@@ -488,23 +501,31 @@ static void menu_select(struct MenuLayer* menu, MenuIndex* cell_index, void* cal
             temp_alarm.hour = hour;
           }
           else
-            temp_alarm.hour = ((temp_alarm.hour+12)%12) + 12;
+          temp_alarm.hour = ((temp_alarm.hour+12)%12) + 12;
           memcpy(current_alarm,&temp_alarm,sizeof(Alarm));
           window_stack_pop(true);
           window_stack_pop(false);
         }
       }
-      else
+      else if(cell_index->row==1)
       {
-#ifdef PBL_PLATFORM_APLITE
+  #ifdef PBL_PLATFORM_APLITE
         tertiary_text_show(temp_alarm.description);
-#else
+  #else
         if(s_dictation_session)
-	  dictation_session_start(s_dictation_session);
-	else
-	  tertiary_text_show(temp_alarm.description);
-#endif
+        dictation_session_start(s_dictation_session);
+        else
+        tertiary_text_show(temp_alarm.description);
+  #endif
       }
+#ifndef PBL_PLATFORM_APLITE
+      else {
+        temp_alarm.smart_alarm_minutes+=10;
+        if(temp_alarm.smart_alarm_minutes>60)
+          temp_alarm.smart_alarm_minutes=0;
+        layer_mark_dirty(menu_layer_get_layer(menu));
+      }
+#endif
       break;
     case MENU_SECTION_WEEKDAYS:
       if(cell_index->row==0)
