@@ -281,7 +281,7 @@ static void main_window_load(Window *window) {
   if(alarm_has_description(s_alarm))
   {
     // Create Description
-    s_description_layer = text_layer_create(GRect(0, 6, bounds.size.w-ACTION_BAR_WIDTH, 36));
+    s_description_layer = text_layer_create(GRect(PBL_IF_ROUND_ELSE(20,0), PBL_IF_ROUND_ELSE(20,6), bounds.size.w-ACTION_BAR_WIDTH-PBL_IF_ROUND_ELSE(20,0), bounds.size.h/2-10));
     text_layer_set_text_alignment(s_description_layer, GTextAlignmentCenter);
     text_layer_set_font(s_description_layer,fonts_get_system_font(FONT_KEY_GOTHIC_28_BOLD));
     text_layer_set_text(s_description_layer, s_alarm->description);

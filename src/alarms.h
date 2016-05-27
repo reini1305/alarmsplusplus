@@ -12,11 +12,7 @@
 #include <pebble.h>
 #ifdef PBL_PLATFORM_APLITE
 #define NUM_ALARMS 24
-#else
-#define NUM_ALARMS 32
-#endif
 #define DESCRIPTION_LENGTH 9
-
 typedef struct Alarm{
   unsigned char hour;
   unsigned char minute;
@@ -25,6 +21,29 @@ typedef struct Alarm{
   WakeupId alarm_id;
   char description[DESCRIPTION_LENGTH+1];
 }Alarm;
+
+#else
+#define NUM_ALARMS 32
+#define DESCRIPTION_LENGTH 19
+typedef struct Alarm_old{
+  unsigned char hour;
+  unsigned char minute;
+  bool weekdays_active[7];
+  bool enabled;
+  WakeupId alarm_id;
+  char description[10];
+}Alarm_old;
+
+typedef struct Alarm{
+  unsigned char hour;
+  unsigned char minute;
+  bool enabled;
+  unsigned char smart_alarm_minutes;
+  WakeupId alarm_id;
+  bool weekdays_active[7];
+  char description[DESCRIPTION_LENGTH+1];
+}Alarm;
+#endif
 
 void alarm_toggle_enable(Alarm *alarm);
 time_t alarm_get_time_of_wakeup(Alarm *alarm);
