@@ -59,7 +59,6 @@ bool cancel_vibrate=false;
 bool already_running=false;
 
 #ifdef PBL_HEALTH
-int s_smart_alarm;
 AppTimer* s_start_smart_alarm_timer = NULL;
 #endif 
 
@@ -318,8 +317,7 @@ static void main_window_load(Window *window) {
   s_auto_snooze = load_persistent_storage_bool(AUTO_SNOOZE_KEY, true);
   // do smart-alarmy stuff here
 #ifdef PBL_HEALTH
-  s_smart_alarm = load_persistent_storage_int(SMART_ALARM_KEY, 0);
-  if(s_smart_alarm>0)
+  if(s_alarm->smart_alarm_minutes>0)
   {
     // Attempt to subscribe
     if(!health_service_events_subscribe(health_handler, NULL)) {
@@ -338,7 +336,7 @@ static void main_window_load(Window *window) {
         // Determine if the user is sleeping
         if(activities & HealthActivitySleep) { // give him time to wake
           APP_LOG(APP_LOG_LEVEL_INFO, "User is sleeping!");
-          s_start_smart_alarm_timer = app_timer_register(1000*10*60*s_smart_alarm,start_vibration,NULL);
+          s_start_smart_alarm_timer = app_timer_register(1000*60*s_alarm->smart_alarm_minutes,start_vibration,NULL);
         } else { // just vibrate
           start_vibration(NULL);
         }
