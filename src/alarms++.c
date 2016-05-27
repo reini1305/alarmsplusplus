@@ -11,8 +11,6 @@ void init(void)
 {
   setup_communication();
   load_persistent_storage_alarms(alarms);
-  //if(load_persistent_storage_bool(BACKGROUND_TRACKING_KEY, false))
-  //  app_worker_launch();
   perform_wakeup_tasks(alarms,&snooze);
 }
 
@@ -26,8 +24,6 @@ void deinit(void)
 
 int main(void) {
   init();
-
- // APP_LOG(APP_LOG_LEVEL_DEBUG, "Done initializing, pushed window: %p", window);
   locale_init();
   app_event_loop();
   deinit();

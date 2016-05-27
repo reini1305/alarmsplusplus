@@ -411,6 +411,10 @@ static void menu_draw_row_alarms(GContext* ctx, const Layer* cell_layer, uint16_
   
   // draw active weekdays
   char weekday_state[13];
+  char smart_minutes[] = "    ";
+#ifndef PBL_PLATFORM_APLITE
+  snprintf(smart_minutes, sizeof(smart_minutes), " +%d",alarm->smart_alarm_minutes);
+#endif
   snprintf(weekday_state,sizeof(weekday_state),"%c%c%c%c%c\n%c%c%s",
            alarm->weekdays_active[1]?weekday_names[1]:'_',
            alarm->weekdays_active[2]?weekday_names[2]:'_',
@@ -419,11 +423,7 @@ static void menu_draw_row_alarms(GContext* ctx, const Layer* cell_layer, uint16_
            alarm->weekdays_active[5]?weekday_names[5]:'_',
            alarm->weekdays_active[6]?weekday_names[6]:'_',
            alarm->weekdays_active[0]?weekday_names[0]:'_',
-#ifdef PBL_PLATFORM_APLITE
-           " "); //smart alarm not supported
-#else
-           (alarm->smart_alarm_minutes>0)? "  Sm":" ");
-#endif
+           smart_minutes);
   
   graphics_draw_text(ctx, weekday_state,
                      fonts_get_system_font(FONT_KEY_GOTHIC_14),
