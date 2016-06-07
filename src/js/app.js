@@ -110,11 +110,8 @@ function deleteSharedPin(pin, topics, apiKey, callback) {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // App Message
 //
-var keys = {
-  "DESCRIPTION": 1,
-  "NEXT_ALARM": 0,
-  "READY": 2
-}
+//var keys = require('message_keys');
+
 // message received
 Pebble.addEventListener('appmessage', function(e) {
                         // check for key
@@ -122,9 +119,9 @@ Pebble.addEventListener('appmessage', function(e) {
                         if (typeof Pebble.getTimelineToken == 'function') {
                         // add time
                         curDate = new Date();
-                        curDate.setTime(curDate.getTime() + e.payload[0]*1000);
-                        reminderPIN.layout.subtitle = e.payload[1];
-                        console.log('Description: ' + e.payload[1]);
+                        curDate.setTime(curDate.getTime() + e.payload['NEXT_ALARM']*1000);
+                        reminderPIN.layout.subtitle = e.payload['DESCRIPTION'];
+                        console.log('Description: ' + e.payload['DESCRIPTION']);
                         reminderPIN.time = curDate;
                         // insert pin
                         insertUserPin(reminderPIN, function (responseText) {
@@ -137,5 +134,5 @@ Pebble.addEventListener('appmessage', function(e) {
 Pebble.addEventListener('ready', function(e) {
                         console.log("JS ready!");
 //                        console.log(keys.READY);
-                        Pebble.sendAppMessage({ 2: true });
+                        Pebble.sendAppMessage({ 'READY': true });
                         });
