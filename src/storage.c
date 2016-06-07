@@ -28,6 +28,7 @@ void load_persistent_storage_alarms(Alarm *alarms)
     Alarm_old temp_alarms[8];
     for(int i=0;i<NUM_ALARMS/8;i++) { // we can only store 8 alarms in one memory slot on aplite
       persist_read_data(ALARMS_OLD_KEY+i,temp_alarms,8*sizeof(Alarm_old));
+      persist_delete(ALARMS_OLD_KEY+i);
       for (int j=0; j<8; j++) {
         alarms[8*i+j].alarm_id = temp_alarms[j].alarm_id;
         alarms[8*i+j].enabled = temp_alarms[j].enabled;
