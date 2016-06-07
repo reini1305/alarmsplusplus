@@ -2,6 +2,7 @@
 #include "timeout.h"
 #include "storage.h"
 #include "localize.h"
+#include "debug.h"
 
 #define MENU_ROW_COUNT 5
 

@@ -8,16 +8,16 @@
 
 #include "timeline.h"
 #include "debug.h"
-#define KEY_NEXT_ALARM 0
-#define KEY_DESCRIPTION 1
-#define KEY_READY 2
+//#define KEY_NEXT_ALARM 0
+//#define KEY_DESCRIPTION 1
+//#define KEY_READY 2
 
 static bool communication_ready;
 static Alarm* retry_alarm;
 static void prv_inbox_recived(DictionaryIterator *iter, void *context) {
   
   // change to configuring screen
-  if (dict_find(iter, KEY_READY)) {
+  if (dict_find(iter, MESSAGE_KEY_READY)) {
     communication_ready=true;
     if(retry_alarm)
       alarm_phone_send_pin(retry_alarm);
@@ -45,8 +45,8 @@ void alarm_phone_send_pin(Alarm* alarm) {
     DictionaryIterator *iter;
     app_message_outbox_begin(&iter);
     // write data
-    dict_write_uint32(iter, KEY_NEXT_ALARM, alarm_get_time_of_wakeup(alarm)-now);
-    dict_write_cstring(iter,KEY_DESCRIPTION, alarm_has_description(alarm)? alarm->description:"Alarms++");
+    dict_write_uint32(iter, MESSAGE_KEY_NEXT_ALARM, alarm_get_time_of_wakeup(alarm)-now);
+    dict_write_cstring(iter,MESSAGE_KEY_DESCRIPTION, alarm_has_description(alarm)? alarm->description:"Alarms++");
     APP_LOG(APP_LOG_LEVEL_DEBUG, "Pin Sent: %d", (int)ret);
     dict_write_end(iter);
     // send

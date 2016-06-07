@@ -1,0 +1,162 @@
+{
+  "version": "6.31.0",
+  "author": "Christian Reinbacher",
+  "private": true,
+  "dependencies": {},
+  "keywords": [
+    "pebble-app"
+  ],
+  "pebble": {
+    "sdkVersion": "3",
+    "resources": {
+      "media": [
+        {
+          "storageOptimization": "memory",
+          "name": "IMAGE_MENU_ICON",
+          "file": "images/logo.png",
+          "memoryFormat": "1Bit",
+          "menuIcon": true,
+          "type": "bitmap"
+        },
+        {
+          "storageOptimization": "memory",
+          "type": "bitmap",
+          "name": "IMAGE_MENU_INV_ICON",
+          "file": "images/logo_inv.png"
+        },
+        {
+          "type": "bitmap",
+          "name": "IMAGE_LOGO",
+          "file": "images/logo_small.png"
+        },
+        {
+          "type": "bitmap",
+          "name": "IMAGE_STATUS",
+          "file": "images/logo_status.png"
+        },
+        {
+          "memoryFormat": "1Bit",
+          "storageOptimization": "memory",
+          "type": "bitmap",
+          "name": "IMAGE_ACTION_ICON_CHECK",
+          "file": "images/action_icon_check.png"
+        },
+        {
+          "memoryFormat": "1Bit",
+          "storageOptimization": "memory",
+          "type": "bitmap",
+          "name": "IMAGE_ACTION_ICON_UP",
+          "file": "images/action_icon_up.png"
+        },
+        {
+          "memoryFormat": "1Bit",
+          "storageOptimization": "memory",
+          "type": "bitmap",
+          "name": "IMAGE_ACTION_ICON_DOWN",
+          "file": "images/action_icon_down.png"
+        },
+        {
+          "memoryFormat": "1Bit",
+          "storageOptimization": "memory",
+          "type": "bitmap",
+          "name": "IMAGE_ACTION_ICON_CROSS",
+          "file": "images/action_icon_cross.png"
+        },
+        {
+          "memoryFormat": "1Bit",
+          "storageOptimization": "memory",
+          "type": "bitmap",
+          "name": "IMAGE_ACTION_ICON_ZZ",
+          "file": "images/action_icon_zz.png"
+        },
+        {
+          "storageOptimization": "memory",
+          "type": "bitmap",
+          "name": "IMAGE_ACTION_ICON_CHECK_INV",
+          "file": "images/action_icon_check_inv.png"
+        },
+        {
+          "memoryFormat": "1Bit",
+          "storageOptimization": "memory",
+          "type": "bitmap",
+          "name": "IMAGE_ACTION_ICON_UP_INV",
+          "file": "images/action_icon_up_inv.png"
+        },
+        {
+          "memoryFormat": "1Bit",
+          "storageOptimization": "memory",
+          "type": "bitmap",
+          "name": "IMAGE_ACTION_ICON_DOWN_INV",
+          "file": "images/action_icon_down_inv.png"
+        },
+        {
+          "memoryFormat": "1Bit",
+          "storageOptimization": "memory",
+          "type": "bitmap",
+          "name": "IMAGE_ACTION_ICON_CROSS_INV",
+          "file": "images/action_icon_cross_inv.png"
+        },
+        {
+          "memoryFormat": "1Bit",
+          "storageOptimization": "memory",
+          "type": "bitmap",
+          "name": "IMAGE_ACTION_ICON_ZZ_INV",
+          "file": "images/action_icon_zz_inv.png"
+        },
+        {
+          "type": "raw",
+          "name": "LOCALE_ENGLISH",
+          "file": "locale_english.bin"
+        },
+        {
+          "type": "raw",
+          "name": "LOCALE_FRENCH",
+          "file": "locale_french.bin"
+        },
+        {
+          "type": "raw",
+          "name": "LOCALE_SPANISH",
+          "file": "locale_spanish.bin"
+        },
+        {
+          "type": "raw",
+          "name": "LOCALE_GERMAN",
+          "file": "locale_german.bin"
+        },
+        {
+          "type": "raw",
+          "name": "LOCALE_ITALIAN",
+          "file": "locale_italian.bin"
+        },
+        {
+          "type": "raw",
+          "name": "CLOCK_SEQUENCE",
+          "file": "clock_sequence.pdc"
+        }
+      ]
+    },
+    "projectType": "native",
+    "uuid": "e3060014-bfe9-4d03-b75e-374cc4dca97b",
+    "messageKeys": {
+      "DESCRIPTION": 1,
+      "NEXT_ALARM": 0,
+      "READY": 2
+    },
+    "enableMultiJS": true,
+    "displayName": "Alarms++",
+    "watchapp": {
+      "onlyShownOnCommunication": false,
+      "hiddenApp": false,
+      "watchface": false
+    },
+    "targetPlatforms": [
+      "aplite",
+      "basalt",
+      "chalk"
+    ],
+    "capabilities": [
+      "health"
+    ]
+  },
+  "name": "Alarms++"
+}
