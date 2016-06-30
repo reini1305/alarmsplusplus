@@ -47,8 +47,9 @@ void update_app_glance(Alarm* alarms) {
       convert_24_to_12(t->tm_hour, &temp_hour, &is_am);
       snprintf(next_alarm_text,sizeof(next_alarm_text),"Next: %02d:%02d %s",temp_hour,t->tm_min,is_am?"AM":"PM");
     }
+    app_glance_reload(prv_update_app_glance,next_alarm_text);
   } else {
-    snprintf(next_alarm_text,sizeof(next_alarm_text)," ");
+    app_glance_reload(prv_update_app_glance,NULL);
   }
-  app_glance_reload(prv_update_app_glance,next_alarm_text);
+  
 }
