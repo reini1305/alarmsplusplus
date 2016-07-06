@@ -1,5 +1,5 @@
 {
-  "version": "6.32.0",
+  "version": "6.33.0",
   "author": "Christian Reinbacher",
   "private": true,
   "dependencies": {},
@@ -16,6 +16,11 @@
           "file": "images/logo.png",
           "memoryFormat": "1Bit",
           "menuIcon": true,
+          "type": "bitmap"
+        },
+        {
+          "name": "IMAGE_MENU_LOGO",
+          "file": "images/logo.png",
           "type": "bitmap"
         },
         {
