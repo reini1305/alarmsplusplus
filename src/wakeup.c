@@ -60,7 +60,7 @@ bool already_running=false;
 
 #ifdef PBL_HEALTH
 AppTimer* s_start_smart_alarm_timer = NULL;
-#endif 
+#endif
 
 static void wakeup_handler(WakeupId id, int32_t reason) {
   // The app has woken!
@@ -180,7 +180,7 @@ static void update_proc(Layer *layer, GContext *ctx) {
   // Get the next frame
   GDrawCommandFrame *frame = gdraw_command_sequence_get_frame_by_index(s_command_seq, s_index);
 
-  // If another frame was found, draw it    
+  // If another frame was found, draw it
   if (frame) {
     gdraw_command_frame_draw(ctx, s_command_seq, frame, GPoint(0, 23));
   }
@@ -237,6 +237,7 @@ static void health_handler(HealthEventType event, void *context) {
     case HealthEventSignificantUpdate:
       APP_LOG(APP_LOG_LEVEL_INFO,
               "New HealthService HealthEventSignificantUpdate event");
+      start_vibration(NULL);
       break;
     case HealthEventMovementUpdate:
       APP_LOG(APP_LOG_LEVEL_INFO,
@@ -263,14 +264,14 @@ static void health_handler(HealthEventType event, void *context) {
               "New HealthService HealthEventHeartRateUpdate event");
       break;
   }
-  
+
 }
 
 #endif
 
 static void main_window_load(Window *window) {
   GRect bounds = layer_get_bounds(window_get_root_layer(window));
-  
+
   action_bar = action_bar_layer_create();
   action_bar_layer_set_click_config_provider(action_bar, click_config_provider);
   bool topbutton_dismiss = load_persistent_storage_bool(TOP_BUTTON_DISMISS_KEY, true);
@@ -279,9 +280,9 @@ static void main_window_load(Window *window) {
   action_bar_layer_set_icon_animated(action_bar,topbutton_dismiss?BUTTON_ID_DOWN:BUTTON_ID_UP,gbitmap_create_with_resource(RESOURCE_ID_IMAGE_ACTION_ICON_ZZ_INV),true);
 
   action_bar_layer_add_to_window(action_bar,window);
-  
+
   // Create output TextLayer
-  
+
   s_output_layer = text_layer_create(GRect(0, bounds.size.h/2-(is_24h()?0:4), bounds.size.w-ACTION_BAR_WIDTH, bounds.size.h));
   text_layer_set_text_alignment(s_output_layer, GTextAlignmentCenter);
   text_layer_set_font(s_output_layer,fonts_get_system_font(FONT_KEY_BITHAM_42_LIGHT));
@@ -289,7 +290,7 @@ static void main_window_load(Window *window) {
   //snprintf(output_text, sizeof(output_text), "00:00");
   text_layer_set_text(s_output_layer, output_text);
   layer_add_child(window_get_root_layer(window), text_layer_get_layer(s_output_layer));
-  
+
   //snprintf(output_text, sizeof(output_text), "00:00");
   if(alarm_has_description(s_alarm))
   {
@@ -311,7 +312,7 @@ static void main_window_load(Window *window) {
 
     // Add to parent Window
     layer_add_child(window_get_root_layer(window), s_canvas_layer);
-    
+
 #else
     // Create Bitmap
     s_bitmap_layer = bitmap_layer_create(GRect(0,10,bounds.size.w-ACTION_BAR_WIDTH, bounds.size.h));
@@ -341,14 +342,14 @@ static void main_window_load(Window *window) {
     else {
       // Check which activities are available
       HealthServiceAccessibilityMask activity_mask = health_service_any_activity_accessible(HealthActivityMaskAll,time(NULL)-SECONDS_PER_HOUR,time(NULL));
-      
+
       if(activity_mask & HealthServiceAccessibilityMaskAvailable){
         APP_LOG(APP_LOG_LEVEL_INFO, "We can read activities!");
         // Get an activities mask
         HealthActivityMask activities = health_service_peek_current_activities();
-        
+
         // Determine if the user is sleeping
-        if(activities & HealthActivitySleep) { // give him time to wake
+        if((activities & HealthActivitySleep) || (activities & HealthActivityRestfulSleep)) { // give him time to wake
           APP_LOG(APP_LOG_LEVEL_INFO, "User is sleeping!");
           s_start_smart_alarm_timer = app_timer_register(1000*60*s_alarm->smart_alarm_minutes,start_vibration,NULL);
         } else { // just vibrate
@@ -363,7 +364,7 @@ static void main_window_load(Window *window) {
   else {
     start_vibration(NULL);
   }
-  
+
 #else
   start_vibration(NULL);
 #endif
@@ -385,7 +386,7 @@ void perform_wakeup_tasks(Alarm* alarms, bool *snooze)
   s_snooze=snooze;
   // Create main Window
   s_main_window = window_create();
-  
+
   window_set_window_handlers(s_main_window, (WindowHandlers) {
     .load = main_window_load,
     .unload = main_window_unload,
@@ -397,35 +398,35 @@ void perform_wakeup_tasks(Alarm* alarms, bool *snooze)
       alarm_phone_send_pin(&alarms[alarm_id]);
     APP_LOG(APP_LOG_LEVEL_DEBUG, "Alarm ID: %d",alarm_id);
 
-  
+
   //s_flip_to_snooze = load_persistent_storage_bool(FLIP_TO_SNOOZE_KEY, false);
-  
+
   // Subscribe to Wakeup API
   wakeup_service_subscribe(wakeup_handler);
-  
+
   // Was this a wakeup?
   if(launch_reason() == APP_LAUNCH_WAKEUP) {
     // The app was started by a wakeup
     WakeupId id = 0;
     int32_t reason = 0;
-    
+
     // Get details and handle the wakeup
     wakeup_get_launch_event(&id, &reason);
     // search for alarm which caused the wakeup
     s_alarm = alarms;
     while(s_alarm->alarm_id!=id)
       s_alarm++;
-    
+
     // Get the current time
     time_t now = time(NULL);
     struct tm *t = localtime(&now);
     update_text(t);
-    
+
     //handle_tick(t, MINUTE_UNIT);
     tick_timer_service_subscribe(MINUTE_UNIT, handle_tick);
     light_enable_interaction();
     window_stack_push(s_main_window, true);
-    
+
     //wakeup_handler(id, (int32_t)alarms);
   }
   else{

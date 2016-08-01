@@ -166,7 +166,7 @@ void win_main_init(Alarm* alarms) {
   snprintf(version_text, sizeof(version_text), "Alarms++ v%d.%d",__pbl_app_info.process_version.major,__pbl_app_info.process_version.minor);
   s_scroll_timer = app_timer_register(500,scroll_timer_callback,NULL);
 #ifndef PBL_PLATFORM_APLITE
-  s_logo_bitmap = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_MENU_ICON);
+  s_logo_bitmap = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_MENU_LOGO);
   s_logo_inv_bitmap = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_MENU_INV_ICON);
 #endif
   init_action_menu();
