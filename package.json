@@ -1,8 +1,10 @@
 {
-  "version": "6.33.0",
+  "version": "6.35.0",
   "author": "Christian Reinbacher",
   "private": true,
-  "dependencies": {},
+  "dependencies": {
+    "pebble-ui-dialog-window": "^0.2.1"
+  },
   "keywords": [
     "pebble-app"
   ],

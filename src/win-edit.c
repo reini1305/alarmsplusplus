@@ -69,6 +69,13 @@ static Alarm temp_alarm;
 static Alarm *current_alarm;
 
 #ifndef PBL_PLATFORM_APLITE
+#include "pebble-ui-dialog-window/pebble-ui-dialog-window.h"
+UIDialogWindow* ui_dialog;
+#ifdef PBL_ROUND
+char* ui_dialog_message = "       Voice        dictation not available, falling back to standard text input. Press back to continue.";
+#else
+char* ui_dialog_message = "Voice dictation not available, falling back to standard text input. Press back to continue.";
+#endif
 static DictationSession *s_dictation_session;
 static void dictation_session_callback(DictationSession *session, DictationSessionStatus status,
                                        char *transcription, void *context) {
@@ -77,7 +84,9 @@ static void dictation_session_callback(DictationSession *session, DictationSessi
     strncpy(temp_alarm.description, transcription, sizeof(temp_alarm.description));
   }
   else { // fallback to old solution
+    Window* window = ui_dialog_window_get_window(ui_dialog);
     tertiary_text_show(temp_alarm.description);
+    window_stack_push(window, true);
   }
 }
 #endif
@@ -89,7 +98,7 @@ void win_edit_init(void)
     .load = window_load,
     .unload = window_unload
   });
-  
+
   s_time_window = window_create();
   window_set_window_handlers(s_time_window, (WindowHandlers) {
     .load = time_window_load,
@@ -100,6 +109,9 @@ void win_edit_init(void)
 #ifndef PBL_PLATFORM_APLITE
   s_dictation_session = dictation_session_create(sizeof(temp_alarm.description),
                                                  dictation_session_callback, NULL);
+  ui_dialog = ui_dialog_window_create(ui_dialog_message, NULL);
+  ui_dialog_window_set_background_color(ui_dialog,GColorRed);
+  ui_dialog_window_set_label_color(ui_dialog,GColorWhite);
 #endif
   check_icon = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_ACTION_ICON_CHECK_INV);
   check_icon_inv = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_ACTION_ICON_CHECK);
@@ -147,7 +159,7 @@ void win_edit_show(Alarm *alarm){
 // Time input window stuff
 
 static void update_ui(Layer *layer, GContext *ctx) {
-  
+
   for(int i = 0; i < 3; i++) {
     text_layer_set_background_color(s_input_layers[i], (i == s_selection) ? PBL_IF_COLOR_ELSE(GColorBlue,GColorBlack) : PBL_IF_COLOR_ELSE(GColorDarkGray,GColorLightGray));
     text_layer_set_text_color(s_input_layers[i],GColorWhite);
@@ -178,7 +190,7 @@ static void update_ui(Layer *layer, GContext *ctx) {
   graphics_context_set_text_color(ctx,PBL_IF_COLOR_ELSE(GColorBlue,GColorBlack));
   graphics_draw_text(ctx,":",fonts_get_system_font(FONT_KEY_GOTHIC_28_BOLD),GRect(s_withampm?144/2-27:144/2 + OFFSET_LEFT,58 + OFFSET_TOP,40,20),
                      GTextOverflowModeWordWrap,GTextAlignmentLeft,NULL);
-  
+
 #ifdef PBL_ROUND
   // draw graphical representations as rings around the border
   GRect bounds = layer_get_bounds(layer);
@@ -189,14 +201,14 @@ static void update_ui(Layer *layer, GContext *ctx) {
   bounds = grect_inset(bounds,GEdgeInsets(9));
   graphics_context_set_fill_color(ctx, s_selection==1?GColorBlue:GColorDarkGray);
   graphics_fill_radial(ctx, bounds, GOvalScaleModeFitCircle, 9, 0, DEG_TO_TRIGANGLE(minute_angle));
-  
+
 #endif
 }
 
 static void select_click_handler(ClickRecognizerRef recognizer, void *context) {
   // Next column
   s_selection++;
-  
+
   if(s_selection == (s_withampm? 3:2)) {
     temp_alarm.hour = s_digits[0];
     temp_alarm.minute = s_digits[1];
@@ -211,7 +223,7 @@ static void select_click_handler(ClickRecognizerRef recognizer, void *context) {
 static void back_click_handler(ClickRecognizerRef recognizer, void *context) {
   // Previous column
   s_selection--;
-  
+
   if(s_selection == -1) {
     window_stack_pop(true);
   }
@@ -222,24 +234,24 @@ static void back_click_handler(ClickRecognizerRef recognizer, void *context) {
 static void up_click_handler(ClickRecognizerRef recognizer, void *context) {
   if(s_selection == 0 && s_withampm && s_digits[s_selection] == s_max[s_selection] - 1)
     s_digits[2] = !s_digits[2];
-  
+
   s_digits[s_selection] += s_digits[s_selection] == s_max[s_selection] ? -s_max[s_selection] : 1;
 
   if(s_selection == 0 && s_withampm && s_digits[0] == 0)
     s_digits[0] = 1;
-	
+
   layer_mark_dirty(s_canvas_layer);
 }
 
 static void down_click_handler(ClickRecognizerRef recognizer, void *context) {
   if(s_selection == 0 && s_withampm && s_digits[s_selection] == s_max[s_selection])
     s_digits[2] = !s_digits[2];
-	  
+
   s_digits[s_selection] -= (s_digits[s_selection] == 0) ? -s_max[s_selection] : 1;
-	
+
   if(s_selection == 0 && s_withampm && s_digits[0] == 0)
     s_digits[0] = s_max[0];
-  
+
   layer_mark_dirty(s_canvas_layer);
 }
 
@@ -253,12 +265,12 @@ static void click_config_provider(void *context) {
 static void time_window_load(Window *window) {
   Layer *window_layer = window_get_root_layer(window);
   GRect bounds = layer_get_bounds(window_layer);
-  
+
   // init hands
   s_canvas_layer = layer_create(bounds);
   layer_set_update_proc(s_canvas_layer, update_ui);
   layer_add_child(window_layer, s_canvas_layer);
-  
+
   for(int i = 0; i < 3; i++) {
     s_input_layers[i] = text_layer_create(GRect((s_withampm?3:30) + i * (PIN_WINDOW_SPACING + PIN_WINDOW_SPACING) + OFFSET_LEFT, 60 + OFFSET_TOP, 40, 40));
 #ifdef PBL_COLOR
@@ -303,10 +315,10 @@ void window_load(Window* window)
     .draw_row = menu_draw_row,
     .select_click = menu_select,
   });
-  
+
   // Bind the menu layer's click config provider to the window for interactivity
   menu_layer_set_click_config_onto_window(s_menu, s_window);
-  
+
 #ifdef PBL_COLOR
   menu_layer_set_highlight_colors(s_menu,GColorBlue,GColorWhite);
   menu_layer_pad_bottom_enable(s_menu,false);
@@ -365,7 +377,7 @@ static void menu_draw_header(GContext* ctx, const Layer* cell_layer, uint16_t se
   #endif
   GRect layer_size = layer_get_bounds(cell_layer);
   graphics_fill_rect(ctx,GRect(0,1,layer_size.size.w,14),0,GCornerNone);
-  
+
 #ifdef PBL_RECT
   graphics_draw_text(ctx, section_index==MENU_SECTION_OK?_("Update Alarm"):_("Weekdays"),
                      fonts_get_system_font(FONT_KEY_GOTHIC_14_BOLD),
@@ -389,7 +401,7 @@ static void menu_draw_row(GContext* ctx, const Layer* cell_layer, MenuIndex* cel
   GFont font = NULL;
   bool draw_checkmark=false;
   GRect layer_size = layer_get_bounds(cell_layer);
-  
+
   if(cell_index->section == MENU_SECTION_OK)
   {
     if(cell_index->row==0) // OK
@@ -445,7 +457,7 @@ static void menu_draw_row(GContext* ctx, const Layer* cell_layer, MenuIndex* cel
         case 7:
           text = _("Saturday");
           break;
-          
+
         default:
           break;
       }
@@ -514,8 +526,12 @@ static void menu_select(struct MenuLayer* menu, MenuIndex* cell_index, void* cal
   #else
         if(s_dictation_session)
         dictation_session_start(s_dictation_session);
-        else
-        tertiary_text_show(temp_alarm.description);
+        else{
+          tertiary_text_show(temp_alarm.description);
+          Window* window = ui_dialog_window_get_window(ui_dialog);
+          window_stack_push(window, true);
+        }
+
   #endif
       }
 #ifndef PBL_PLATFORM_APLITE
@@ -540,7 +556,7 @@ static void menu_select(struct MenuLayer* menu, MenuIndex* cell_index, void* cal
       }
       layer_mark_dirty(menu_layer_get_layer(menu));
       break;
-      
+
     default:
       break;
   }
