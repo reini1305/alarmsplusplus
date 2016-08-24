@@ -157,7 +157,7 @@
       "watchface": false
     },
     "targetPlatforms": [
-      "aplite",
+      "diorite",
       "basalt",
       "chalk"
     ],

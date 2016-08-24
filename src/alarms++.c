@@ -3,6 +3,7 @@
 #include "wakeup.h"
 #include "localize.h"
 #include "timeline.h"
+#include "appglance.h"
 
 static Alarm alarms[NUM_ALARMS];
 static bool snooze;
@@ -14,12 +15,15 @@ void init(void)
   perform_wakeup_tasks(alarms,&snooze);
 }
 
+
+
 void deinit(void)
 {
   destroy_communication();
   if(!snooze)
     reschedule_wakeup(alarms);
   write_persistent_storage_alarms(alarms);
+  update_app_glance(alarms);
 }
 
 int main(void) {

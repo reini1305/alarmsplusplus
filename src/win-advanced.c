@@ -36,9 +36,6 @@ static int s_vibration_duration;
 static bool s_auto_snooze;
 //static bool s_background_tracking;
 static bool s_dismiss_top;
-#ifdef PBL_HEALTH
-static int s_smart_alarm;
-#endif
 
 static int16_t s_scroll_index;
 static int16_t s_scroll_row_index;
