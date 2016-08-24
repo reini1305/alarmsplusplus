@@ -9,9 +9,8 @@
 #include "wakeup.h"
 #include "win-main.h"
 #include "storage.h"
-#ifndef PBL_PLATFORM_APLITE
 #include "pwm_vibrate.h"
-#endif
+
 #include "timeline.h"
 #include "win-konami.h"
 #include "debug.h"
@@ -28,7 +27,7 @@ static Alarm *s_alarm;
 static uint32_t s_segments[]={600,1};
 static int s_vibe_counter = 0;
 static int s_vibration_pattern = 0;
-#ifndef PBL_PLATFORM_APLITE
+
 static VibePatternPWM s_pwmPat = {
   .durations = s_segments,
   .num_segments = 2
@@ -37,14 +36,6 @@ static VibePatternPWM s_pwmPat = {
 static GDrawCommandSequence *s_command_seq;
 static int s_index = 0;
 static Layer *s_canvas_layer;
-#else
-VibePattern s_pat= {
-  .durations = s_segments,
-  .num_segments = 2,
-};
-static GBitmap *s_logo;
-static BitmapLayer *s_bitmap_layer;
-#endif
 static int s_vibration_duration = 0;
 static int s_auto_snooze=false;
 static int s_konami_dismiss=0;
@@ -116,21 +107,12 @@ uint32_t min(uint32_t val1,uint32_t val2) {
 }
 
 void do_vibrate(void) {
-#ifndef PBL_PLATFORM_APLITE
   if(s_vibration_pattern)
   {
     s_pwmPat.durations[1] = (s_vibe_counter/s_vibration_pattern)+1;
     s_vibe_counter++;
     vibes_enqueue_custom_pwm_pattern(&s_pwmPat);
   }
-#else
-  if(s_vibration_pattern)
-  {
-    s_segments[0] = min((s_vibe_counter/s_vibration_pattern)*50,500);
-    s_vibe_counter++;
-    vibes_enqueue_custom_pattern(s_pat);
-  }
-#endif
   else
     vibes_long_pulse();
 
@@ -167,7 +149,6 @@ static void handle_tick(struct tm *t, TimeUnits units_changed) {
     layer_mark_dirty(text_layer_get_layer(s_description_layer));
 }
 
-#ifndef PBL_PLATFORM_APLITE
 static void next_frame_handler(void *context) {
   // Draw the next frame
   layer_mark_dirty(s_canvas_layer);
@@ -192,7 +173,6 @@ static void update_proc(Layer *layer, GContext *ctx) {
     s_index = 0;
   }
 }
-#endif
 
 void start_vibration(void *data)
 {
@@ -223,10 +203,8 @@ void start_vibration(void *data)
         break;
     }
     cancel_vibe_timer = app_timer_register(1000*s_vibration_duration,cancel_vibe_timer_callback,NULL);
-  #ifndef PBL_PLATFORM_APLITE
     if(!alarm_has_description(s_alarm))
       app_timer_register(33, next_frame_handler, NULL);
-  #endif
   }
 }
 
@@ -303,7 +281,6 @@ static void main_window_load(Window *window) {
   }
   else
   {
-#ifndef PBL_PLATFORM_APLITE
     s_command_seq = gdraw_command_sequence_create_with_resource(RESOURCE_ID_CLOCK_SEQUENCE);
     // Create the canvas Layer
     s_canvas_layer = layer_create(GRect(PBL_IF_ROUND_ELSE(60,30)-ACTION_BAR_WIDTH/2, 0, bounds.size.w, bounds.size.h));
@@ -312,18 +289,6 @@ static void main_window_load(Window *window) {
 
     // Add to parent Window
     layer_add_child(window_get_root_layer(window), s_canvas_layer);
-
-#else
-    // Create Bitmap
-    s_bitmap_layer = bitmap_layer_create(GRect(0,10,bounds.size.w-ACTION_BAR_WIDTH, bounds.size.h));
-    s_logo = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_LOGO);
-    bitmap_layer_set_bitmap(s_bitmap_layer,s_logo);
-    bitmap_layer_set_alignment(s_bitmap_layer,GAlignTop);
-    layer_add_child(window_get_root_layer(window),bitmap_layer_get_layer(s_bitmap_layer));
-    s_pat.durations = s_segments;
-    s_pat.num_segments = 2;
-
-#endif
   }
   s_vibration_pattern = load_persistent_storage_int(VIBRATION_PATTERN_KEY,0);
   s_vibration_duration = load_persistent_storage_int(VIBRATION_DURATION_KEY, 2);

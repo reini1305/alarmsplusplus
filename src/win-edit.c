@@ -68,7 +68,6 @@ static void menu_select(struct MenuLayer* menu, MenuIndex* cell_index, void* cal
 static Alarm temp_alarm;
 static Alarm *current_alarm;
 
-#ifndef PBL_PLATFORM_APLITE
 #include "pebble-ui-dialog-window/pebble-ui-dialog-window.h"
 UIDialogWindow* ui_dialog;
 #ifdef PBL_ROUND
@@ -89,7 +88,6 @@ static void dictation_session_callback(DictationSession *session, DictationSessi
     window_stack_push(window, true);
   }
 }
-#endif
 
 void win_edit_init(void)
 {
@@ -106,13 +104,12 @@ void win_edit_init(void)
   });
 
   tertiary_text_init();
-#ifndef PBL_PLATFORM_APLITE
   s_dictation_session = dictation_session_create(sizeof(temp_alarm.description),
                                                  dictation_session_callback, NULL);
   ui_dialog = ui_dialog_window_create(ui_dialog_message, NULL);
   ui_dialog_window_set_background_color(ui_dialog,GColorRed);
   ui_dialog_window_set_label_color(ui_dialog,GColorWhite);
-#endif
+
   check_icon = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_ACTION_ICON_CHECK_INV);
   check_icon_inv = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_ACTION_ICON_CHECK);
 
@@ -343,11 +340,7 @@ static uint16_t menu_num_rows(struct MenuLayer* menu, uint16_t section_index, vo
       return 8;
       break;
     case MENU_SECTION_OK:
-#ifdef PBL_PLATFORM_APLITE
-      return 2;
-#else
       return 3;
-#endif
     default:
       break;
   }
@@ -414,7 +407,6 @@ static void menu_draw_row(GContext* ctx, const Layer* cell_layer, MenuIndex* cel
       text = _("Description");
       font = fonts_get_system_font(FONT_KEY_GOTHIC_24);
     }
-#ifndef PBL_PLATFORM_APLITE
     if(cell_index->row==2) // set text
     {
       char temp_text[20];
@@ -422,7 +414,6 @@ static void menu_draw_row(GContext* ctx, const Layer* cell_layer, MenuIndex* cel
       text = temp_text;
       font = fonts_get_system_font(FONT_KEY_GOTHIC_24);
     }
-#endif
   }
   else
   {
@@ -521,9 +512,6 @@ static void menu_select(struct MenuLayer* menu, MenuIndex* cell_index, void* cal
       }
       else if(cell_index->row==1)
       {
-  #ifdef PBL_PLATFORM_APLITE
-        tertiary_text_show(temp_alarm.description);
-  #else
         if(s_dictation_session)
         dictation_session_start(s_dictation_session);
         else{
@@ -531,17 +519,13 @@ static void menu_select(struct MenuLayer* menu, MenuIndex* cell_index, void* cal
           Window* window = ui_dialog_window_get_window(ui_dialog);
           window_stack_push(window, true);
         }
-
-  #endif
       }
-#ifndef PBL_PLATFORM_APLITE
       else {
         temp_alarm.smart_alarm_minutes+=10;
         if(temp_alarm.smart_alarm_minutes>60)
           temp_alarm.smart_alarm_minutes=0;
         layer_mark_dirty(menu_layer_get_layer(menu));
       }
-#endif
       break;
     case MENU_SECTION_WEEKDAYS:
       if(cell_index->row==0)

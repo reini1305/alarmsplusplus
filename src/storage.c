@@ -11,18 +11,6 @@
 
 void load_persistent_storage_alarms(Alarm *alarms)
 {
-#ifdef PBL_PLATFORM_APLITE
-  for(int i=0;i<NUM_ALARMS/8;i++) { // we can only store 8 alarms in one memory slot
-    if (persist_exists(ALARMS_KEY+i)) {
-      persist_read_data(ALARMS_KEY+i,&alarms[8*i],8*sizeof(Alarm));
-    }
-    else {
-      for (int j=0; j<8; j++) {
-        alarm_reset(&alarms[8*i+j]);
-      }
-    }
-  }
-#else
   // Perform migration
   if(persist_exists(ALARMS_OLD_KEY)) {
     Alarm_old temp_alarms[8];
@@ -54,18 +42,12 @@ void load_persistent_storage_alarms(Alarm *alarms)
     }
   }
   APP_LOG(APP_LOG_LEVEL_DEBUG,"Size of one alarm struct: %d",sizeof(Alarm));
-#endif
 }
 
 void write_persistent_storage_alarms(Alarm *alarms)
 {
-#ifdef PBL_PLATFORM_APLITE
-  for(int i=0;i<NUM_ALARMS/8;i++) // we can only store 8 alarms in one memory slot on aplite
-    persist_write_data(ALARMS_KEY+i,&alarms[8*i],8*sizeof(Alarm));
-#else
   for(int i=0;i<NUM_ALARMS/4;i++) // we can only store 4 alarms in one memory slot on other platforms
   persist_write_data(ALARMS_KEY+i,&alarms[4*i],4*sizeof(Alarm));
-#endif
 }
 
 bool load_persistent_storage_bool(int key, bool default_val)

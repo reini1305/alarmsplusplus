@@ -38,7 +38,7 @@ time_t alarm_get_time_of_wakeup(Alarm *alarm)
     time_t timestamp = now + (60*60*24*7);
     time_t temp_timestamp;
     bool some_active=false;
-    
+
     // Check if we may schedule the alarm today
     int current_weekday = t->tm_wday;
     for(int i=0;i<7;i++)
@@ -120,11 +120,11 @@ void reschedule_wakeup(Alarm *alarms)
 bool alarm_is_one_time(Alarm *alarm)
 {
   bool onetime=true;
-  
+
   for (int i=0;i<7;i++)
     if(alarm->weekdays_active[i])
       onetime=false;
-  
+
   return onetime;
 }
 
@@ -171,9 +171,7 @@ void alarm_reset(Alarm *alarm)
   alarm->description[0]=0;
   for (int weekday=0; weekday<7;weekday++)
     alarm->weekdays_active[weekday]=true;
-#ifndef PBL_PLATFORM_APLITE
   alarm->smart_alarm_minutes=0;
-#endif
 }
 
 bool is_24h()

@@ -79,10 +79,9 @@ static char version_text[15];
 static int16_t s_scroll_index;
 static int16_t s_scroll_row_index;
 static AppTimer *s_scroll_timer;
-#ifndef PBL_PLATFORM_APLITE
 static GBitmap *s_logo_bitmap;
 static GBitmap *s_logo_inv_bitmap;
-#endif
+
 static char english[7] = {"SMTWTFS"};
 static char german[7] = {"SMDMDFS"};
 static char french[7] = {"dlmmjvs"};
@@ -105,13 +104,13 @@ static void action_toggle_performed_callback(ActionMenu *action_menu, const Acti
 static void init_action_menu() {
   // Create the root level and secondary custom patterns level
   s_root_level = action_menu_level_create(2);
-  
+
   // Set up the actions for this level, using action context to pass types
   action_menu_level_add_action(s_root_level, "Enable/Disable", action_toggle_performed_callback,
                                NULL);
   action_menu_level_add_action(s_root_level, "Delete", action_reset_performed_callback,
                                NULL);
-  
+
 }
 
 
@@ -165,10 +164,9 @@ void win_main_init(Alarm* alarms) {
   refresh_next_alarm_text();
   snprintf(version_text, sizeof(version_text), "Alarms++ v%d.%d",__pbl_app_info.process_version.major,__pbl_app_info.process_version.minor);
   s_scroll_timer = app_timer_register(500,scroll_timer_callback,NULL);
-#ifndef PBL_PLATFORM_APLITE
   s_logo_bitmap = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_MENU_LOGO);
   s_logo_inv_bitmap = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_MENU_INV_ICON);
-#endif
+
   init_action_menu();
   char *sys_locale = setlocale(LC_ALL, "");
   if (strcmp("de_DE", sys_locale) == 0) {
@@ -190,7 +188,7 @@ static void battery_proc(Layer *layer, GContext *ctx) {
   graphics_context_set_stroke_color(ctx, GColorWhite);
   graphics_draw_rect(ctx, GRect(126, 4, 14, 8));
   graphics_draw_line(ctx, GPoint(140, 6), GPoint(140, 9));
-  
+
   BatteryChargeState state = battery_state_service_peek();
   int width = state.charge_percent / 10;
   graphics_context_set_fill_color(ctx, GColorWhite);
@@ -201,7 +199,7 @@ static void battery_proc(Layer *layer, GContext *ctx) {
 static void window_load(Window* window) {
   Layer *window_layer = window_get_root_layer(s_window);
   GRect bounds = layer_get_frame(window_layer);
-  
+
 #if defined(PBL_RECT)
   s_status_layer = status_bar_layer_create();
   // Change the status bar width to make space for the action bar
@@ -216,7 +214,7 @@ static void window_load(Window* window) {
   bounds.size.h-=STATUS_BAR_LAYER_HEIGHT;
   bounds.origin.y+=STATUS_BAR_LAYER_HEIGHT;
 #endif
-  
+
   // Create the menu layer
   s_menu = menu_layer_create(bounds);
   menu_layer_set_callbacks(s_menu, NULL, (MenuLayerCallbacks) {
@@ -301,7 +299,7 @@ static void menu_draw_header(GContext* ctx, const Layer* cell_layer, uint16_t se
   {
     graphics_context_set_text_color(ctx, GColorWhite);
     graphics_context_set_fill_color(ctx, PBL_IF_COLOR_ELSE(GColorBlue, GColorBlack));
-    
+
     GRect layer_size = layer_get_bounds(cell_layer);
     graphics_fill_rect(ctx,GRect(0,1,layer_size.size.w,14),0,GCornerNone);
 #ifdef PBL_RECT
@@ -354,14 +352,14 @@ static void menu_draw_row_add(GContext* ctx, bool selected, int width) {
 
 static void menu_draw_row_alarms(GContext* ctx, const Layer* cell_layer, uint16_t row_index) {
   Alarm* alarm = &s_alarms[s_id_enabled[row_index]];
-  
+
   if(menu_cell_layer_is_highlighted(cell_layer))
     graphics_context_set_text_color(ctx,GColorWhite);
   else
     graphics_context_set_text_color(ctx,GColorBlack);
 
   GFont font = fonts_get_system_font(alarm->enabled?FONT_KEY_GOTHIC_28_BOLD:FONT_KEY_GOTHIC_28);
-  
+
   GRect layer_size = layer_get_bounds(cell_layer);
   char alarm_time[6];
   int hour_out = alarm->hour;
@@ -379,20 +377,13 @@ static void menu_draw_row_alarms(GContext* ctx, const Layer* cell_layer, uint16_
                        GRect(57-(alarm->enabled?3:0)+ALARM_OFFSET_LEFT, -1+offset, layer_size.size.w - 33 - ALARM_OFFSET_RIGHT, 30), GTextOverflowModeWordWrap,
                        GTextAlignmentLeft, NULL);
   }
-  
+
   snprintf(alarm_time,sizeof(alarm_time),"%02d:%02d",hour_out,alarm->minute);
   graphics_draw_text(ctx, alarm_time,font,
                      GRect(3+ALARM_OFFSET_LEFT, -3+offset, layer_size.size.w - 33- ALARM_OFFSET_RIGHT, 28), GTextOverflowModeFill,
                      GTextAlignmentLeft, NULL);
-  
+
   // draw activity state
-#ifdef PBL_PLATFORM_APLITE
-  char state[]={"RST"};
-  snprintf(state, sizeof(state), "%s",alarm->enabled? _("ON"):_("OFF"));
-  graphics_draw_text(ctx, state,font,
-                     GRect(3+ALARM_OFFSET_LEFT, alarm_has_description(alarm)?7:-3+offset, layer_size.size.w - 5 - ALARM_OFFSET_RIGHT, 28), GTextOverflowModeFill,
-                     GTextAlignmentRight, NULL);
-#else
   bool highlighted = menu_cell_layer_is_highlighted(cell_layer);
   graphics_draw_bitmap_in_rect(ctx,highlighted?s_logo_inv_bitmap:s_logo_bitmap,
                                GRect(layer_size.size.w - 29 - ALARM_OFFSET_RIGHT, alarm_has_description(alarm)?7:3+offset, 24 , 28));
@@ -407,14 +398,12 @@ static void menu_draw_row_alarms(GContext* ctx, const Layer* cell_layer, uint16_
     graphics_draw_line(ctx,GPoint(layer_size.size.w - 29 - ALARM_OFFSET_RIGHT, alarm_has_description(alarm)?7:3+offset),
                        GPoint(layer_size.size.w - 5 - ALARM_OFFSET_RIGHT, 24+(alarm_has_description(alarm)?7:3+offset)));
   }
-#endif
-  
+
   // draw active weekdays
   char weekday_state[13];
   char smart_minutes[] = "    ";
-#ifndef PBL_PLATFORM_APLITE
   snprintf(smart_minutes, sizeof(smart_minutes), " +%d",alarm->smart_alarm_minutes);
-#endif
+
   snprintf(weekday_state,sizeof(weekday_state),"%c%c%c%c%c\n%c%c%s",
            alarm->weekdays_active[1]?weekday_names[1]:'_',
            alarm->weekdays_active[2]?weekday_names[2]:'_',
@@ -424,12 +413,12 @@ static void menu_draw_row_alarms(GContext* ctx, const Layer* cell_layer, uint16_
            alarm->weekdays_active[6]?weekday_names[6]:'_',
            alarm->weekdays_active[0]?weekday_names[0]:'_',
            smart_minutes);
-  
+
   graphics_draw_text(ctx, weekday_state,
                      fonts_get_system_font(FONT_KEY_GOTHIC_14),
                      GRect(70+ALARM_OFFSET_LEFT, -1+offset, layer_size.size.w - 33 - ALARM_OFFSET_RIGHT, 30), GTextOverflowModeWordWrap,
                      GTextAlignmentLeft, NULL);
-  
+
   // draw description
   if(alarm_has_description(alarm))
   {
@@ -531,7 +520,7 @@ static void menu_select_long(struct MenuLayer* menu, MenuIndex* cell_index, void
       else
         s_selected_alarm=s_id_enabled[cell_index->row];
       // Show the settings dialog
-      
+
            // Show the ActionMenu
       s_action_menu = action_menu_open(&config);
       break;
