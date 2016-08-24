@@ -43,7 +43,7 @@ void update_app_glance(Alarm* alarms) {
     time_t timestamp = alarm_get_time_of_wakeup(&alarms[alarm_id]);
     struct tm *t = localtime(&timestamp);
     if(clock_is_24h_style())
-      snprintf(next_alarm_text,sizeof(next_alarm_text),"Next: %02d:%02d",t->tm_hour,t->tm_min);
+      snprintf(next_alarm_text,sizeof(next_alarm_text),"Next alarm: %02d:%02d",t->tm_hour,t->tm_min);
     else
     {
       int temp_hour;
