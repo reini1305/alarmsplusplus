@@ -140,6 +140,13 @@
           "name": "CLOCK_SEQUENCE",
           "file": "clock_sequence.pdc"
         }
+      ],
+      "publishedMedia": [
+        {
+          "name": "LOGO",
+          "id": 1,
+          "glance": "IMAGE_MENU_LOGO"
+        }
       ]
     },
     "projectType": "native",
