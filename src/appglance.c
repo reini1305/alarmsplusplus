@@ -19,7 +19,7 @@ static void prv_update_app_glance(AppGlanceReloadSession *session,
     // NOTE: When .icon_resource_id is not set, the app's default icon is used
     const AppGlanceSlice entry = (AppGlanceSlice) {
       .layout = {
-        .icon = APP_GLANCE_SLICE_DEFAULT_ICON,
+        .icon = PUBLISHED_ID_LOGO,
         .subtitle_template_string = message
       },
       .expiration_time = expiration_time+3600*24*7
