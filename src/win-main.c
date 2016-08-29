@@ -385,6 +385,8 @@ static void menu_draw_row_alarms(GContext* ctx, const Layer* cell_layer, uint16_
 
   // draw activity state
   bool highlighted = menu_cell_layer_is_highlighted(cell_layer);
+  if(!highlighted)
+    graphics_context_set_compositing_mode(ctx,GCompOpSet);
   graphics_draw_bitmap_in_rect(ctx,highlighted?s_logo_inv_bitmap:s_logo_bitmap,
                                GRect(layer_size.size.w - 29 - ALARM_OFFSET_RIGHT, alarm_has_description(alarm)?7:3+offset, 25 , 25));
 
