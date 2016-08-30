@@ -174,7 +174,8 @@
     "targetPlatforms": [
       "diorite",
       "basalt",
-      "chalk"
+      "chalk",
+      "aplite"
     ],
     "capabilities": [
       "health"

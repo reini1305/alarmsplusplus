@@ -171,7 +171,9 @@ void alarm_reset(Alarm *alarm)
   alarm->description[0]=0;
   for (int weekday=0; weekday<7;weekday++)
     alarm->weekdays_active[weekday]=true;
+#ifndef PBL_PLATFORM_APLITE
   alarm->smart_alarm_minutes=0;
+#endif
 }
 
 bool is_24h()

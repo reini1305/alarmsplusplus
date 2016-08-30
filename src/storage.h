@@ -21,8 +21,12 @@
 #define BACKGROUND_TRACKING_KEY 11
 #define TOP_BUTTON_DISMISS_KEY 20
 #define KONAMI_DISMISS_KEY 22
+#ifdef PBL_PLATFORM_APLITE
+#define ALARMS_KEY 12
+#else
 #define ALARMS_OLD_KEY 12
 #define ALARMS_KEY 23
+#endif
 
 void load_persistent_storage_alarms(Alarm *alarms);
 bool load_persistent_storage_bool(int key, bool default_val);
