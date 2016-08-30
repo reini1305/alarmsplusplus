@@ -10,9 +10,9 @@ var reminderPIN = {
     "body": "Launch app to modify it.",
     "primaryColor": "black",
     "secondaryColor": "black",
-    "tinyIcon": "app://images/LOGO",
-    "smallIcon": "app://images/LOGO",
-    "largeIcon": "app://images/LOGO",
+    "tinyIcon": "system://images/ALARM_CLOCK",
+    "smallIcon": "system://images/ALARM_CLOCK",
+    "largeIcon": "system://images/ALARM_CLOCK",
     "backgroundColor": "pictonblue"
   },
   "actions": [

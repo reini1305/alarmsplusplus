@@ -13,16 +13,14 @@
     "resources": {
       "media": [
         {
-          "storageOptimization": "memory",
-          "name": "IMAGE_MENU_ICON",
+          "name": "IMAGE_LOGO_TINY",
           "file": "images/logo_tiny.png",
-          "memoryFormat": "1Bit",
-          "menuIcon": true,
-          "type": "bitmap"
+          "type": "bitmap",
+          "menuIcon": true
         },
         {
           "name": "IMAGE_MENU_LOGO",
-          "file": "images/logo_tiny.png",
+          "file": "images/logo_menu.png",
           "type": "bitmap"
         },
         {
@@ -149,10 +147,10 @@
       "publishedMedia": [
         {
           "name": "LOGO",
-          "id": 3,
-          "glance": "IMAGE_MENU_LOGO",
+          "id": 5,
+          "glance": "IMAGE_LOGO_TINY",
           "timeline": {
-            "tiny": "IMAGE_MENU_LOGO",
+            "tiny": "IMAGE_LOGO_TINY",
             "small": "IMAGE_LOGO",
             "large": "IMAGE_LOGO_LARGE"
           }
