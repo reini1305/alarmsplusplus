@@ -238,7 +238,7 @@ static void health_handler(HealthEventType event, void *context) {
     case HealthEventSignificantUpdate:
       APP_LOG(APP_LOG_LEVEL_INFO,
               "New HealthService HealthEventSignificantUpdate event");
-      start_vibration(NULL);
+      //start_vibration(NULL);
       break;
     case HealthEventMovementUpdate:
       APP_LOG(APP_LOG_LEVEL_INFO,
@@ -253,17 +253,13 @@ static void health_handler(HealthEventType event, void *context) {
     case HealthEventMetricAlert:
       APP_LOG(APP_LOG_LEVEL_INFO,
               "New HealthService HealthEventMetricAlert event");
-      start_vibration(NULL);
+      //start_vibration(NULL);
       break;
     case HealthEventHeartRateUpdate:
       APP_LOG(APP_LOG_LEVEL_INFO,
               "New HealthService HealthEventHeartRateUpdate event");
-      start_vibration(NULL);
+      //start_vibration(NULL);
       break;
-    // case HealthEventHeartRateSubscriptionExpiring:
-    //   APP_LOG(APP_LOG_LEVEL_INFO,
-    //           "New HealthService HealthEventHeartRateUpdate event");
-    //   break;
   }
 
 }
