@@ -23,7 +23,7 @@ void deinit(void)
   if(!snooze)
     reschedule_wakeup(alarms);
   write_persistent_storage_alarms(alarms);
-  update_app_glance(alarms);
+  update_app_glance(alarms,true);
 }
 
 int main(void) {
