@@ -12,6 +12,6 @@
 #include <pebble.h>
 #include "alarms.h"
 
-void update_app_glance(Alarm* alarms);
+void update_app_glance(Alarm* alarms, bool show_remaining);
 
 #endif /* appglance_h */

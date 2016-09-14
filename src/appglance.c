@@ -19,7 +19,7 @@ static void prv_update_app_glance(AppGlanceReloadSession *session,
     // NOTE: When .icon_resource_id is not set, the app's default icon is used
     const AppGlanceSlice entry = (AppGlanceSlice) {
       .layout = {
-        .icon = PUBLISHED_ID_LOGO,
+        .icon = APP_GLANCE_SLICE_DEFAULT_ICON,//PUBLISHED_ID_LOGO,
         .subtitle_template_string = message
       },
       .expiration_time = expiration_time+3600*24*7
@@ -35,22 +35,26 @@ static void prv_update_app_glance(AppGlanceReloadSession *session,
 }
 #endif
 
-void update_app_glance(Alarm* alarms) {
+void update_app_glance(Alarm* alarms, bool show_remaining) {
 #if PBL_API_EXISTS(app_glance_reload)
   int alarm_id = get_next_alarm(alarms);
-  char next_alarm_text[40];
+  char next_alarm_text[100];
   if(alarm_id>=0)
   {
     time_t timestamp = alarm_get_time_of_wakeup(&alarms[alarm_id]);
-    struct tm *t = localtime(&timestamp);
-    if(clock_is_24h_style())
-      snprintf(next_alarm_text,sizeof(next_alarm_text),"Next %salarm: %s, %02d:%02d",alarms[alarm_id].smart_alarm_minutes>0?"smart ":"", weekdays[t->tm_wday],t->tm_hour,t->tm_min);
-    else
-    {
-      int temp_hour;
-      bool is_am;
-      convert_24_to_12(t->tm_hour, &temp_hour, &is_am);
-      snprintf(next_alarm_text,sizeof(next_alarm_text),"Next alarm: %02d:%02d %s",temp_hour,t->tm_min,is_am?"AM":"PM");
+    if(show_remaining) {
+      snprintf(next_alarm_text,sizeof(next_alarm_text),"{time_until(%d)|format(>0S:'Next in %%Hh %%Mm','')}",(unsigned int)timestamp);
+    } else {
+      struct tm *t = localtime(&timestamp);
+      if(clock_is_24h_style())
+        snprintf(next_alarm_text,sizeof(next_alarm_text),"Next %salarm: %s, %02d:%02d",alarms[alarm_id].smart_alarm_minutes>0?"smart ":"", weekdays[t->tm_wday],t->tm_hour,t->tm_min);
+      else
+      {
+        int temp_hour;
+        bool is_am;
+        convert_24_to_12(t->tm_hour, &temp_hour, &is_am);
+        snprintf(next_alarm_text,sizeof(next_alarm_text),"Next alarm: %02d:%02d %s",temp_hour,t->tm_min,is_am?"AM":"PM");
+      }
     }
     app_glance_reload(prv_update_app_glance,next_alarm_text);
   } else {
