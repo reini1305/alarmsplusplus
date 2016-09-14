@@ -1,6 +1,6 @@
 
 #include "appglance.h"
-#include "debug.h"
+//#include "debug.h"
 
 #if PBL_API_EXISTS(app_glance_reload)
 static char* weekdays[] = {"Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"};
