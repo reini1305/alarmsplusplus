@@ -70,7 +70,7 @@ void win_advanced_show(void) {
 static void window_load(Window* window) {
   Layer *window_layer = window_get_root_layer(s_window);
   GRect bounds = layer_get_frame(window_layer);
-  
+
   // Create the menu layer
   s_menu = menu_layer_create(bounds);
   menu_layer_set_callbacks(s_menu, NULL, (MenuLayerCallbacks) {
@@ -85,7 +85,7 @@ static void window_load(Window* window) {
   });
   // Bind the menu layer's click config provider to the window for interactivity
   menu_layer_set_click_config_onto_window(s_menu, s_window);
-  
+
 #ifdef PBL_COLOR
   menu_layer_pad_bottom_enable(s_menu,false);
   menu_layer_set_highlight_colors(s_menu,GColorBlue,GColorWhite);
@@ -95,7 +95,7 @@ static void window_load(Window* window) {
 #endif
   // Add it to the window for display
   layer_add_child(window_layer, menu_layer_get_layer(s_menu));
-  
+
 }
 
 static void window_unload(Window* window) {
@@ -121,7 +121,11 @@ static int16_t menu_cell_height(struct MenuLayer *menu, MenuIndex *cell_index, v
   else
     return MENU_CELL_ROUND_UNFOCUSED_SHORT_CELL_HEIGHT;
 #else
+#ifdef PBL_PLATFORM_EMERY
+  return 54;
+#else
   return 38;
+#endif
 #endif
 }
 
@@ -135,18 +139,19 @@ static int16_t menu_header_height(struct MenuLayer *menu, uint16_t section_index
 
 static void menu_draw_header(GContext* ctx, const Layer* cell_layer, uint16_t section_index, void* callback_context) {
 #ifndef PBL_ROUND
+    GRect bounds = layer_get_bounds(cell_layer);
     graphics_context_set_text_color(ctx, GColorWhite);
     #ifdef PBL_COLOR
       graphics_context_set_fill_color(ctx, GColorBlue);
     #else
       graphics_context_set_fill_color(ctx, GColorBlack);
     #endif
-    graphics_fill_rect(ctx,GRect(0,1,144,14),0,GCornerNone);
-    
+    graphics_fill_rect(ctx,GRect(0,1,bounds.size.w,14),0,GCornerNone);
+
     graphics_draw_text(ctx, _("Options"),
                        fonts_get_system_font(FONT_KEY_GOTHIC_14_BOLD),
-                       GRect(3, -2, 144 - 33, 14), GTextOverflowModeWordWrap,
-                       GTextAlignmentLeft, NULL);
+                       GRect(0, -2, bounds.size.w, 14), GTextOverflowModeWordWrap,
+                       GTextAlignmentCenter, NULL);
 #endif
 }
 
