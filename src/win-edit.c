@@ -27,17 +27,33 @@ static char s_max[3];
 static char s_min[3];
 static bool s_withampm;
 #ifdef PBL_RECT
-#define OFFSET_LEFT 0
-#define OFFSET_TOP 0
-#define ITEM_HEIGHT 28
-#define OFFSET_ITEM_TOP 0
+  #ifdef PBL_PLATFORM_EMERY
+    #define OFFSET_LEFT 16
+    #define OFFSET_TOP 30
+    #define ITEM_HEIGHT 28
+    #define OFFSET_ITEM_TOP 0
+    #define LAYER_SIZE 50
+    #define FONT_KEY FONT_KEY_BITHAM_34_MEDIUM_NUMBERS
+    #define PIN_WINDOW_SPACING 34
+  #else
+    #define OFFSET_LEFT 0
+    #define OFFSET_TOP 0
+    #define ITEM_HEIGHT 28
+    #define OFFSET_ITEM_TOP 0
+    #define LAYER_SIZE 40
+    #define FONT_KEY FONT_KEY_GOTHIC_28_BOLD
+    #define PIN_WINDOW_SPACING 24
+  #endif
 #else
-#define OFFSET_LEFT 18
-#define OFFSET_TOP 11
-#define ITEM_HEIGHT 40
-#define OFFSET_ITEM_TOP 6
+  #define OFFSET_LEFT 18
+  #define OFFSET_TOP 11
+  #define ITEM_HEIGHT 40
+  #define OFFSET_ITEM_TOP 6
+  #define LAYER_SIZE 40
+  #define FONT_KEY FONT_KEY_GOTHIC_28_BOLD
+  #define PIN_WINDOW_SPACING 24
 #endif
-#define PIN_WINDOW_SPACING 24
+
 static const GPathInfo PATH_INFO = {
   .num_points = 3,
   .points = (GPoint []) {{0, -5}, {5,5}, {-5, 5}}
@@ -161,14 +177,14 @@ void win_edit_show(Alarm *alarm){
 // Time input window stuff
 
 static void update_ui(Layer *layer, GContext *ctx) {
-
+  GRect bounds = layer_get_bounds(layer);
   for(int i = 0; i < 3; i++) {
     text_layer_set_background_color(s_input_layers[i], (i == s_selection) ? PBL_IF_COLOR_ELSE(GColorBlue,GColorBlack) : PBL_IF_COLOR_ELSE(GColorDarkGray,GColorLightGray));
     text_layer_set_text_color(s_input_layers[i],GColorWhite);
     if(i==s_selection)
     {
       GPoint selection_center = {
-        .x = (int16_t) (s_withampm?23:50) + i * (PIN_WINDOW_SPACING + PIN_WINDOW_SPACING) + OFFSET_LEFT,
+        .x = (int16_t) (s_withampm?3:30) + LAYER_SIZE/2 + i * (PIN_WINDOW_SPACING + PIN_WINDOW_SPACING) + OFFSET_LEFT,
         .y = (int16_t) 50 + OFFSET_TOP,
       };
       gpath_rotate_to(s_my_path_ptr, 0);
@@ -176,7 +192,7 @@ static void update_ui(Layer *layer, GContext *ctx) {
       graphics_context_set_fill_color(ctx,PBL_IF_COLOR_ELSE(GColorBlue,GColorBlack));
       gpath_draw_filled(ctx, s_my_path_ptr);
       gpath_rotate_to(s_my_path_ptr, TRIG_MAX_ANGLE/2);
-      selection_center.y = 110 + OFFSET_TOP;
+      selection_center.y = 70 + LAYER_SIZE + OFFSET_TOP;
       gpath_move_to(s_my_path_ptr, selection_center);
       gpath_draw_filled(ctx, s_my_path_ptr);
     }
@@ -190,12 +206,11 @@ static void update_ui(Layer *layer, GContext *ctx) {
   // draw the :
 
   graphics_context_set_text_color(ctx,PBL_IF_COLOR_ELSE(GColorBlue,GColorBlack));
-  graphics_draw_text(ctx,":",fonts_get_system_font(FONT_KEY_GOTHIC_28_BOLD),GRect(s_withampm?144/2-27:144/2 + OFFSET_LEFT,58 + OFFSET_TOP,40,20),
+  graphics_draw_text(ctx,":",fonts_get_system_font(FONT_KEY),GRect(s_withampm?bounds.size.w/2-27:bounds.size.w/2,58 + OFFSET_TOP,40,20),
                      GTextOverflowModeWordWrap,GTextAlignmentLeft,NULL);
 
 #ifdef PBL_ROUND
   // draw graphical representations as rings around the border
-  GRect bounds = layer_get_bounds(layer);
   int hour_angle = (s_digits[0] * 360) / 12;
   graphics_context_set_fill_color(ctx, s_selection==0?GColorBlue:GColorDarkGray);
   graphics_fill_radial(ctx, bounds, GOvalScaleModeFitCircle, 10, 0, DEG_TO_TRIGANGLE(hour_angle));
@@ -274,7 +289,7 @@ static void time_window_load(Window *window) {
   layer_add_child(window_layer, s_canvas_layer);
 
   for(int i = 0; i < 3; i++) {
-    s_input_layers[i] = text_layer_create(GRect((s_withampm?3:30) + i * (PIN_WINDOW_SPACING + PIN_WINDOW_SPACING) + OFFSET_LEFT, 60 + OFFSET_TOP, 40, 40));
+    s_input_layers[i] = text_layer_create(GRect((s_withampm?3:30) + i * (PIN_WINDOW_SPACING + PIN_WINDOW_SPACING) + OFFSET_LEFT, 60 + OFFSET_TOP, LAYER_SIZE, LAYER_SIZE));
 #ifdef PBL_COLOR
     text_layer_set_text_color(s_input_layers[i], GColorWhite);
     text_layer_set_background_color(s_input_layers[i], GColorDarkGray);
@@ -283,7 +298,7 @@ static void time_window_load(Window *window) {
     text_layer_set_background_color(s_input_layers[i], GColorWhite);
 #endif
     text_layer_set_text(s_input_layers[i], "00");
-    text_layer_set_font(s_input_layers[i], fonts_get_system_font(FONT_KEY_GOTHIC_28_BOLD));
+    text_layer_set_font(s_input_layers[i], fonts_get_system_font(FONT_KEY));
     text_layer_set_text_alignment(s_input_layers[i], GTextAlignmentCenter);
     layer_add_child(window_layer, text_layer_get_layer(s_input_layers[i]));
   }
