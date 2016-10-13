@@ -294,7 +294,11 @@ static void main_window_load(Window *window) {
     // Create Description
     s_description_layer = text_layer_create(GRect(PBL_IF_ROUND_ELSE(20,0), PBL_IF_ROUND_ELSE(20,6), bounds.size.w-ACTION_BAR_WIDTH-PBL_IF_ROUND_ELSE(20,0), bounds.size.h/2-10));
     text_layer_set_text_alignment(s_description_layer, GTextAlignmentCenter);
+#ifdef PBL_PLATFORM_EMERY
+    text_layer_set_font(s_description_layer,fonts_get_system_font(FONT_KEY_BITHAM_30_BLACK));
+#else
     text_layer_set_font(s_description_layer,fonts_get_system_font(FONT_KEY_GOTHIC_28_BOLD));
+#endif
     text_layer_set_text(s_description_layer, s_alarm->description);
     layer_add_child(window_get_root_layer(window), text_layer_get_layer(s_description_layer));
   }
@@ -303,7 +307,7 @@ static void main_window_load(Window *window) {
 #ifndef PBL_PLATFORM_APLITE
     s_command_seq = gdraw_command_sequence_create_with_resource(RESOURCE_ID_CLOCK_SEQUENCE);
     // Create the canvas Layer
-    s_canvas_layer = layer_create(GRect(PBL_IF_ROUND_ELSE(60,30)-ACTION_BAR_WIDTH/2, 0, bounds.size.w, bounds.size.h));
+    s_canvas_layer = layer_create(GRect((bounds.size.w-ACTION_BAR_WIDTH-80)/2, 0, bounds.size.w, bounds.size.h));
     // Set the LayerUpdateProc
     layer_set_update_proc(s_canvas_layer, update_proc);
 
