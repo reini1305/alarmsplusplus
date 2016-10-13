@@ -72,10 +72,10 @@ static void change_set(int s, bool lock)
       }
     }
   }
-  
+
   menu = false;
   if (lock) cur_set = s;
-  
+
   drawSides();
 }
 
@@ -95,7 +95,7 @@ static void clickButton(int b)
       change_set(b, false);
       return;
     }
-    
+
     if (size > 3)
     {
       size /= 3;
@@ -118,7 +118,7 @@ static void clickButton(int b)
       change_set(cur_set, false);
       next();
     }
-    
+
     drawSides();
   }
   refresh_timeout();
@@ -126,18 +126,18 @@ static void clickButton(int b)
 
 // Modify these common button handlers
 static void up_single_click_handler(ClickRecognizerRef recognizer, void* context) {
-  
+
   clickButton(TOP);
-  
+
 }
 
 static void select_single_click_handler(ClickRecognizerRef recognizer, void* context) {
-  
+
   clickButton(MID);
 }
 
 static void down_single_click_handler(ClickRecognizerRef recognizer, void* context) {
-  
+
   clickButton(BOT);
 }
 
@@ -152,46 +152,46 @@ static bool common_long(int b)
 }
 
 static void up_long_click_handler(ClickRecognizerRef recognizer, void* context) {
-  
+
   if (common_long(TOP)) return;
-  
+
   set_menu();
-  
+
 }
 
 static void select_long_click_handler(ClickRecognizerRef recognizer, void* context) {
-  
+
   if (common_long(MID)) return;
-  
+
   //    blackout = !blackout;
   //
   //    if (blackout)
   //    text_layer_set_background_color(text_layer, GColorBlack);
   //    else
   //    text_layer_set_background_color(text_layer, GColorClear);
-  
+
   // clear the string
   /*pos = 0;
   for (int i=0; i<TEXT_LENGTH; i++)
   text_buffer[i] = ' ';
-  
+
   drawNotepadText();
   change_set(cur_set, false);
-  
+
   next();
   drawSides();*/
   strncpy(return_text,text_buffer,DESCRIPTION_LENGTH);
   window_stack_pop(true);
-  
+
 }
 
 
 static void down_long_click_handler(ClickRecognizerRef recognizer, void* context) {
-  
+
   if (common_long(BOT)) return;
-  
+
   // delete or cancel when back is held
-  
+
   if (size==27 && pos>0 && !blackout)
   {
     text_buffer[--pos] = 0;
@@ -202,7 +202,7 @@ static void down_long_click_handler(ClickRecognizerRef recognizer, void* context
     next();
     drawSides();
   }
-  
+
 }
 
 static void set_menu()
@@ -217,13 +217,13 @@ static void set_menu()
 // This usually won't need to be modified
 
 static void click_config_provider(void* context) {
-  
+
   window_single_click_subscribe(BUTTON_ID_UP, up_single_click_handler);
   window_long_click_subscribe(BUTTON_ID_UP, 500, up_long_click_handler, NULL);
-  
+
   window_single_click_subscribe(BUTTON_ID_SELECT, select_single_click_handler);
   window_long_click_subscribe(BUTTON_ID_SELECT, 500, select_long_click_handler, NULL);
-  
+
   window_single_click_subscribe(BUTTON_ID_DOWN, down_single_click_handler);
   window_long_click_subscribe(BUTTON_ID_DOWN, 500, down_long_click_handler, NULL);
 }
@@ -234,7 +234,7 @@ static void drawMenu()
   {
     text_layer_set_text(bbuttons[i][i!=2], " ");
     text_layer_set_text(bbuttons[i][2], " ");
-    
+
     text_layer_set_text(bbuttons[i][i==2], cases[i]);
     text_layer_set_font(bbuttons[i][0], fonts_get_system_font(FONT_KEY_GOTHIC_24_BOLD));
   }
@@ -255,86 +255,115 @@ static void drawSides()
         text_layer_set_background_color(bbuttons[h][i], GColorClear);
         text_layer_set_font(bbuttons[h][i], fonts_get_system_font(FONT_KEY_GOTHIC_18_BOLD));
       }
-      
+
     }
   }
   else if (size==9)   // second click
   {
-    
+
     for (int i=0; i<3; i++)
     {
       text_layer_set_text(bbuttons[i][i!=2], " ");
       text_layer_set_text(bbuttons[i][2], " ");
-      
+
       text_layer_set_text(bbuttons[i][i==2], btexts[top/9][i]);
       text_layer_set_font(bbuttons[i][i==2], fonts_get_system_font(FONT_KEY_GOTHIC_24_BOLD));
     }
-    
+
   } else if (size == 3)
   {
     for (int i=0; i<3; i++)
     {
       setlist[i][2] = master[top+i];
       text_layer_set_text(bbuttons[i][i==2], setlist[i]);
-      
+
     }
   }
-  
+
 }
 
 #ifdef PBL_RECT
+#ifdef PBL_PLATFORM_EMERY
 static void initSidesAndText()
 {
   Layer *window_layer = window_get_root_layer(window);
-  
+
   wordsYouWrite = text_layer_create((GRect) { .origin = { 3, 0 }, .size = { 109, 150 } });
-  
+
   text_layer_set_background_color(wordsYouWrite, GColorClear);
   text_layer_set_font(wordsYouWrite, fonts_get_system_font(FONT_KEY_GOTHIC_28_BOLD));
   layer_add_child(window_layer, text_layer_get_layer(wordsYouWrite));
-  
+
+  for (int i = 0; i<3; i++)
+  {
+    buttons1[i] = text_layer_create((GRect) { .origin = { 171, 12*i }, .size = { 100, 100 } });
+    buttons2[i] = text_layer_create((GRect) { .origin = { 171, 12*i+80 }, .size = { 100, 100 } });
+    buttons3[i] = text_layer_create((GRect) { .origin = { 171, 12*i+160 }, .size = { 100, 100 } });
+  }
+
+  bbuttons[0] = buttons1;
+  bbuttons[1] = buttons2;
+  bbuttons[2] = buttons3;
+
+  for (int i=0; i<3; i++)
+    for (int j=0; j<3; j++)
+      layer_add_child(window_layer, text_layer_get_layer(bbuttons[i][j]));
+
+}
+#else
+static void initSidesAndText()
+{
+  Layer *window_layer = window_get_root_layer(window);
+
+  wordsYouWrite = text_layer_create((GRect) { .origin = { 3, 0 }, .size = { 109, 150 } });
+
+  text_layer_set_background_color(wordsYouWrite, GColorClear);
+  text_layer_set_font(wordsYouWrite, fonts_get_system_font(FONT_KEY_GOTHIC_28_BOLD));
+  layer_add_child(window_layer, text_layer_get_layer(wordsYouWrite));
+
   for (int i = 0; i<3; i++)
   {
     buttons1[i] = text_layer_create((GRect) { .origin = { 115, 12*i }, .size = { 100, 100 } });
     buttons2[i] = text_layer_create((GRect) { .origin = { 115, 12*i+50 }, .size = { 100, 100 } });
     buttons3[i] = text_layer_create((GRect) { .origin = { 115, 12*i+100 }, .size = { 100, 100 } });
   }
-  
+
   bbuttons[0] = buttons1;
   bbuttons[1] = buttons2;
   bbuttons[2] = buttons3;
-  
+
   for (int i=0; i<3; i++)
     for (int j=0; j<3; j++)
       layer_add_child(window_layer, text_layer_get_layer(bbuttons[i][j]));
-  
+
 }
+#endif
 #else
 static void initSidesAndText()
 {
   Layer *window_layer = window_get_root_layer(window);
-  
+
   wordsYouWrite = text_layer_create((GRect) { .origin = { 18, 30 }, .size = { 109, 150 } });
-  
+
   text_layer_set_background_color(wordsYouWrite, GColorClear);
   text_layer_set_font(wordsYouWrite, fonts_get_system_font(FONT_KEY_GOTHIC_28_BOLD));
   layer_add_child(window_layer, text_layer_get_layer(wordsYouWrite));
-  
+
   for (int i = 0; i<3; i++)
   {
     buttons1[i] = text_layer_create((GRect) { .origin = { 119, 12*i+14 }, .size = { 100, 100 } });
     buttons2[i] = text_layer_create((GRect) { .origin = { 145, 12*i+64 }, .size = { 100, 100 } });
     buttons3[i] = text_layer_create((GRect) { .origin = { 119, 12*i+114 }, .size = { 100, 100 } });
   }
-  
+
   bbuttons[0] = buttons1;
   bbuttons[1] = buttons2;
   bbuttons[2] = buttons3;
-  
+
   for (int i=0; i<3; i++)
     for (int j=0; j<3; j++)
       layer_add_child(window_layer, text_layer_get_layer(bbuttons[i][j]));
-  
+
 }
 #endif
 
@@ -359,14 +388,18 @@ static void window_load(Window* window)
   Layer *window_layer = window_get_root_layer(window);
   GRect bounds = layer_get_bounds(window_layer);
 #ifdef PBL_RECT
+#ifdef PBL_PLATFORM_EMERY
+  text_layer = text_layer_create((GRect) { .origin = { 5, 122 }, .size = { 110, bounds.size.h-72 } });
+#else
   text_layer = text_layer_create((GRect) { .origin = { 5, 72 }, .size = { 110, bounds.size.h-72 } });
+#endif
 #else
   text_layer = text_layer_create((GRect) { .origin = { 2, 72 }, .size = { 110, bounds.size.h-72 } });
   text_layer_set_text_alignment(text_layer,GTextAlignmentRight);
-#endif  
+#endif
   //  text_layer_set_text(&textLayer, text_buffer);
   //    text_layer_set_background_color(&textLayer, GColorClear);
-  
+
   text_layer_set_font(text_layer, fonts_get_system_font(FONT_KEY_GOTHIC_24));
   layer_add_child(window_layer, text_layer_get_layer(text_layer));
   text_layer_set_text(text_layer,"Long-press buttons for more options");
@@ -375,27 +408,27 @@ static void window_load(Window* window)
   change_set(1, true);
   drawSides();
   drawNotepadText();
-  
+
 
   // Attach our desired button functionality
   //    window_set_click_config_provider(&window, (ClickConfigProvider) click_config_provider);
-  
+
 }
 
 
 void tertiary_text_init(void) {
 
   window = window_create();
-  
+
   pos = 0;
-  
+
   window_set_click_config_provider(window, click_config_provider);
   window_set_window_handlers(window, (WindowHandlers) {
     .load = window_load,
     .unload = window_unload,
   });
-  
-  
+
+
 }
 
 
