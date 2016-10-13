@@ -69,13 +69,14 @@ static Alarm temp_alarm;
 static Alarm *current_alarm;
 
 #ifndef PBL_PLATFORM_APLITE
-#include "pebble-ui-dialog-window/pebble-ui-dialog-window.h"
+/*#include "pebble-ui-dialog-window/pebble-ui-dialog-window.h"
 UIDialogWindow* ui_dialog;
 #ifdef PBL_ROUND
 char* ui_dialog_message = "       Voice        dictation not available, falling back to standard text input. Press back to continue.";
 #else
 char* ui_dialog_message = "Voice dictation not available, falling back to standard text input. Press back to continue.";
 #endif
+*/
 static DictationSession *s_dictation_session;
 static void dictation_session_callback(DictationSession *session, DictationSessionStatus status,
                                        char *transcription, void *context) {
@@ -84,9 +85,9 @@ static void dictation_session_callback(DictationSession *session, DictationSessi
     strncpy(temp_alarm.description, transcription, sizeof(temp_alarm.description));
   }
   else { // fallback to old solution
-    Window* window = ui_dialog_window_get_window(ui_dialog);
+    //Window* window = ui_dialog_window_get_window(ui_dialog);
     tertiary_text_show(temp_alarm.description);
-    window_stack_push(window, true);
+    //window_stack_push(window, true);
   }
 }
 #endif
@@ -109,9 +110,9 @@ void win_edit_init(void)
 #ifndef PBL_PLATFORM_APLITE
   s_dictation_session = dictation_session_create(sizeof(temp_alarm.description),
                                                  dictation_session_callback, NULL);
-  ui_dialog = ui_dialog_window_create(ui_dialog_message, NULL);
-  ui_dialog_window_set_background_color(ui_dialog,GColorRed);
-  ui_dialog_window_set_label_color(ui_dialog,GColorWhite);
+  //ui_dialog = ui_dialog_window_create(ui_dialog_message, NULL);
+  //ui_dialog_window_set_background_color(ui_dialog,GColorRed);
+  //ui_dialog_window_set_label_color(ui_dialog,GColorWhite);
 #endif
 
   check_icon = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_ACTION_ICON_CHECK_INV);
@@ -529,8 +530,8 @@ static void menu_select(struct MenuLayer* menu, MenuIndex* cell_index, void* cal
         dictation_session_start(s_dictation_session);
         else{
           tertiary_text_show(temp_alarm.description);
-          Window* window = ui_dialog_window_get_window(ui_dialog);
-          window_stack_push(window, true);
+          //Window* window = ui_dialog_window_get_window(ui_dialog);
+          //window_stack_push(window, true);
         }
 #endif
       }

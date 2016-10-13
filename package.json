@@ -3,7 +3,7 @@
   "author": "Christian Reinbacher",
   "private": true,
   "dependencies": {
-    "pebble-ui-dialog-window": "^0.2.1"
+
   },
   "keywords": [
     "pebble-app"
@@ -175,7 +175,8 @@
       "diorite",
       "basalt",
       "chalk",
-      "aplite"
+      "aplite",
+      "emery"
     ],
     "capabilities": [
       "health"

@@ -18,19 +18,28 @@
 #define MENU_ROW_COUNT_ALARMS NUM_ALARMS
 
 #ifdef PBL_RECT
-#define ALARM_HEIGHT 32
-#define DESCRIPTION_HEIGHT 58
-#define ALARM_OFFSET_LEFT 0
-#define ALARM_OFFSET_RIGHT 0
-#define ALARM_OFFSET_TOP 0
-#define OTHER_HEIGHT 38
+  #ifdef PBL_PLATFORM_EMERY
+    #define ALARM_HEIGHT 44
+    #define DESCRIPTION_HEIGHT 64
+    #define ALARM_OFFSET_LEFT 18
+    #define ALARM_OFFSET_RIGHT 24
+    #define ALARM_OFFSET_TOP 8
+    #define OTHER_HEIGHT 52
+  #else
+    #define ALARM_HEIGHT 32
+    #define DESCRIPTION_HEIGHT 58
+    #define ALARM_OFFSET_LEFT 0
+    #define ALARM_OFFSET_RIGHT 0
+    #define ALARM_OFFSET_TOP 0
+    #define OTHER_HEIGHT 38
+  #endif
 #else
-#define ALARM_HEIGHT 64
-#define DESCRIPTION_HEIGHT 64
-#define ALARM_OFFSET_LEFT 18
-#define ALARM_OFFSET_RIGHT 24
-#define ALARM_OFFSET_TOP 8
-#define OTHER_HEIGHT 42
+  #define ALARM_HEIGHT 64
+  #define DESCRIPTION_HEIGHT 64
+  #define ALARM_OFFSET_LEFT 18
+  #define ALARM_OFFSET_RIGHT 24
+  #define ALARM_OFFSET_TOP 8
+  #define OTHER_HEIGHT 42
 #endif
 
 #define MENU_ROW_NEXT_ALARM          0
@@ -189,14 +198,15 @@ void win_main_show(void) {
 #ifndef PBL_ROUND
 static void battery_proc(Layer *layer, GContext *ctx) {
   // Emulator battery meter on Aplite
+  GRect bounds = layer_get_bounds(layer);
   graphics_context_set_stroke_color(ctx, GColorWhite);
-  graphics_draw_rect(ctx, GRect(126, 4, 14, 8));
-  graphics_draw_line(ctx, GPoint(140, 6), GPoint(140, 9));
+  graphics_draw_rect(ctx, GRect(bounds.size.w-18, 4, 14, 8));
+  graphics_draw_line(ctx, GPoint(bounds.size.w-4, 6), GPoint(bounds.size.w-4, 9));
 
   BatteryChargeState state = battery_state_service_peek();
   int width = state.charge_percent / 10;
   graphics_context_set_fill_color(ctx, GColorWhite);
-  graphics_fill_rect(ctx, GRect(128, 6, width, 4), 0, GCornerNone);
+  graphics_fill_rect(ctx, GRect(bounds.size.w-16, 6, width, 4), 0, GCornerNone);
 }
 #endif
 
