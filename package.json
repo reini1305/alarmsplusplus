@@ -1,9 +1,9 @@
 {
-  "version": "7.3",
+  "version": "7.5",
   "author": "Christian Reinbacher",
   "private": true,
   "dependencies": {
-
+    "pebble-ui-dialog-window": "../pebble-ui-dialog-window"
   },
   "keywords": [
     "pebble-app"
