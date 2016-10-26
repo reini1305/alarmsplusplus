@@ -147,6 +147,12 @@ void cancel_vibe_timer_callback(void* data) {
   cancel_vibrate = true;
   if(s_auto_snooze)
     do_snooze();
+  else {
+    *s_snooze=false;
+    if(alarm_is_one_time(s_alarm))
+      s_alarm->enabled=false;
+    window_stack_pop(true);
+  }
 }
 
 static void update_text(struct tm *t) {
