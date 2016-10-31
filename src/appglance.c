@@ -43,7 +43,7 @@ void update_app_glance(Alarm* alarms, bool show_remaining) {
   {
     time_t timestamp = alarm_get_time_of_wakeup(&alarms[alarm_id]);
     if(show_remaining) {
-      snprintf(next_alarm_text,sizeof(next_alarm_text),"{time_until(%d)|format(>0S:'Next in %%Hh %%Mm','')}",(unsigned int)timestamp);
+      snprintf(next_alarm_text,sizeof(next_alarm_text),"{time_until(%d)|format(>1d:'Next in %%dd %%Hh %%Mm',>0S:'Next in %%Hh %%Mm','')}",(unsigned int)timestamp);
     } else {
       struct tm *t = localtime(&timestamp);
       if(clock_is_24h_style())
@@ -57,6 +57,7 @@ void update_app_glance(Alarm* alarms, bool show_remaining) {
       }
     }
     app_glance_reload(prv_update_app_glance,next_alarm_text);
+    //APP_LOG(APP_LOG_LEVEL_DEBUG,"%s",next_alarm_text);
   } else {
     app_glance_reload(prv_update_app_glance,NULL);
   }
